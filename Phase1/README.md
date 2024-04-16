@@ -1,7 +1,5 @@
 - Ioannis Mavrakis
-- mavrakis@csd.uoc.gr
-- A.M. 2736
-
+- 
 PHASE 1
 
 How to run the phase 1
