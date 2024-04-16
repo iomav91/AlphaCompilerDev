@@ -1,5 +1,5 @@
 - Ioannis Mavrakis
-- 
+  
 PHASE 1
 
 How to run the phase 1
