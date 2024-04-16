@@ -1,6 +1,4 @@
 - Ioannis Mavrakis
-- mavrakis@csd.uoc.gr
-- A.M. 2736
 
 PHASE 1
 
