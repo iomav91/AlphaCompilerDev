@@ -1,0 +1,29 @@
+x = 10; function x(){} // error: var redefined as a function
+function b(){} b = 10; // error: function used as an l-value
+
+function y(w) {
+    function x(a) {
+	    return a+w;
+    }
+}
+
+function g() {
+	function h() {
+	    return g();
+	}
+}
+
+/*function a() {}
+
+a = 20;
+*/
+
+function f () {
+	local f = 10;
+	local print = 20;
+	function h () {
+	    return f;
+	    return ::f();
+	}
+}
+

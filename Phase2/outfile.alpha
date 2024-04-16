@@ -1,0 +1,16 @@
+Error symbol x is a function it cannot be assigned
+Error symbol f is a function it cannot be assigned
+argument	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 4	 (Line) -1	 (Scope) 0	(State: [Active -> 1 | Inactive -> 0]) 1
+cos	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 4	 (Line) -1	 (Scope) 0	(State: [Active -> 1 | Inactive -> 0]) 1
+f	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 3	 (Line) 3	 (Scope) 0	(State: [Active -> 1 | Inactive -> 0]) 1
+input	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 4	 (Line) -1	 (Scope) 0	(State: [Active -> 1 | Inactive -> 0]) 1
+objectcopy	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 4	 (Line) -1	 (Scope) 0	(State: [Active -> 1 | Inactive -> 0]) 1
+objectmemberkeys	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 4	 (Line) -1	 (Scope) 0	(State: [Active -> 1 | Inactive -> 0]) 1
+objecttotalmembers	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 4	 (Line) -1	 (Scope) 0	(State: [Active -> 1 | Inactive -> 0]) 1
+print	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 4	 (Line) -1	 (Scope) 0	(State: [Active -> 1 | Inactive -> 0]) 1
+sin	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 4	 (Line) -1	 (Scope) 0	(State: [Active -> 1 | Inactive -> 0]) 1
+sqrt	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 4	 (Line) -1	 (Scope) 0	(State: [Active -> 1 | Inactive -> 0]) 1
+strtonum	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 4	 (Line) -1	 (Scope) 0	(State: [Active -> 1 | Inactive -> 0]) 1
+totalarguments	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 4	 (Line) -1	 (Scope) 0	(State: [Active -> 1 | Inactive -> 0]) 1
+typeof	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 4	 (Line) -1	 (Scope) 0	(State: [Active -> 1 | Inactive -> 0]) 1
+x	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 3	 (Line) 1	 (Scope) 0	(State: [Active -> 1 | Inactive -> 0]) 1
