@@ -13,26 +13,30 @@ void push_blocks_prec(int n) {
     blocks_prec.push_back(n);
 }
 
-void handle_assign_expr(std::string name, int scope) {
+bool handle_assign_expr(std::string name, int scope) {
     //std::cout << "Type is " << type << std::endl;
     if (lookup(name)) {
         if (is_a_func_name(name) && lookup_and_return_scope(name) == scope) {
             std::cout << "Error symbol " << name << " is a function it cannot be assigned" << std::endl;
-            return;
+            return false;
         } 
     }
-    return;
+    return true;
 }
 
-void handle_id(std::string name, int scope, int line) {
+void handle_id(std::string name, int scope, scope_space space, unsigned offset, int line) {
     if (!lookup(name)) {
     	//std::cout << "false Scope " << scope << std::endl;
         
         if (scope == 0) {
-            insert(name, scope, line, GLOBAL);
+            insert(name, scope, line, space, offset, GLOBAL);
+            //inc_curr_scope_offset();
+            return;
             
         } else {
-            insert(name, scope, line, LOCAL);
+            insert(name, scope, line, space, offset, LOCAL);
+            //inc_curr_scope_offset();
+            return;
         }
     } else {
         //std::cout << "LOOK HERE " << "" << std::endl;
@@ -49,14 +53,23 @@ void handle_id(std::string name, int scope, int line) {
             return;
         }*/
 
+
+
         for (int i = get_scope()-1; i >= 1; i--) {
             //std::cout << "Current Scope is " << i << std::endl;
             //std::cout << "Blocks Prec " << blocks_prec.back() << std::endl;   
-            if (lookup_and_return_scope_second(name, i) < scope && lookup_and_return_scope_second(name, i) != -1 && blocks_prec.back() == 2) {
+            /*if (lookup_and_return_scope_second(name, i) < scope && lookup_and_return_scope_second(name, i) != -1 && blocks_prec.back() == 2) {
                 //std::cout << "LOOK HERE 3 " <<  scope << lookup_and_return_scope_second(name, i) << std::endl;
                 std::cout << "Error: " << name << " :: " << name << " at line " << line << " (local) not accessible" << std::endl;
                 return;
+            }*/
+
+            if (lookup_at_scope(name, i) && blocks_prec.back() == 2) {
+                std::cout << "Error: " << name << " :: " << name << " at line " << line << " (local) not accessible" << std::endl;
+                return;
             }
+
+
 
             /*if (lookup_and_return_scope_second(name, i) < scope && lookup_and_return_scope_second(name, i) != -1) {
                 std::cout << "HANDLE_ID !!!!" << lookup_and_return_scope_second(name, i) << std::endl;
@@ -69,13 +82,14 @@ void handle_id(std::string name, int scope, int line) {
                 std::cout << "Error: " << name << " :: " << name << " (local) not accessible" << std::endl;
                 return;   
             }*/
-
         }
+        std::cout << "Symbol " << name << " is a reference" << std::endl;
+        return;
     }
     return;
 }
 
-void handle_local_id(std::string name, int scope, int line) {
+void handle_local_id(std::string name, int scope, scope_space space, unsigned offset, int line) {
 
     /*if (!lookup_at_scope(name, get_scope())) {
     	std::cout << "false" << std::endl;
@@ -95,7 +109,7 @@ void handle_local_id(std::string name, int scope, int line) {
                 std::cout << "Error: Shadowing of library function " << name << " is not allowed" << std::endl;
                 return;
             }
-            insert(name, scope, line, LOCAL);
+            insert(name, scope, line, space, offset, LOCAL);
         } else {
             /*if (lookup_and_return_scope(name) < scope && lookup_and_return_scope(name) != 0 && is_in_function_mode == 1) {
                 std::cout << "You cannot access symbol" << name << " is scope " << lookup_and_return_scope(name) << std::endl;
@@ -140,7 +154,7 @@ void handle_global_access_id(std::string name) {
     return;
 }
 
-void handle_funcdef_w_name(std::string name, int scope, int line) {
+void handle_funcdef_w_name(std::string name, int scope, scope_space space, unsigned offset, int line) {
     //std::cout << "Scope in handle_funcdef_w_name " << scope << std::endl;
     if (!lookup_at_scope(name, scope)) {
         //std::cout << "THERE !!!" << std::endl;
@@ -148,7 +162,7 @@ void handle_funcdef_w_name(std::string name, int scope, int line) {
             std::cout << "Error: Shadowing of library function " << name << " is not allowed" << std::endl;
             return;
         }
-        insert(name, scope, line, USERFUNC);
+        insert(name, scope, line, space, offset, USERFUNC);
     } else {
         if (is_a_lib_func(name) == 1) {
             std::cout << "Error: Shadowing of library function " << name << " is not allowed" << std::endl;
@@ -160,11 +174,11 @@ void handle_funcdef_w_name(std::string name, int scope, int line) {
     return;
 }
 
-void handle_funcdef_anonym_name(int scope, int line) {
-    std::string name = func_name_generator();
+void handle_funcdef_anonym_name(std::string name, int scope, scope_space space, unsigned offset, int line) {
+    //std::string name = func_name_generator();
     ++func_anonym_counter;
     if (!lookup_at_scope(name, get_scope())) {
-        insert(name, scope, line, USERFUNC);
+        insert(name, scope, line, space, offset, USERFUNC);
     } else {
         std::cout << "Error: Symbol " << name << " is in the symbol table" << std::endl;
         return;
@@ -172,13 +186,13 @@ void handle_funcdef_anonym_name(int scope, int line) {
     return;
 }
 
-void handle_func_w_1arg(std::string name, int scope, int line) {
+void handle_func_w_1arg(std::string name, int scope, scope_space space, unsigned offset, int line) {
     //std::cout << "Scope is: " << get_scope() << std::endl;
     if (get_vector_size() > scope) {
         //std::cout << "handle_func_w_1arg 2" << std::endl;
         if (!lookup_at_scope(name, get_scope()) && is_a_lib_func(name) == 0) {
             //std::cout << "handle_func_w_1arg 2.1" << std::endl;
-            insert(name, scope, line, FORMAL);
+            insert(name, scope, line, space, offset, FORMAL);
             return;
         } else {
             //std::cout << "handle_func_w_1arg 3" << std::endl;
@@ -188,7 +202,7 @@ void handle_func_w_1arg(std::string name, int scope, int line) {
     } else {
         //std::cout << "handle_func_w_1arg 1" << std::endl;
         push_vector();
-        insert(name, scope, line, FORMAL);
+        insert(name, scope, line, space, offset, FORMAL);
     }
     return;
 }
