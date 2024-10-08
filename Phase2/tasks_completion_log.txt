@@ -1,0 +1,58 @@
+local x handling is completed
+
+explanation of implementation
+
+if the symbol is not in the table at the current scope then
+
+------- if the symbol is the same as a library's name then print error and return 
+
+----------- if not then 
+
+--------------- if the new symbol is in the scope not equal to zero then 
+
+------------------- insert symbol in the table as LOCAL 
+
+----------------otherwise
+
+----------------     as GLOBAL
+
+else 
+
+------- the symbol is a reference to an existing symbol.
+
+finish 
+
+-------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------
+
+::x (global x) handling is completed
+
+explanation of implementation
+
+if the symbol is not in the table at global scope then
+
+------- print error
+
+else 
+
+------- the symbol is reference to an existing global symbol (access global symbol)
+
+finish
+
+
+-------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------
+
+x (variable x) handling is completed
+
+explanation of implementation
+
+if the symbol is not in the table then
+
+------- insert the symbol in the table depends on scope.
+
+otherwise we check the rules about access of a symbol and we decide respectivily.
+
+-------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------
+

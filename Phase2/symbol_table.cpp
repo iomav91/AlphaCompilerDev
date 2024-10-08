@@ -149,11 +149,22 @@ int lookup_and_return_scope(std::string name) {
 int lookup_and_return_scope_second(std::string name, int scope) {
     for (auto map : symbol_table_alt) {
         for (const auto& symbol : map) {
-            if (symbol.first == name && symbol.second.scope == scope && symbol.second.isActive == true) {
-                return symbol.second.scope;
+            //std::cout << "LOOK HERE 4 at: " << symbol.second.name << std::endl;
+            if (symbol.first == name && symbol.second.scope == scope) {
+                std::cout << "LOOK HERE 4 at: " << symbol.second.name << std::endl;
+                /*if (symbol.first == name) {
+                    //std::cout << "LOOK HERE 5 at: " << symbol.first << std::endl;
+                    return symbol.second.scope;
+                }*/
             }
         }   
     }
+    /*for (auto& symbol : symbol_table_alt.at(scope)) {
+        std::cout << "LOOK HERE 4 at: " << symbol.second.name << std::endl;
+        if (symbol.second.name == name && symbol.second.isActive == true) {
+            return symbol.second.scope;
+        }
+    }*/
     return -1;
 }
 
@@ -168,6 +179,19 @@ int is_a_func_name(std::string name) {
         }   
     }
     return 0;
+}
+
+int is_a_func_name_scope(std::string name) {
+    for (auto map : symbol_table_alt) {
+        for (const auto& symbol : map) {
+            if (symbol.first == name && symbol.second.isActive == true) {
+                if (symbol.second.type == USERFUNC) {
+                    return symbol.second.scope;
+                }
+            }
+        }   
+    }
+    return -1;
 }
 
 int is_symbol_active(std::string name, int scope) {

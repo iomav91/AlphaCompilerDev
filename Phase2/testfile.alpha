@@ -1,29 +1,109 @@
-x = 10; function x(){} // error: var redefined as a function
-function b(){} b = 10; // error: function used as an l-value
+//x = 10; function x(){} // error: var redefined as a function
+//function b(){} b = 10; // error: function used as an l-value
 
-function y(w) {
+/*function y(w) {
     function x(a) {
 	    return a+w;
     }
-}
+}*/
 
-function g() {
+/*function g() {
 	function h() {
 	    return g();
 	}
-}
+}*/
 
 /*function a() {}
 
 a = 20;
 */
 
-function f () {
+/*function f () {
 	local f = 10;
 	local print = 20;
 	function h () {
 	    return f;
 	    return ::f();
 	}
-}
+}*/
 
+//local print = 0;
+
+/*function f (a,b) {
+	local print;
+}*/
+
+/*{
+    local f;
+	local print;
+}*/
+
+//x; //new global var x
+//print(::x); //ok, x found
+//print(::y); //error: no y
+//function f() { return ::x;} //ok
+//{ print(::f()); } //ok, f found
+
+a = 3;
+
+/*function f() {
+	a = 3;
+	b = 3;
+
+	function g() {
+	    a = 4;
+	    c = 3;
+	    c = 2;
+	    b = 4;
+	    return f;
+	}
+
+	{
+	    z = 3;
+	    function g() {
+	        return z;
+	    }
+	    print(z);
+	}
+}*/
+
+//function f() {}
+
+//local f; //ok, found locally
+//local print; //ok, found in scope 0
+//local x; //new global var in scope 0
+//{
+  //  local f; //new local var in scope 1
+    //local print; //error: trying to
+    //shadow libfunc
+//}
+//function g(a, b) { local a = local b; }
+
+//ok, a and b found locally
+
+//function f() { // f in scope 0
+  //  function f() {}// f in scope 1
+  //  function f() {}//error: f exists
+//}
+//x = 1;
+//function x() {} //error: x is var
+//function sin() {} //error: func
+//shadows libfunc
+//y(1, 2); //new variable y, not
+//function y
+
+//function f(x, y, z) {}
+//ok, f with formals x, y, z
+//function g(x, y, x) {} //error:
+//formal redeclaration
+//function h(x, cos) {} //error:
+//formal shadows libfunc
+
+function f() {}
+
+f = 1;
+
+f++;
+++f;
+--f;
+f--;

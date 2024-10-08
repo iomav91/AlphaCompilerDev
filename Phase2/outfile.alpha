@@ -1,8 +1,14 @@
-Error symbol x is a function it cannot be assigned
-Error symbol f is a function it cannot be assigned
+handle_func_w_1arg 1
+handle_func_w_1arg 2
+handle_func_w_1arg 1
+handle_func_w_1arg 1
+handle_func_w_1arg 1
+handle_func_w_1arg 1
+handle_func_w_1arg 2
+__func0	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 3	 (Line) 5	 (Scope) 0	(State: [Active -> 1 | Inactive -> 0]) 1
+__func4	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 3	 (Line) 28	 (Scope) 0	(State: [Active -> 1 | Inactive -> 0]) 1
 argument	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 4	 (Line) -1	 (Scope) 0	(State: [Active -> 1 | Inactive -> 0]) 1
 cos	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 4	 (Line) -1	 (Scope) 0	(State: [Active -> 1 | Inactive -> 0]) 1
-f	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 3	 (Line) 3	 (Scope) 0	(State: [Active -> 1 | Inactive -> 0]) 1
 input	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 4	 (Line) -1	 (Scope) 0	(State: [Active -> 1 | Inactive -> 0]) 1
 objectcopy	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 4	 (Line) -1	 (Scope) 0	(State: [Active -> 1 | Inactive -> 0]) 1
 objectmemberkeys	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 4	 (Line) -1	 (Scope) 0	(State: [Active -> 1 | Inactive -> 0]) 1
@@ -13,4 +19,13 @@ sqrt	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBF
 strtonum	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 4	 (Line) -1	 (Scope) 0	(State: [Active -> 1 | Inactive -> 0]) 1
 totalarguments	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 4	 (Line) -1	 (Scope) 0	(State: [Active -> 1 | Inactive -> 0]) 1
 typeof	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 4	 (Line) -1	 (Scope) 0	(State: [Active -> 1 | Inactive -> 0]) 1
-x	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 3	 (Line) 1	 (Scope) 0	(State: [Active -> 1 | Inactive -> 0]) 1
+AnonymousThree	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 2	 (Line) 15	 (Scope) 3	(State: [Active -> 1 | Inactive -> 0]) 0
+AnonymousFour	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 2	 (Line) 20	 (Scope) 3	(State: [Active -> 1 | Inactive -> 0]) 0
+AnonymousTwo	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 2	 (Line) 10	 (Scope) 2	(State: [Active -> 1 | Inactive -> 0]) 0
+__func2	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 3	 (Line) 15	 (Scope) 2	(State: [Active -> 1 | Inactive -> 0]) 0
+__func3	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 3	 (Line) 20	 (Scope) 2	(State: [Active -> 1 | Inactive -> 0]) 0
+AnonymousOne	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 2	 (Line) 5	 (Scope) 1	(State: [Active -> 1 | Inactive -> 0]) 0
+__func1	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 3	 (Line) 10	 (Scope) 1	(State: [Active -> 1 | Inactive -> 0]) 0
+x	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 2	 (Line) 5	 (Scope) 1	(State: [Active -> 1 | Inactive -> 0]) 0
+AnonymousFive	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 2	 (Line) 28	 (Scope) 1	(State: [Active -> 1 | Inactive -> 0]) 0
+x	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 2	 (Line) 28	 (Scope) 1	(State: [Active -> 1 | Inactive -> 0]) 0

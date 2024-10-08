@@ -10,6 +10,8 @@
     int scope_counter;
     int is_in_function_mode = 0;
     int is_in_block_mode = 0;
+    int is_a_member_access = 0;
+    int is_func_call = 0;
 %}
 %output "parser.c"
 %defines "parser.h"
@@ -103,109 +105,64 @@
 
 %%
 
-program: statements statement //{printf("program -> statements statement\n");}
-         | %empty //{printf("program -> \n");}
+program: statements statement                                                  {}
+         | %empty                                                              {}
 ;
 
-statement: expression TOK_SEMICOLON //{printf("statement -> expression;\n");}
-          | if_statement //{printf("statement -> if_statement\n");}
-          | while_statement //{printf("statement -> while_statement\n");}
-          | for_statement //{printf("statement -> for_statement\n");}
-          | return_statement //{printf("statement -> return_statement\n");}
-          | TOK_CONTINUE TOK_SEMICOLON //{printf("statement -> continue;\n");}
-          | TOK_BREAK TOK_SEMICOLON //{printf("statement -> break;\n");}
-          | block //{printf("statement -> block\n");}
-          | funcdef //{printf("statement -> funcdef\n");}
-          | TOK_SEMICOLON //{printf("statement -> ;\n");}
-          | error TOK_SEMICOLON {yyerrok; yyclearin;}
+statement: expression TOK_SEMICOLON                                            {}
+          | if_statement                                                       {}
+          | while_statement                                                    {}
+          | for_statement                                                      {}
+          | return_statement                                                   {}
+          | TOK_CONTINUE TOK_SEMICOLON                                         {}
+          | TOK_BREAK TOK_SEMICOLON                                            {}
+          | block                                                              {}
+          | funcdef                                                            {}
+          | TOK_SEMICOLON                                                      {}
+          | error TOK_SEMICOLON                                                {yyerrok; yyclearin;}
 ;
 
-statements: statements statement //{printf("\nstatements -> statements
-//statement\n");}
-            | %empty //{printf("statements -> statements statement\n");}
+statements: statements statement                                               {}
+            | %empty                                                           {}
 ;
 
-expression: assignexpr //{printf("expression -> assignexpr\n");}
-            | expression TOK_PLUS expression {
-                    //printf("expression -> expression + expression\n");
-                    //handle_expression($1,$3, get_scope(), yylineno);
-                }
-            | expression TOK_MINUS expression {
-                    //printf("expression -> expression - expression\n");
-                    //handle_expression($1,$3, get_scope(), yylineno);
-                }
-            | expression TOK_MULTIPLY expression {
-                    //printf("expression -> expression * expression\n");
-                    //handle_expression($1,$3, get_scope(), yylineno);
-                }
-            | expression TOK_DIVIDE expression {
-                    //printf("expression -> expression / expression\n");
-                    //handle_expression($1,$3, get_scope(), yylineno);
-                }
-            | expression TOK_MODULO expression {
-                    //printf("expression -> expression modulo expression\n");
-                    //handle_expression($1,$3, get_scope(), yylineno);
-                }
-            | expression TOK_GREATER expression {
-                    //printf("expression -> expression > expression\n");
-                    //handle_expression($1,$3, get_scope(), yylineno);
-                }
-            | expression TOK_LESS expression {
-                    //printf("expression -> expression < expression\n");
-                    //handle_expression($1,$3, get_scope(), yylineno);
-                }
-            | expression TOK_GR_EQUAL expression { 
-                    //printf("expression -> expression >= expression\n");
-                    //handle_expression($1,$3, get_scope(), yylineno);
-                }
-            | expression TOK_LS_EQUAL expression {
-                    //printf("expression -> expression <= expression\n");
-                    //handle_expression($1,$3, get_scope(), yylineno);
-                }
-            | expression TOK_EQUAL expression {
-                    //printf("expression -> expression == expression\n");
-                    //handle_expression($1,$3, get_scope(), yylineno);
-                }
-            | expression TOK_N_EQUAL expression {
-                    //printf("expression -> expression != expression\n");
-                    //handle_expression($1,$3, get_scope(), yylineno);
-                }
-            | expression TOK_AND expression {
-                    //printf("expression -> expression and expression\n");
-                    //handle_expression($1,$3, get_scope(), yylineno);
-                }
-            | expression TOK_OR expression {
-                    //printf("expression -> expression or expression\n");
-                    //handle_expression($1,$3, get_scope(), yylineno);
-                }
-            | term //{printf("expression -> term\n");}
+expression: assignexpr                                                         {}
+            | expression TOK_PLUS expression                                   {}
+            | expression TOK_MINUS expression                                  {}
+            | expression TOK_MULTIPLY expression                               {}
+            | expression TOK_DIVIDE expression                                 {}
+            | expression TOK_MODULO expression                                 {}
+            | expression TOK_GREATER expression                                {}
+            | expression TOK_LESS expression                                   {}
+            | expression TOK_GR_EQUAL expression                               {}
+            | expression TOK_LS_EQUAL expression                               {}
+            | expression TOK_EQUAL expression                                  {}
+            | expression TOK_N_EQUAL expression                                {}
+            | expression TOK_AND expression                                    {}
+            | expression TOK_OR expression                                     {}
+            | term                                                             {}
 ;
 
-term: TOK_L_PARENTH expression TOK_R_PARENTH //{printf("term ->
-//(expression)\n");}
-      | UMINUS expression //{printf("term -> - expression\n");}
-      | TOK_NOT expression  //{printf("term -> not expression\n");}
-      | TOK_DBL_PLUS lvalue {/*printf("term -> ++lvalue\n");*/ handle_assign_expr($2->name,get_scope());}
-      | lvalue TOK_DBL_PLUS {/*printf("term -> lvalue++\n");*/ handle_assign_expr($1->name,get_scope());}
-      | TOK_DBL_MINUS lvalue {/*printf("term -> --lvalue\n");*/ handle_assign_expr($2->name,get_scope());}
-      | lvalue TOK_DBL_MINUS {/*printf("term -> lvalue--\n");*/ handle_assign_expr($1->name,get_scope());}
-      | primary //{printf("term -> primary\n");}
+term: TOK_L_PARENTH expression TOK_R_PARENTH                                   {}
+      | UMINUS expression                                                      {}
+      | TOK_NOT expression                                                     {}
+      | TOK_DBL_PLUS lvalue                                                    {handle_plus_db_expr($2->name);}
+      | lvalue TOK_DBL_PLUS                                                    {handle_db_plus_expr($1->name);}
+      | TOK_DBL_MINUS lvalue                                                   {handle_minus_db_expr($2->name);}
+      | lvalue TOK_DBL_MINUS                                                   {handle_db_minus_expr($1->name);}
+      | primary                                                                {}
 ;
 
-assignexpr: lvalue TOK_ASSIGN expression {
-        //printf("assignexpr -> lvalue = expression\n");
-
-        handle_assign_expr($1->name, get_scope());
-
-                                         }
+assignexpr: lvalue TOK_ASSIGN expression                                       {
+                                                                                   handle_assign_expr($1->name);
+                                                                               }
 ;
 
-primary: lvalue //{printf("primary -> lvalue\n");}
-         | call //{printf("primary -> call\n");}
-         | objectdef //{printf("primary -> objectdef\n");}
-         | TOK_L_PARENTH funcdef TOK_R_PARENTH //{printf("primary ->
-//(funcdef)\n");}
-         | const //{printf("primary -> const\n");}
+primary: lvalue                                                                {}
+         | call                                                                {}
+         | objectdef                                                           {}
+         | TOK_L_PARENTH funcdef TOK_R_PARENTH                                 {}
+         | const                                                               {}
 ;
 
 lvalue: TOK_ID {//printf("lvalue -> ID\n"); 
@@ -236,11 +193,24 @@ lvalue: TOK_ID {//printf("lvalue -> ID\n");
                            }
         | TOK_DBL_COLON TOK_ID  {//printf("lvalue -> :: id\n");
                                     handle_global_access_id($2);
+                                    $$ = (SymbolTableEntry*)malloc(sizeof(SymbolTableEntry));
+                                    $$->name = $2;
+                                    $$->scope = 0;
+                                    $$->line = yylineno;
+                                    $$->isActive = true;
+                                    $$->type = 1;
                                 }
-        | member //{printf("lvalue -> member\n");}
+        | member {
+                    //printf("lvalue -> member\n");
+                    is_a_member_access = 1;
+                    //is_in_func_call_mode = 1;
+                 }
 ;
 
-member: lvalue TOK_DOT TOK_ID //{printf("member -> lvalue.id\n");}
+member: lvalue TOK_DOT TOK_ID {
+            //printf("member -> lvalue.id\n");
+            is_a_member_access = 0;
+        }
         | lvalue TOK_L_BR expression TOK_R_BR //{printf("member ->
 //lvalue[expression]\n");}
         | call TOK_DOT TOK_ID //{printf("member -> call.id\n");}
@@ -249,7 +219,10 @@ member: lvalue TOK_DOT TOK_ID //{printf("member -> lvalue.id\n");}
 ;
 
 call: call normcall //{printf("call -> call normcall\n");}
-      | lvalue callsuffix //{printf("call -> lvalue callsuffix\n");}
+      | lvalue callsuffix {
+            printf("call -> lvalue callsuffix\n");
+            is_func_call = 0;
+}
       | TOK_L_PARENTH funcdef TOK_R_PARENTH normcall //{printf("call
 //-> (funcdef) normcall\n");}
 ;
@@ -287,7 +260,7 @@ block: TOK_L_CURLY_BR {
     push_vector();
     is_in_block_mode++;
     scope_counter++;
-std::cout<<scope_counter<<std::endl;} statements TOK_R_CURLY_BR
+/*std::cout<<scope_counter<<std::endl;*/} statements TOK_R_CURLY_BR
 {/*printf("block -> {statements}\n");*/ is_in_block_mode--; handle_block_end(get_scope()); scope_counter--;
 /*std::cout<< "Scope Counter is " << scope_counter<<std::endl;*/}
 ;
@@ -303,7 +276,7 @@ funcdef_block: TOK_L_CURLY_BR {push_blocks_prec(2);} statements TOK_R_CURLY_BR {
 
 funcdef: TOK_FUNCTION TOK_ID TOK_L_PARENTH {
     
-    is_in_function_mode = 1;
+    is_in_function_mode++;
     handle_funcdef_w_name($2, get_scope(), yylineno);
     scope_counter++;
     /*std::cout<<scope_counter<<std::endl;*/} idlist TOK_R_PARENTH
@@ -311,9 +284,10 @@ funcdef_block {
                    //printf("funcdef -> function id (idlist) funcdef_block\n");
                    //handle_funcdef_block_end(get_scope());
                    scope_counter--;
+                   is_in_function_mode--;
               }
          | TOK_FUNCTION TOK_L_PARENTH {
-         is_in_function_mode = 1;
+         is_in_function_mode++;
          handle_funcdef_anonym_name(get_scope(), yylineno);
          scope_counter++;
 /*std::cout<<scope_counter<<std::endl;*/} idlist TOK_R_PARENTH
@@ -321,6 +295,7 @@ funcdef_block {
                     //printf("funcdef -> function (idlist) funcdef_block\n");
                     //handle_funcdef_block_end(get_scope());
                     scope_counter--;
+                    is_in_function_mode--;
               }
 ;
 

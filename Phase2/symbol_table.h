@@ -24,6 +24,7 @@ bool lookup(std::string);
 int lookup_and_return_scope(std::string);
 int lookup_and_return_scope_second(std::string, int);
 int is_a_func_name(std::string);
+int is_a_func_name_scope(std::string);
 void hide();
 int is_symbol_active(std::string, int);
 int get_vector_size();
