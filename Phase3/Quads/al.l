@@ -1,5 +1,6 @@
 %{
-   #include "symbol_table.h"     
+   #include "symbol_table.h"
+   #include "icode_managers.h"     
    #include "help_functions.h"
    #include <stack>
    #include <string>
@@ -20,51 +21,51 @@
 %option noyywrap
 %option yylineno
 
-TOK_IF           "if"
-TOK_ELSE         "else"
-TOK_WHILE        "while"
-TOK_FOR          "for"
-TOK_FUNCTION     "function"
-TOK_RETURN       "return"
-TOK_BREAK        "break"
-TOK_CONTINUE     "continue"
-TOK_AND          "and"
-TOK_NOT          "not"
-TOK_OR           "or"
-TOK_LOCAL        "local"
-TOK_TRUE         "true"
-TOK_FALSE        "false"
-TOK_NIL          "nil"
-TOK_ASSIGN       "="
-TOK_PLUS         "+"
-TOK_MINUS        "-"
-TOK_MULTIPLY     "*"
-TOK_DIVIDE       "/"
-TOK_MODULO       "%"
-TOK_EQUAL        "=="
-TOK_N_EQUAL      "!="
-TOK_DBL_PLUS     "++"
-TOK_DBL_MINUS    "--"
-TOK_GREATER      ">"
-TOK_LESS         "<"
-TOK_GR_EQUAL     ">="
-TOK_LS_EQUAL     "<="
-TOK_L_CURLY_BR   "{"
-TOK_R_CURLY_BR   "}"
-TOK_L_BR         "["
-TOK_R_BR         "]"
-TOK_L_PARENTH    "("
-TOK_R_PARENTH    ")"
-TOK_SEMICOLON    ";"
-TOK_COMMA        ","
-TOK_COLON        ":"
-TOK_DBL_COLON    "::"
-TOK_DOT          "."
-TOK_DBL_DOT      ".."
-TOK_ID           [a-zA-Z][a-zA-Z_0-9]*
-TOK_INT          [0-9]+
-TOK_FLOAT        ([0-9])+"."([0-9])+
-TOK_STRING       \" \"
+AL_TOK_IF           "if"
+AL_TOK_ELSE         "else"
+AL_TOK_WHILE        "while"
+AL_TOK_FOR          "for"
+AL_TOK_FUNCTION     "function"
+AL_TOK_RETURN       "return"
+AL_TOK_BREAK        "break"
+AL_TOK_CONTINUE     "continue"
+AL_TOK_AND          "and"
+AL_TOK_NOT          "not"
+AL_TOK_OR           "or"
+AL_TOK_LOCAL        "local"
+AL_TOK_TRUE         "true"
+AL_TOK_FALSE        "false"
+AL_TOK_NIL          "nil"
+AL_TOK_ASSIGN       "="
+AL_TOK_PLUS         "+"
+AL_TOK_MINUS        "-"
+AL_TOK_MULTIPLY     "*"
+AL_TOK_DIVIDE       "/"
+AL_TOK_MODULO       "%"
+AL_TOK_EQUAL        "=="
+AL_TOK_N_EQUAL      "!="
+AL_TOK_DBL_PLUS     "++"
+AL_TOK_DBL_MINUS    "--"
+AL_TOK_GREATER      ">"
+AL_TOK_LESS         "<"
+AL_TOK_GR_EQUAL     ">="
+AL_TOK_LS_EQUAL     "<="
+AL_TOK_L_CURLY_BR   "{"
+AL_TOK_R_CURLY_BR   "}"
+AL_TOK_L_BR         "["
+AL_TOK_R_BR         "]"
+AL_TOK_L_PARENTH    "("
+AL_TOK_R_PARENTH    ")"
+AL_TOK_SEMICOLON    ";"
+AL_TOK_COMMA        ","
+AL_TOK_COLON        ":"
+AL_TOK_DBL_COLON    "::"
+AL_TOK_DOT          "."
+AL_TOK_DBL_DOT      ".."
+AL_TOK_ID           [a-zA-Z][a-zA-Z_0-9]*
+AL_TOK_INT          [0-9]+
+AL_TOK_FLOAT        ([0-9])+"."([0-9])+
+AL_TOK_STRING       \" \"
 
 %x ml_comment
 %x string
@@ -76,42 +77,40 @@ sl_comment      "//".*
 
 %%
 
-{TOK_IF}         {handle_keyword(yylineno, yytext); return TOK_IF;}
-{TOK_ELSE}       {handle_keyword(yylineno, yytext); return TOK_ELSE;}
-{TOK_WHILE}      {handle_keyword(yylineno, yytext); return TOK_WHILE;}
-{TOK_FOR}        {handle_keyword(yylineno, yytext); return TOK_FOR;}
-{TOK_FUNCTION}   {handle_keyword(yylineno, yytext); return TOK_FUNCTION;}
-{TOK_RETURN}     {handle_keyword(yylineno, yytext); return TOK_RETURN;}
-{TOK_BREAK}      {handle_keyword(yylineno, yytext); return TOK_BREAK;}
-{TOK_CONTINUE}   {handle_keyword(yylineno, yytext); return TOK_CONTINUE;}
-{TOK_AND}        {handle_keyword(yylineno, yytext); return TOK_AND;}
-{TOK_NOT}        {handle_keyword(yylineno, yytext); return TOK_NOT;}
-{TOK_OR}         {handle_keyword(yylineno, yytext); return TOK_OR;}
-{TOK_LOCAL}      {handle_keyword(yylineno, yytext); return TOK_LOCAL;}
-{TOK_TRUE}       {handle_keyword(yylineno, yytext); yylval.intVal =
-atoi(yytext); return TOK_TRUE;}
-{TOK_FALSE}      {handle_keyword(yylineno, yytext); yylval.intVal =
-atoi(yytext); return TOK_FALSE;}
-{TOK_NIL}        {handle_keyword(yylineno, yytext); return TOK_NIL;}
-{TOK_ASSIGN}     {handle_operator(yylineno, yytext); return TOK_ASSIGN;}
-{TOK_PLUS}       {handle_operator(yylineno, yytext); return TOK_PLUS;}
-{TOK_MINUS}      {handle_operator(yylineno, yytext); return TOK_MINUS;}
-{TOK_MULTIPLY}   {handle_operator(yylineno, yytext); return TOK_MULTIPLY;}
-{TOK_DIVIDE}     {handle_operator(yylineno, yytext); return TOK_DIVIDE;}
-{TOK_MODULO}     {handle_operator(yylineno, yytext); return TOK_MODULO;}
-{TOK_EQUAL}      {handle_operator(yylineno, yytext); return TOK_EQUAL;}
-{TOK_N_EQUAL}    {handle_operator(yylineno, yytext); return TOK_N_EQUAL;}
-{TOK_DBL_PLUS}   {handle_operator(yylineno, yytext); return TOK_DBL_PLUS;}
-{TOK_DBL_MINUS}  {handle_operator(yylineno, yytext); return TOK_DBL_MINUS;}
-{TOK_GREATER}    {handle_operator(yylineno, yytext); return TOK_GREATER;}
-{TOK_LESS}       {handle_operator(yylineno, yytext); return TOK_LESS;}
-{TOK_GR_EQUAL}   {handle_operator(yylineno, yytext); return TOK_GR_EQUAL;}
-{TOK_LS_EQUAL}   {handle_operator(yylineno, yytext); return TOK_LS_EQUAL;}
-{TOK_L_CURLY_BR} {handle_punctuation(yylineno, yytext); return TOK_L_CURLY_BR;}
-{TOK_R_CURLY_BR} {handle_punctuation(yylineno, yytext); return TOK_R_CURLY_BR;}
-{TOK_L_BR}       {handle_punctuation(yylineno, yytext); return TOK_L_BR;}
-{TOK_R_BR}       {handle_punctuation(yylineno, yytext); return TOK_R_BR;}
-{TOK_L_PARENTH}  {handle_punctuation(yylineno, yytext); return TOK_L_PARENTH;}
+{AL_TOK_IF}         {handle_keyword(yylineno, yytext); return TOK_IF;}
+{AL_TOK_ELSE}       {handle_keyword(yylineno, yytext); return TOK_ELSE;}
+{AL_TOK_WHILE}      {handle_keyword(yylineno, yytext); return TOK_WHILE;}
+{AL_TOK_FOR}        {handle_keyword(yylineno, yytext); return TOK_FOR;}
+{AL_TOK_FUNCTION}   {handle_keyword(yylineno, yytext); return TOK_FUNCTION;}
+{AL_TOK_RETURN}     {handle_keyword(yylineno, yytext); return TOK_RETURN;}
+{AL_TOK_BREAK}      {handle_keyword(yylineno, yytext); return TOK_BREAK;}
+{AL_TOK_CONTINUE}   {handle_keyword(yylineno, yytext); return TOK_CONTINUE;}
+{AL_TOK_AND}        {handle_keyword(yylineno, yytext); return TOK_AND;}
+{AL_TOK_NOT}        {handle_keyword(yylineno, yytext); return TOK_NOT;}
+{AL_TOK_OR}         {handle_keyword(yylineno, yytext); return TOK_OR;}
+{AL_TOK_LOCAL}      {handle_keyword(yylineno, yytext); return TOK_LOCAL;}
+{AL_TOK_TRUE}       {handle_keyword(yylineno, yytext); yylval.intVal = atoi(yytext); return TOK_TRUE;}
+{AL_TOK_FALSE}      {handle_keyword(yylineno, yytext); yylval.intVal = atoi(yytext); return TOK_FALSE;}
+{AL_TOK_NIL}        {handle_keyword(yylineno, yytext); return TOK_NIL;}
+{AL_TOK_ASSIGN}     {handle_operator(yylineno, yytext); return TOK_ASSIGN;}
+{AL_TOK_PLUS}       {handle_operator(yylineno, yytext); return TOK_PLUS;}
+{AL_TOK_MINUS}      {handle_operator(yylineno, yytext); return TOK_MINUS;}
+{AL_TOK_MULTIPLY}   {handle_operator(yylineno, yytext); return TOK_MULTIPLY;}
+{AL_TOK_DIVIDE}     {handle_operator(yylineno, yytext); return TOK_DIVIDE;}
+{AL_TOK_MODULO}     {handle_operator(yylineno, yytext); return TOK_MODULO;}
+{AL_TOK_EQUAL}      {handle_operator(yylineno, yytext); return TOK_EQUAL;}
+{AL_TOK_N_EQUAL}    {handle_operator(yylineno, yytext); return TOK_N_EQUAL;}
+{AL_TOK_DBL_PLUS}   {handle_operator(yylineno, yytext); return TOK_DBL_PLUS;}
+{AL_TOK_DBL_MINUS}  {handle_operator(yylineno, yytext); return TOK_DBL_MINUS;}
+{AL_TOK_GREATER}    {handle_operator(yylineno, yytext); return TOK_GREATER;}
+{AL_TOK_LESS}       {handle_operator(yylineno, yytext); return TOK_LESS;}
+{AL_TOK_GR_EQUAL}   {handle_operator(yylineno, yytext); return TOK_GR_EQUAL;}
+{AL_TOK_LS_EQUAL}   {handle_operator(yylineno, yytext); return TOK_LS_EQUAL;}
+{AL_TOK_L_CURLY_BR} {handle_punctuation(yylineno, yytext); return TOK_L_CURLY_BR;}
+{AL_TOK_R_CURLY_BR} {handle_punctuation(yylineno, yytext); return TOK_R_CURLY_BR;}
+{AL_TOK_L_BR}       {handle_punctuation(yylineno, yytext); return TOK_L_BR;}
+{AL_TOK_R_BR}       {handle_punctuation(yylineno, yytext); return TOK_R_BR;}
+{AL_TOK_L_PARENTH}  {handle_punctuation(yylineno, yytext); return TOK_L_PARENTH;}
 {TOK_R_PARENTH}  {handle_punctuation(yylineno, yytext); return TOK_R_PARENTH;}
 {TOK_SEMICOLON}  {handle_punctuation(yylineno, yytext); return TOK_SEMICOLON;}
 {TOK_COMMA}      {handle_punctuation(yylineno, yytext); return TOK_COMMA;}

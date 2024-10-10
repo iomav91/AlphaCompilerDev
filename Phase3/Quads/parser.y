@@ -1,6 +1,7 @@
 %{
     #include "symbol_table.h"
     #include "handlers.h"
+    #include "icode_managers.h"
     extern int yylex();
     extern void yyerror(const char *);
     extern int yyparse();
@@ -119,174 +120,71 @@
 
 %%
 
-program: statements statement //{printf("program -> statements statement\n");}
-         | %empty //{printf("program -> \n");}
+program: statements statement                                                                          {}
+         | %empty                                                                                      {}
 ;
 
-statement: expression TOK_SEMICOLON //{printf("statement -> expression;\n");}
-          | if_statement //{printf("statement -> if_statement\n");}
-          | while_statement //{printf("statement -> while_statement\n");}
-          | for_statement //{printf("statement -> for_statement\n");}
-          | return_statement //{printf("statement -> return_statement\n");}
-          | TOK_CONTINUE TOK_SEMICOLON //{printf("statement -> continue;\n");}
-          | TOK_BREAK TOK_SEMICOLON //{printf("statement -> break;\n");}
-          | block //{printf("statement -> block\n");}
-          | funcdef //{printf("statement -> funcdef\n");}
-          | TOK_SEMICOLON //{printf("statement -> ;\n");}
+statement: expression TOK_SEMICOLON                                                                    {}
+          | if_statement                                                                               {}
+          | while_statement                                                                            {}
+          | for_statement                                                                              {}
+          | return_statement                                                                           {}
+          | TOK_CONTINUE TOK_SEMICOLON                                                                 {}
+          | TOK_BREAK TOK_SEMICOLON                                                                    {}
+          | block                                                                                      {}
+          | funcdef                                                                                    {}
+          | TOK_SEMICOLON                                                                              {}
           | error TOK_SEMICOLON {yyerrok; yyclearin;}
 ;
 
-statements: statements statement //{printf("\nstatements -> statements
-//statement\n");}
-            | %empty //{printf("statements -> statements statement\n");}
+statements: statements statement                                                                       {}
+            | %empty                                                                                   {}
 ;
 
-expression: assignexpr //{printf("expression -> assignexpr\n");}
-            | expression TOK_PLUS expression {
-                    //printf("expression -> expression + expression\n");
-                    //handle_expression($1,$3, get_scope(), yylineno));
-                    if (check_if_is_arithm($1) == true && check_if_is_arithm($3) == true) {
-                        SymbolType type = GLOBAL;
-                        if (get_scope() != 0) {
-                            type = LOCAL;
-                        }
-                        SymbolTableEntry new_temp = new_temp_var(-1, type);
-                        //std::cout << new_temp.scope << std::endl;
-                        $$ = make_arithm_expression(ARITHM_EXPR, get_symbol(new_temp.name, get_scope()));
-                        std::cout << "$1->type " << $1->type << std::endl;
-                        emit_add(ADD, $$, $1, $3);
-                    }
+expression: assignexpr                                                                                 {}
+            | expression TOK_PLUS expression                                                           {
+
+                                                                                                            $$ = manage_expr_plus_expr($$, $1, $3);
                     
-                }
-            | expression TOK_MINUS expression {
-                    //printf("expression -> expression - expression\n");
-                    //handle_expression($1,$3, get_scope(), yylineno);
-                    if (check_if_is_arithm($1) == true && check_if_is_arithm($3) == true) {
-                        SymbolType type = GLOBAL;
-                        if (get_scope() != 0) {
-                            type = LOCAL;
-                        }
-                        SymbolTableEntry new_temp = new_temp_var(-1, type);
-                        //std::cout << new_temp.scope << std::endl;
-                        $$ = make_arithm_expression(ARITHM_EXPR, get_symbol(new_temp.name, get_scope()));
-                        std::cout << "$1->type " << $1->type << std::endl;
-                        emit_sub(SUB, $$, $1, $3);
-                    }
+                                                                                                       }
+            | expression TOK_MINUS expression                                                          {
+                                                                                                            
+                                                                                                            $$ = manage_expr_minus_expr($$, $1, $3);
+                                                                                                       
+                                                                                                       }
+            | expression TOK_MULTIPLY expression                                                       {
+
+                                                                                                            $$ = manage_expr_mul_expr($$, $1, $3);        
                     
-                }
-            | expression TOK_MULTIPLY expression {
-                    //printf("expression -> expression * expression\n");
-                    //handle_expression($1,$3, get_scope(), yylineno);
-                    if (check_if_is_arithm($1) == true && check_if_is_arithm($3) == true) {
-                        SymbolType type = GLOBAL;
-                        if (get_scope() != 0) {
-                            type = LOCAL;
-                        }
-                        SymbolTableEntry new_temp = new_temp_var(-1, type);
-                        //std::cout << new_temp.scope << std::endl;
-                        $$ = make_arithm_expression(ARITHM_EXPR, get_symbol(new_temp.name, get_scope()));
-                        std::cout << "$1->type " << $1->type << std::endl;
-                        emit_mul(MUL, $$, $1, $3);
-                    }
-                }
-            | expression TOK_DIVIDE expression {
-                    //printf("expression -> expression / expression\n");
-                    //handle_expression($1,$3, get_scope(), yylineno);
-                    if (check_if_is_arithm($1) == true && check_if_is_arithm($3) == true) {
-                        SymbolType type = GLOBAL;
-                        if (get_scope() != 0) {
-                            type = LOCAL;
-                        }
-                        SymbolTableEntry new_temp = new_temp_var(-1, type);
-                        //std::cout << new_temp.scope << std::endl;
-                        $$ = make_arithm_expression(ARITHM_EXPR, get_symbol(new_temp.name, get_scope()));
-                        std::cout << "$1->type " << $1->type << std::endl;
-                        emit_div(DIV, $$, $1, $3);
-                    }
-                }
-            | expression TOK_MODULO expression {
-                    //printf("expression -> expression modulo expression\n");
-                    //handle_expression($1,$3, get_scope(), yylineno);
-                    if (check_if_is_arithm($1) == true && check_if_is_arithm($3) == true) {
-                        SymbolType type = GLOBAL;
-                        if (get_scope() != 0) {
-                            type = LOCAL;
-                        }
-                        SymbolTableEntry new_temp = new_temp_var(-1, type);
-                        //std::cout << new_temp.scope << std::endl;
-                        $$ = make_arithm_expression(ARITHM_EXPR, get_symbol(new_temp.name, get_scope()));
-                        std::cout << "$1->type " << $1->type << std::endl;
-                        emit_mod(MOD, $$, $1, $3);
-                    }
-                }
+                                                                                                       }
+            | expression TOK_DIVIDE expression                                                         {    
+                                                                                                            $$ = manage_expr_div_expr($$, $1, $3);
+                                                                                                       }
+            | expression TOK_MODULO expression                                                         {
+
+                                                                                                            $$ = manage_expr_mod_expr($$, $1, $3);
+
+                                                                                                       }
             | expression TOK_GREATER expression {
-                    //printf("expression -> expression > expression\n");
-                    //handle_expression($1,$3, get_scope(), yylineno);
-                    SymbolType type = GLOBAL;
-                    if (get_scope() != 0) {
-                        type = LOCAL;
-                    }
-                    SymbolTableEntry new_temp = new_temp_var(-1, type);
-                    //std::cout << new_temp.scope << std::endl;
-                    $$ = make_bool_expression(BOOL_EXPR, get_symbol(new_temp.name, get_scope()));
-                    emit_if_greater(IF_GR, $1, $3, next_quad_label()+3);
-                    set_curr_quad_label((next_quad_label()+3));
-                    emit_assign(ASSIGN, $$, make_constbool_expression(CONSTBOOL_EXPR, 1));
-                    emit_jump(JUMP, (next_quad_label()+2));
-                    set_curr_quad_label((next_quad_label()+2));
-                    emit_assign(ASSIGN, $$, make_constbool_expression(CONSTBOOL_EXPR, 0));
-                }
+                    
+                                                                                                            $$ = manage_expr_gr_expr($$, $1, $3);
+
+                                                                                                       }
             | expression TOK_LESS expression {
-                    //printf("expression -> expression < expression\n");
-                    //handle_expression($1,$3, get_scope(), yylineno);
-                    SymbolType type = GLOBAL;
-                    if (get_scope() != 0) {
-                        type = LOCAL;
-                    }
-                    SymbolTableEntry new_temp = new_temp_var(-1, type);
-                    //std::cout << new_temp.scope << std::endl;
-                    $$ = make_bool_expression(BOOL_EXPR, get_symbol(new_temp.name, get_scope()));
-                    emit_if_less(IF_L, $1, $3, next_quad_label()+3);
-                    set_curr_quad_label((next_quad_label()+3));
-                    emit_assign(ASSIGN, $$, make_constbool_expression(CONSTBOOL_EXPR, 1));
-                    emit_jump(JUMP, (next_quad_label()+2));
-                    set_curr_quad_label((next_quad_label()+2));
-                    emit_assign(ASSIGN, $$, make_constbool_expression(CONSTBOOL_EXPR, 0));
-                }
-            | expression TOK_GR_EQUAL expression { 
-                    //printf("expression -> expression >= expression\n");
-                    //handle_expression($1,$3, get_scope(), yylineno);
-                    SymbolType type = GLOBAL;
-                    if (get_scope() != 0) {
-                        type = LOCAL;
-                    }
-                    SymbolTableEntry new_temp = new_temp_var(-1, type);
-                    //std::cout << new_temp.scope << std::endl;
-                    $$ = make_bool_expression(BOOL_EXPR, get_symbol(new_temp.name, get_scope()));
-                    emit_if_greatereq(IF_GR_EQ, $1, $3, next_quad_label()+3);
-                    set_curr_quad_label((next_quad_label()+3));
-                    emit_assign(ASSIGN, $$, make_constbool_expression(CONSTBOOL_EXPR, 1));
-                    emit_jump(JUMP, (next_quad_label()+2));
-                    set_curr_quad_label((next_quad_label()+2));
-                    emit_assign(ASSIGN, $$, make_constbool_expression(CONSTBOOL_EXPR, 0));
-                }
+                    
+                                                                                                            $$ = manage_expr_ls_expr($$, $1, $3);
+
+                                                                                                       }
+            | expression TOK_GR_EQUAL expression                                                       {  
+                 
+                                                                                                            $$ = manage_expr_gr_eq_expr($$, $1, $3);
+
+                                                                                                       }
             | expression TOK_LS_EQUAL expression {
-                    //printf("expression -> expression <= expression\n");
-                    //handle_expression($1,$3, get_scope(), yylineno);
-                    SymbolType type = GLOBAL;
-                    if (get_scope() != 0) {
-                        type = LOCAL;
-                    }
-                    SymbolTableEntry new_temp = new_temp_var(-1, type);
-                    //std::cout << new_temp.scope << std::endl;
-                    $$ = make_bool_expression(BOOL_EXPR, get_symbol(new_temp.name, get_scope()));
-                    emit_if_lesseq(IF_L_EQ, $1, $3, next_quad_label()+3);
-                    set_curr_quad_label((next_quad_label()+3));
-                    emit_assign(ASSIGN, $$, make_constbool_expression(CONSTBOOL_EXPR, 1));
-                    emit_jump(JUMP, (next_quad_label()+2));
-                    set_curr_quad_label((next_quad_label()+2));
-                    emit_assign(ASSIGN, $$, make_constbool_expression(CONSTBOOL_EXPR, 0));
-                }
+                    
+                                                                                                            $$ = manage_expr_ls_eq_expr($$, $1, $3);
+                
+                                                                                                       }
             | expression TOK_EQUAL expression {
                     //printf("expression -> expression == expression\n");
                     //handle_expression($1,$3, get_scope(), yylineno);
@@ -366,7 +264,7 @@ term: TOK_L_PARENTH expression TOK_R_PARENTH {
       }
       | TOK_DBL_PLUS lvalue {
             /*printf("term -> ++lvalue\n");*/ 
-            if (handle_assign_expr($2->symbol->name, get_scope())) {
+            if (handle_assign_expr($2->symbol->name) == 0) {
                 if (check_if_is_arithm($2)) {
                     //std::cout << "--L-VALUE" << std::endl;
                     if ($2->type == TABLEITEM_EXPR) {
@@ -391,7 +289,7 @@ term: TOK_L_PARENTH expression TOK_R_PARENTH {
       }
       | lvalue TOK_DBL_PLUS {
             /*printf("term -> lvalue++\n");*/ 
-            if (handle_assign_expr($1->symbol->name,get_scope())) {
+            if (handle_assign_expr($1->symbol->name) == 0) {
                 if (check_if_is_arithm($1)) {
                     SymbolType type = GLOBAL;
                     if (get_scope() != 0) {
@@ -415,7 +313,7 @@ term: TOK_L_PARENTH expression TOK_R_PARENTH {
       }
       | TOK_DBL_MINUS lvalue {
             /*printf("term -> --lvalue\n");*/ 
-            if (handle_assign_expr($2->symbol->name, get_scope())) {
+            if (handle_assign_expr($2->symbol->name) == 0) {
                 if (check_if_is_arithm($2)) {
                     //std::cout << "--L-VALUE" << std::endl;
                     if ($2->type == TABLEITEM_EXPR) {
@@ -440,7 +338,7 @@ term: TOK_L_PARENTH expression TOK_R_PARENTH {
       }
       | lvalue TOK_DBL_MINUS {
             /*printf("term -> lvalue--\n");*/ 
-            if (handle_assign_expr($1->symbol->name,get_scope())) {
+            if (handle_assign_expr($1->symbol->name) == 0) {
                 if (check_if_is_arithm($1)) {
                     SymbolType type = GLOBAL;
                     if (get_scope() != 0) {
@@ -473,7 +371,7 @@ assignexpr: lvalue TOK_ASSIGN expression {
         printf("assignexpr -> lvalue = expression\n");
         //printf("%s\n", $1->name);
         std::cout << "$3->type " << $3->type << "\t\t" << $3->num_const << std::endl;
-        if (handle_assign_expr($1->symbol->name, get_scope())) {
+        if (handle_assign_expr($1->symbol->name) == 0) {
             std::cout << "ASSIGN EXPR $$$" << std::endl;
             if ($1->type == TABLEITEM_EXPR) {
                 //std::cout << "Expression has symbol " << $3->symbol->name << std::endl;
@@ -779,8 +677,8 @@ funcdef_block {
               }
          | TOK_FUNCTION TOK_L_PARENTH {
          is_in_function_mode = 1;
-         name = func_name_generator();
-         handle_funcdef_anonym_name(name, get_scope(), curr_scope_space(), curr_scope_offset(), yylineno);
+         //name = func_name_generator();
+         handle_funcdef_anonym_name(get_scope(), curr_scope_space(), curr_scope_offset(), yylineno);
          emit_funcdef(FUNCSTART, make_func_expression(PROGRAMFUNC_EXPR, get_symbol(name, get_scope())));
          scope_counter++;
          set_prev_scope_space_counter(get_scope_space_counter());

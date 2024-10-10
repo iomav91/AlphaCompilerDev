@@ -71,6 +71,7 @@
 
     #include "symbol_table.h"
     #include "handlers.h"
+    #include "icode_managers.h"
     extern int yylex();
     extern void yyerror(const char *);
     extern int yyparse();
@@ -84,7 +85,7 @@
     int is_a_member_access = 0;
     std::string name = "";
 
-#line 88 "parser.c"
+#line 89 "parser.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -559,16 +560,16 @@ static const yytype_int8 yytranslate[] =
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,   122,   122,   123,   126,   127,   128,   129,   130,   131,
-     132,   133,   134,   135,   136,   139,   141,   144,   145,   161,
-     177,   192,   207,   222,   239,   256,   273,   290,   307,   324,
-     328,   332,   339,   343,   356,   367,   392,   416,   441,   465,
-     472,   513,   517,   518,   523,   529,   535,   546,   556,   566,
-     574,   582,   593,   594,   599,   603,   631,   638,   642,   648,
-     658,   668,   672,   676,   682,   686,   692,   706,   722,   731,
-     731,   743,   743,   756,   756,   780,   780,   807,   811,   815,
-     820,   824,   828,   834,   839,   843,   846,   848,   853,   857,
-     862,   863
+       0,   123,   123,   124,   127,   128,   129,   130,   131,   132,
+     133,   134,   135,   136,   137,   140,   141,   144,   145,   150,
+     155,   160,   163,   178,   195,   212,   229,   246,   263,   280,
+     284,   288,   295,   299,   312,   323,   348,   372,   397,   421,
+     428,   469,   473,   474,   479,   485,   491,   502,   512,   522,
+     530,   538,   549,   550,   555,   559,   587,   594,   598,   604,
+     614,   624,   628,   632,   638,   642,   648,   662,   678,   687,
+     687,   699,   699,   712,   712,   736,   736,   763,   767,   771,
+     776,   780,   784,   790,   795,   799,   802,   804,   809,   813,
+     818,   819
 };
 #endif
 
@@ -1811,96 +1812,142 @@ yyreduce:
     int yychar_backup = yychar;
     switch (yyn)
       {
-  case 14: /* statement: error TOK_SEMICOLON  */
+  case 2: /* program: statements statement  */
+#line 123 "parser.y"
+                                                                                                       {}
+#line 1819 "parser.c"
+    break;
+
+  case 3: /* program: %empty  */
+#line 124 "parser.y"
+                                                                                                       {}
+#line 1825 "parser.c"
+    break;
+
+  case 4: /* statement: expression TOK_SEMICOLON  */
+#line 127 "parser.y"
+                                                                                                       {}
+#line 1831 "parser.c"
+    break;
+
+  case 5: /* statement: if_statement  */
+#line 128 "parser.y"
+                                                                                                       {}
+#line 1837 "parser.c"
+    break;
+
+  case 6: /* statement: while_statement  */
+#line 129 "parser.y"
+                                                                                                       {}
+#line 1843 "parser.c"
+    break;
+
+  case 7: /* statement: for_statement  */
+#line 130 "parser.y"
+                                                                                                       {}
+#line 1849 "parser.c"
+    break;
+
+  case 8: /* statement: return_statement  */
+#line 131 "parser.y"
+                                                                                                       {}
+#line 1855 "parser.c"
+    break;
+
+  case 9: /* statement: TOK_CONTINUE TOK_SEMICOLON  */
+#line 132 "parser.y"
+                                                                                                       {}
+#line 1861 "parser.c"
+    break;
+
+  case 10: /* statement: TOK_BREAK TOK_SEMICOLON  */
+#line 133 "parser.y"
+                                                                                                       {}
+#line 1867 "parser.c"
+    break;
+
+  case 11: /* statement: block  */
+#line 134 "parser.y"
+                                                                                                       {}
+#line 1873 "parser.c"
+    break;
+
+  case 12: /* statement: funcdef  */
+#line 135 "parser.y"
+                                                                                                       {}
+#line 1879 "parser.c"
+    break;
+
+  case 13: /* statement: TOK_SEMICOLON  */
 #line 136 "parser.y"
+                                                                                                       {}
+#line 1885 "parser.c"
+    break;
+
+  case 14: /* statement: error TOK_SEMICOLON  */
+#line 137 "parser.y"
                                 {yyerrok; yyclearin;}
-#line 1818 "parser.c"
+#line 1891 "parser.c"
+    break;
+
+  case 15: /* statements: statements statement  */
+#line 140 "parser.y"
+                                                                                                       {}
+#line 1897 "parser.c"
+    break;
+
+  case 16: /* statements: %empty  */
+#line 141 "parser.y"
+                                                                                                       {}
+#line 1903 "parser.c"
+    break;
+
+  case 17: /* expression: assignexpr  */
+#line 144 "parser.y"
+                                                                                                       {}
+#line 1909 "parser.c"
     break;
 
   case 18: /* expression: expression TOK_PLUS expression  */
 #line 145 "parser.y"
-                                             {
-                    //printf("expression -> expression + expression\n");
-                    //handle_expression($1,$3, get_scope(), yylineno));
-                    if (check_if_is_arithm((yyvsp[-2].expr)) == true && check_if_is_arithm((yyvsp[0].expr)) == true) {
-                        SymbolType type = GLOBAL;
-                        if (get_scope() != 0) {
-                            type = LOCAL;
-                        }
-                        SymbolTableEntry new_temp = new_temp_var(-1, type);
-                        //std::cout << new_temp.scope << std::endl;
-                        (yyval.expr) = make_arithm_expression(ARITHM_EXPR, get_symbol(new_temp.name, get_scope()));
-                        std::cout << "$1->type " << (yyvsp[-2].expr)->type << std::endl;
-                        emit_add(ADD, (yyval.expr), (yyvsp[-2].expr), (yyvsp[0].expr));
-                    }
+                                                                                                       {
+
+                                                                                                            (yyval.expr) = manage_expr_plus_expr((yyval.expr), (yyvsp[-2].expr), (yyvsp[0].expr));
                     
-                }
-#line 1839 "parser.c"
+                                                                                                       }
+#line 1919 "parser.c"
     break;
 
   case 19: /* expression: expression TOK_MINUS expression  */
-#line 161 "parser.y"
-                                              {
-                    //printf("expression -> expression - expression\n");
-                    //handle_expression($1,$3, get_scope(), yylineno);
-                    if (check_if_is_arithm((yyvsp[-2].expr)) == true && check_if_is_arithm((yyvsp[0].expr)) == true) {
-                        SymbolType type = GLOBAL;
-                        if (get_scope() != 0) {
-                            type = LOCAL;
-                        }
-                        SymbolTableEntry new_temp = new_temp_var(-1, type);
-                        //std::cout << new_temp.scope << std::endl;
-                        (yyval.expr) = make_arithm_expression(ARITHM_EXPR, get_symbol(new_temp.name, get_scope()));
-                        std::cout << "$1->type " << (yyvsp[-2].expr)->type << std::endl;
-                        emit_sub(SUB, (yyval.expr), (yyvsp[-2].expr), (yyvsp[0].expr));
-                    }
-                    
-                }
-#line 1860 "parser.c"
+#line 150 "parser.y"
+                                                                                                       {
+                                                                                                            
+                                                                                                            (yyval.expr) = manage_expr_minus_expr((yyval.expr), (yyvsp[-2].expr), (yyvsp[0].expr));
+                                                                                                       
+                                                                                                       }
+#line 1929 "parser.c"
     break;
 
   case 20: /* expression: expression TOK_MULTIPLY expression  */
-#line 177 "parser.y"
-                                                 {
-                    //printf("expression -> expression * expression\n");
-                    //handle_expression($1,$3, get_scope(), yylineno);
-                    if (check_if_is_arithm((yyvsp[-2].expr)) == true && check_if_is_arithm((yyvsp[0].expr)) == true) {
-                        SymbolType type = GLOBAL;
-                        if (get_scope() != 0) {
-                            type = LOCAL;
-                        }
-                        SymbolTableEntry new_temp = new_temp_var(-1, type);
-                        //std::cout << new_temp.scope << std::endl;
-                        (yyval.expr) = make_arithm_expression(ARITHM_EXPR, get_symbol(new_temp.name, get_scope()));
-                        std::cout << "$1->type " << (yyvsp[-2].expr)->type << std::endl;
-                        emit_mul(MUL, (yyval.expr), (yyvsp[-2].expr), (yyvsp[0].expr));
-                    }
-                }
-#line 1880 "parser.c"
+#line 155 "parser.y"
+                                                                                                       {
+
+                                                                                                            (yyval.expr) = manage_expr_mul_expr((yyval.expr), (yyvsp[-2].expr), (yyvsp[0].expr));        
+                    
+                                                                                                       }
+#line 1939 "parser.c"
     break;
 
   case 21: /* expression: expression TOK_DIVIDE expression  */
-#line 192 "parser.y"
-                                               {
-                    //printf("expression -> expression / expression\n");
-                    //handle_expression($1,$3, get_scope(), yylineno);
-                    if (check_if_is_arithm((yyvsp[-2].expr)) == true && check_if_is_arithm((yyvsp[0].expr)) == true) {
-                        SymbolType type = GLOBAL;
-                        if (get_scope() != 0) {
-                            type = LOCAL;
-                        }
-                        SymbolTableEntry new_temp = new_temp_var(-1, type);
-                        //std::cout << new_temp.scope << std::endl;
-                        (yyval.expr) = make_arithm_expression(ARITHM_EXPR, get_symbol(new_temp.name, get_scope()));
-                        std::cout << "$1->type " << (yyvsp[-2].expr)->type << std::endl;
-                        emit_div(DIV, (yyval.expr), (yyvsp[-2].expr), (yyvsp[0].expr));
-                    }
-                }
-#line 1900 "parser.c"
+#line 160 "parser.y"
+                                                                                                       {    
+                                                                                                            (yyval.expr) = manage_expr_div_expr((yyval.expr), (yyvsp[-2].expr), (yyvsp[0].expr));
+                                                                                                       }
+#line 1947 "parser.c"
     break;
 
   case 22: /* expression: expression TOK_MODULO expression  */
-#line 207 "parser.y"
+#line 163 "parser.y"
                                                {
                     //printf("expression -> expression modulo expression\n");
                     //handle_expression($1,$3, get_scope(), yylineno);
@@ -1916,11 +1963,11 @@ yyreduce:
                         emit_mod(MOD, (yyval.expr), (yyvsp[-2].expr), (yyvsp[0].expr));
                     }
                 }
-#line 1920 "parser.c"
+#line 1967 "parser.c"
     break;
 
   case 23: /* expression: expression TOK_GREATER expression  */
-#line 222 "parser.y"
+#line 178 "parser.y"
                                                 {
                     //printf("expression -> expression > expression\n");
                     //handle_expression($1,$3, get_scope(), yylineno);
@@ -1938,11 +1985,11 @@ yyreduce:
                     set_curr_quad_label((next_quad_label()+2));
                     emit_assign(ASSIGN, (yyval.expr), make_constbool_expression(CONSTBOOL_EXPR, 0));
                 }
-#line 1942 "parser.c"
+#line 1989 "parser.c"
     break;
 
   case 24: /* expression: expression TOK_LESS expression  */
-#line 239 "parser.y"
+#line 195 "parser.y"
                                              {
                     //printf("expression -> expression < expression\n");
                     //handle_expression($1,$3, get_scope(), yylineno);
@@ -1960,11 +2007,11 @@ yyreduce:
                     set_curr_quad_label((next_quad_label()+2));
                     emit_assign(ASSIGN, (yyval.expr), make_constbool_expression(CONSTBOOL_EXPR, 0));
                 }
-#line 1964 "parser.c"
+#line 2011 "parser.c"
     break;
 
   case 25: /* expression: expression TOK_GR_EQUAL expression  */
-#line 256 "parser.y"
+#line 212 "parser.y"
                                                  { 
                     //printf("expression -> expression >= expression\n");
                     //handle_expression($1,$3, get_scope(), yylineno);
@@ -1982,11 +2029,11 @@ yyreduce:
                     set_curr_quad_label((next_quad_label()+2));
                     emit_assign(ASSIGN, (yyval.expr), make_constbool_expression(CONSTBOOL_EXPR, 0));
                 }
-#line 1986 "parser.c"
+#line 2033 "parser.c"
     break;
 
   case 26: /* expression: expression TOK_LS_EQUAL expression  */
-#line 273 "parser.y"
+#line 229 "parser.y"
                                                  {
                     //printf("expression -> expression <= expression\n");
                     //handle_expression($1,$3, get_scope(), yylineno);
@@ -2004,11 +2051,11 @@ yyreduce:
                     set_curr_quad_label((next_quad_label()+2));
                     emit_assign(ASSIGN, (yyval.expr), make_constbool_expression(CONSTBOOL_EXPR, 0));
                 }
-#line 2008 "parser.c"
+#line 2055 "parser.c"
     break;
 
   case 27: /* expression: expression TOK_EQUAL expression  */
-#line 290 "parser.y"
+#line 246 "parser.y"
                                               {
                     //printf("expression -> expression == expression\n");
                     //handle_expression($1,$3, get_scope(), yylineno);
@@ -2026,11 +2073,11 @@ yyreduce:
                     set_curr_quad_label((next_quad_label()+2));
                     emit_assign(ASSIGN, (yyval.expr), make_constbool_expression(CONSTBOOL_EXPR, 0));
                 }
-#line 2030 "parser.c"
+#line 2077 "parser.c"
     break;
 
   case 28: /* expression: expression TOK_N_EQUAL expression  */
-#line 307 "parser.y"
+#line 263 "parser.y"
                                                 {
                     //printf("expression -> expression != expression\n");
                     //handle_expression($1,$3, get_scope(), yylineno);
@@ -2048,48 +2095,48 @@ yyreduce:
                     set_curr_quad_label((next_quad_label()+2));
                     emit_assign(ASSIGN, (yyval.expr), make_constbool_expression(CONSTBOOL_EXPR, 0));
                 }
-#line 2052 "parser.c"
+#line 2099 "parser.c"
     break;
 
   case 29: /* expression: expression TOK_AND expression  */
-#line 324 "parser.y"
+#line 280 "parser.y"
                                             {
                     //printf("expression -> expression and expression\n");
                     //handle_expression($1,$3, get_scope(), yylineno);
                 }
-#line 2061 "parser.c"
+#line 2108 "parser.c"
     break;
 
   case 30: /* expression: expression TOK_OR expression  */
-#line 328 "parser.y"
+#line 284 "parser.y"
                                            {
                     //printf("expression -> expression or expression\n");
                     //handle_expression($1,$3, get_scope(), yylineno);
                 }
-#line 2070 "parser.c"
+#line 2117 "parser.c"
     break;
 
   case 31: /* expression: term  */
-#line 332 "parser.y"
+#line 288 "parser.y"
                    {
                 //printf("expression -> term\n");
                 (yyval.expr) = (yyvsp[0].expr);
                 //std::cout << "$$->type " << $$->type << "\t\t" << $$->symbol->name << std::endl;
             }
-#line 2080 "parser.c"
+#line 2127 "parser.c"
     break;
 
   case 32: /* term: TOK_L_PARENTH expression TOK_R_PARENTH  */
-#line 339 "parser.y"
+#line 295 "parser.y"
                                              {
             //printf("term ->(expression)\n");
             (yyval.expr) = (yyvsp[-1].expr);
       }
-#line 2089 "parser.c"
+#line 2136 "parser.c"
     break;
 
   case 33: /* term: TOK_MINUS expression  */
-#line 343 "parser.y"
+#line 299 "parser.y"
                                               {
             //printf("term -> - expression\n");
             if (check_if_is_arithm((yyvsp[0].expr))) {
@@ -2103,11 +2150,11 @@ yyreduce:
                 emit_arithm_one(UMINUS, (yyval.expr), (yyvsp[0].expr));
             }
       }
-#line 2107 "parser.c"
+#line 2154 "parser.c"
     break;
 
   case 34: /* term: TOK_NOT expression  */
-#line 356 "parser.y"
+#line 312 "parser.y"
                             {
             //printf("term -> not expression\n");
             SymbolType type = GLOBAL;
@@ -2119,14 +2166,14 @@ yyreduce:
             (yyval.expr) = make_bool_expression(BOOL_EXPR, get_symbol(new_temp.name, get_scope()));
             emit_bool(NOT, (yyval.expr), (yyvsp[0].expr));
       }
-#line 2123 "parser.c"
+#line 2170 "parser.c"
     break;
 
   case 35: /* term: TOK_DBL_PLUS lvalue  */
-#line 367 "parser.y"
+#line 323 "parser.y"
                             {
             /*printf("term -> ++lvalue\n");*/ 
-            if (handle_assign_expr((yyvsp[0].expr)->symbol->name, get_scope())) {
+            if (handle_assign_expr((yyvsp[0].expr)->symbol->name) == 0) {
                 if (check_if_is_arithm((yyvsp[0].expr))) {
                     //std::cout << "--L-VALUE" << std::endl;
                     if ((yyvsp[0].expr)->type == TABLEITEM_EXPR) {
@@ -2149,14 +2196,14 @@ yyreduce:
                 }
             }
       }
-#line 2153 "parser.c"
+#line 2200 "parser.c"
     break;
 
   case 36: /* term: lvalue TOK_DBL_PLUS  */
-#line 392 "parser.y"
+#line 348 "parser.y"
                             {
             /*printf("term -> lvalue++\n");*/ 
-            if (handle_assign_expr((yyvsp[-1].expr)->symbol->name,get_scope())) {
+            if (handle_assign_expr((yyvsp[-1].expr)->symbol->name) == 0) {
                 if (check_if_is_arithm((yyvsp[-1].expr))) {
                     SymbolType type = GLOBAL;
                     if (get_scope() != 0) {
@@ -2178,14 +2225,14 @@ yyreduce:
                 }
             }
       }
-#line 2182 "parser.c"
+#line 2229 "parser.c"
     break;
 
   case 37: /* term: TOK_DBL_MINUS lvalue  */
-#line 416 "parser.y"
+#line 372 "parser.y"
                              {
             /*printf("term -> --lvalue\n");*/ 
-            if (handle_assign_expr((yyvsp[0].expr)->symbol->name, get_scope())) {
+            if (handle_assign_expr((yyvsp[0].expr)->symbol->name) == 0) {
                 if (check_if_is_arithm((yyvsp[0].expr))) {
                     //std::cout << "--L-VALUE" << std::endl;
                     if ((yyvsp[0].expr)->type == TABLEITEM_EXPR) {
@@ -2208,14 +2255,14 @@ yyreduce:
                 }
             }
       }
-#line 2212 "parser.c"
+#line 2259 "parser.c"
     break;
 
   case 38: /* term: lvalue TOK_DBL_MINUS  */
-#line 441 "parser.y"
+#line 397 "parser.y"
                              {
             /*printf("term -> lvalue--\n");*/ 
-            if (handle_assign_expr((yyvsp[-1].expr)->symbol->name,get_scope())) {
+            if (handle_assign_expr((yyvsp[-1].expr)->symbol->name) == 0) {
                 if (check_if_is_arithm((yyvsp[-1].expr))) {
                     SymbolType type = GLOBAL;
                     if (get_scope() != 0) {
@@ -2237,26 +2284,26 @@ yyreduce:
                 }
             }
       }
-#line 2241 "parser.c"
+#line 2288 "parser.c"
     break;
 
   case 39: /* term: primary  */
-#line 465 "parser.y"
+#line 421 "parser.y"
                 {
             printf("term -> primary\n");
             (yyval.expr) = (yyvsp[0].expr);
             //std::cout << "$$->type " << $$->type << "\t\t" << $$->symbol->name << std::endl;
       }
-#line 2251 "parser.c"
+#line 2298 "parser.c"
     break;
 
   case 40: /* assignexpr: lvalue TOK_ASSIGN expression  */
-#line 472 "parser.y"
+#line 428 "parser.y"
                                          {
         printf("assignexpr -> lvalue = expression\n");
         //printf("%s\n", $1->name);
         std::cout << "$3->type " << (yyvsp[0].expr)->type << "\t\t" << (yyvsp[0].expr)->num_const << std::endl;
-        if (handle_assign_expr((yyvsp[-2].expr)->symbol->name, get_scope())) {
+        if (handle_assign_expr((yyvsp[-2].expr)->symbol->name) == 0) {
             std::cout << "ASSIGN EXPR $$$" << std::endl;
             if ((yyvsp[-2].expr)->type == TABLEITEM_EXPR) {
                 //std::cout << "Expression has symbol " << $3->symbol->name << std::endl;
@@ -2291,50 +2338,50 @@ yyreduce:
             }
         }
                                          }
-#line 2295 "parser.c"
+#line 2342 "parser.c"
     break;
 
   case 41: /* primary: lvalue  */
-#line 513 "parser.y"
+#line 469 "parser.y"
                 {
                         //printf("primary -> lvalue\n");
                         (yyval.expr) = emit_if_table_item((yyvsp[0].expr));
                   }
-#line 2304 "parser.c"
+#line 2351 "parser.c"
     break;
 
   case 43: /* primary: objectdef  */
-#line 518 "parser.y"
+#line 474 "parser.y"
                      {
             printf("primary -> objectdef\n");
             std::cout << "OBJECTDEF in PRIMARY" << (yyvsp[0].expr)->symbol->name << std::endl;
             (yyval.expr) = (yyvsp[0].expr);
          }
-#line 2314 "parser.c"
+#line 2361 "parser.c"
     break;
 
   case 44: /* primary: TOK_L_PARENTH funcdef TOK_R_PARENTH  */
-#line 523 "parser.y"
+#line 479 "parser.y"
                                                {
             //printf("primary ->(funcdef)\n");
             //std::cout << $2->symbol->name << std::endl;
             //quad_table_print();
             (yyval.expr) = (yyvsp[-1].expr);
          }
-#line 2325 "parser.c"
+#line 2372 "parser.c"
     break;
 
   case 45: /* primary: const  */
-#line 529 "parser.y"
+#line 485 "parser.y"
                  {
             printf("primary -> const\n");
             (yyval.expr) = (yyvsp[0].expr);
          }
-#line 2334 "parser.c"
+#line 2381 "parser.c"
     break;
 
   case 46: /* lvalue: TOK_ID  */
-#line 535 "parser.y"
+#line 491 "parser.y"
                {//printf("lvalue -> ID\n"); 
                     handle_id((yyvsp[0].strVal), get_scope(), curr_scope_space(), curr_scope_offset(), yylineno);
                     if (get_symbol((yyvsp[0].strVal), get_scope())->type == LIBFUNC) {
@@ -2346,11 +2393,11 @@ yyreduce:
                         (yyval.expr) = make_lvalue_expression(VAR_EXPR, get_symbol((yyvsp[0].strVal), get_scope()));
                     }
                }
-#line 2350 "parser.c"
+#line 2397 "parser.c"
     break;
 
   case 47: /* lvalue: TOK_LOCAL TOK_ID  */
-#line 546 "parser.y"
+#line 502 "parser.y"
                            {//printf("lvalue -> local id\n");
                     handle_local_id((yyvsp[0].strVal), get_scope(), curr_scope_space(), curr_scope_offset(), yylineno);
                     if (get_symbol((yyvsp[0].strVal), get_scope())->type == LIBFUNC) {
@@ -2361,11 +2408,11 @@ yyreduce:
                         (yyval.expr) = make_lvalue_expression(VAR_EXPR, get_symbol((yyvsp[0].strVal), get_scope()));
                     }
                            }
-#line 2365 "parser.c"
+#line 2412 "parser.c"
     break;
 
   case 48: /* lvalue: TOK_DBL_COLON TOK_ID  */
-#line 556 "parser.y"
+#line 512 "parser.y"
                                 {//printf("lvalue -> :: id\n");
                                     handle_global_access_id((yyvsp[0].strVal));
                                     (yyval.expr) = make_lvalue_expression(VAR_EXPR, get_symbol((yyvsp[0].strVal),0));
@@ -2376,22 +2423,22 @@ yyreduce:
                                     $$->isActive = true;
                                     $$->type = 1;*/
                                 }
-#line 2380 "parser.c"
+#line 2427 "parser.c"
     break;
 
   case 49: /* lvalue: member  */
-#line 566 "parser.y"
+#line 522 "parser.y"
                  {
                     //printf("lvalue -> member\n");
                     is_a_member_access = 1;
                     (yyval.expr) = (yyvsp[0].expr);
 
                  }
-#line 2391 "parser.c"
+#line 2438 "parser.c"
     break;
 
   case 50: /* member: lvalue TOK_DOT TOK_ID  */
-#line 574 "parser.y"
+#line 530 "parser.y"
                               {
             printf("member -> lvalue.id\n");
             std::cout << "$3 -> " << (yyvsp[0].strVal) << std::endl;
@@ -2400,11 +2447,11 @@ yyreduce:
             //std::cout << "$$->index->str_const " << $$->index->str_const << std::endl;
             is_a_member_access = 0;
         }
-#line 2404 "parser.c"
+#line 2451 "parser.c"
     break;
 
   case 51: /* member: lvalue TOK_L_BR expression TOK_R_BR  */
-#line 582 "parser.y"
+#line 538 "parser.y"
                                                {
             //printf("member -> lvalue[expression]\n");
             std::cout << "Expression is : " << (yyvsp[-1].expr)->type << std::endl;
@@ -2416,28 +2463,28 @@ yyreduce:
             }
             clear_expression_list();
         }
-#line 2420 "parser.c"
+#line 2467 "parser.c"
     break;
 
   case 53: /* member: call TOK_L_BR expression TOK_R_BR  */
-#line 594 "parser.y"
+#line 550 "parser.y"
                                             {
             printf("member -> call[expression]\n");
         }
-#line 2428 "parser.c"
+#line 2475 "parser.c"
     break;
 
   case 54: /* call: call normcall  */
-#line 599 "parser.y"
+#line 555 "parser.y"
                     {
             //printf("call -> call normcall\n");
             (yyval.expr) = make_call((yyvsp[-1].expr));
        }
-#line 2437 "parser.c"
+#line 2484 "parser.c"
     break;
 
   case 55: /* call: lvalue callsuffix  */
-#line 603 "parser.y"
+#line 559 "parser.y"
                           {
             printf("call -> lvalue callsuffix\n");
             (yyvsp[-1].expr) = emit_if_table_item((yyvsp[-1].expr));
@@ -2466,39 +2513,39 @@ yyreduce:
                 quad_table_print();
             }
       }
-#line 2470 "parser.c"
+#line 2517 "parser.c"
     break;
 
   case 56: /* call: TOK_L_PARENTH funcdef TOK_R_PARENTH normcall  */
-#line 631 "parser.y"
+#line 587 "parser.y"
                                                      {
             //printf("call -> (funcdef) normcall\n");
             expression* func = make_func_expression(PROGRAMFUNC_EXPR, get_symbol((yyvsp[-2].expr)->symbol->name, get_scope()));
             (yyval.expr) = make_call(func);     
       }
-#line 2480 "parser.c"
+#line 2527 "parser.c"
     break;
 
   case 57: /* callsuffix: normcall  */
-#line 638 "parser.y"
+#line 594 "parser.y"
                      {
                 //printf("callsuffix -> normcall\n");
                 (yyval.call_struct) = (yyvsp[0].call_struct);
             }
-#line 2489 "parser.c"
+#line 2536 "parser.c"
     break;
 
   case 58: /* callsuffix: methodcall  */
-#line 642 "parser.y"
+#line 598 "parser.y"
                          {
                 //printf("callsuffix -> methodcall\n");
                 (yyval.call_struct) = (yyvsp[0].call_struct);
             }
-#line 2498 "parser.c"
+#line 2545 "parser.c"
     break;
 
   case 59: /* normcall: TOK_L_PARENTH elist TOK_R_PARENTH  */
-#line 648 "parser.y"
+#line 604 "parser.y"
                                             {
     (yyval.call_struct).elist = (yyvsp[-1].expr);
     (yyval.call_struct).method = 0;
@@ -2507,11 +2554,11 @@ yyreduce:
     get_last_expression();
     //pop_expression_list();
 }
-#line 2511 "parser.c"
+#line 2558 "parser.c"
     break;
 
   case 60: /* methodcall: TOK_DBL_DOT TOK_ID normcall  */
-#line 658 "parser.y"
+#line 614 "parser.y"
                                         {
     //printf("methodcall -> ..id normcall\n");
     (yyval.call_struct).elist = (yyvsp[0].call_struct).elist;
@@ -2520,56 +2567,56 @@ yyreduce:
 
     //get_last_expression();
 }
-#line 2524 "parser.c"
+#line 2571 "parser.c"
     break;
 
   case 61: /* elist: expression  */
-#line 668 "parser.y"
+#line 624 "parser.y"
                   {
             //printf("elist -> expression\n");
             push_expression_list((yyvsp[0].expr));
         }
-#line 2533 "parser.c"
+#line 2580 "parser.c"
     break;
 
   case 62: /* elist: elist TOK_COMMA expression  */
-#line 672 "parser.y"
+#line 628 "parser.y"
                                     {
             //printf("elist -> elist,\n");
             push_expression_list((yyvsp[0].expr));
         }
-#line 2542 "parser.c"
+#line 2589 "parser.c"
     break;
 
   case 63: /* elist: %empty  */
-#line 676 "parser.y"
+#line 632 "parser.y"
                  {
             //printf("elist -> \n");
             //push_expression_list(NULL);
         }
-#line 2551 "parser.c"
+#line 2598 "parser.c"
     break;
 
   case 64: /* indexed: indexedelem  */
-#line 682 "parser.y"
+#line 638 "parser.y"
                      {
             //printf("elist -> expression\n");
             (yyval.expr) = (yyvsp[0].expr);
         }
-#line 2560 "parser.c"
+#line 2607 "parser.c"
     break;
 
   case 65: /* indexed: indexed TOK_COMMA indexedelem  */
-#line 686 "parser.y"
+#line 642 "parser.y"
                                        {
             //printf("elist -> elist,\n");
             (yyval.expr) = (yyvsp[-2].expr);
         }
-#line 2569 "parser.c"
+#line 2616 "parser.c"
     break;
 
   case 66: /* objectdef: TOK_L_BR elist TOK_R_BR  */
-#line 692 "parser.y"
+#line 648 "parser.y"
                                    {
                 std::cout << "OBJECTDEF" << std::endl;
                 //printf("objectdef -> [elist]\n");
@@ -2584,11 +2631,11 @@ yyreduce:
                 set_elist_expression(table);
                 (yyval.expr) = table;
           }
-#line 2588 "parser.c"
+#line 2635 "parser.c"
     break;
 
   case 67: /* objectdef: TOK_L_BR indexed TOK_R_BR  */
-#line 706 "parser.y"
+#line 662 "parser.y"
                                      {
                 printf("objectdef -> [indexed]\n");
                 SymbolType type = GLOBAL;
@@ -2603,22 +2650,22 @@ yyreduce:
                 (yyval.expr) = table;
 
          }
-#line 2607 "parser.c"
+#line 2654 "parser.c"
     break;
 
   case 68: /* indexedelem: TOK_L_CURLY_BR expression TOK_COLON expression TOK_R_CURLY_BR  */
-#line 723 "parser.y"
+#line 679 "parser.y"
                {
     printf("indexedelem -> {expression:expression}\n");
     std::cout << (yyvsp[-3].expr)->str_const << (yyvsp[-1].expr)->type << std::endl;
     insert_indexed_map((yyvsp[-3].expr),(yyvsp[-1].expr));
     (yyval.expr) = (yyvsp[-3].expr);
 }
-#line 2618 "parser.c"
+#line 2665 "parser.c"
     break;
 
   case 69: /* $@1: %empty  */
-#line 731 "parser.y"
+#line 687 "parser.y"
                       {
     push_blocks_prec(1);
     push_vector();
@@ -2627,24 +2674,24 @@ yyreduce:
     set_prev_scope_space_counter(get_scope_space_counter());
     set_scope_space_counter(1);
 /*std::cout<<scope_counter<<std::endl;*/}
-#line 2631 "parser.c"
+#line 2678 "parser.c"
     break;
 
   case 70: /* block: TOK_L_CURLY_BR $@1 statements TOK_R_CURLY_BR  */
-#line 739 "parser.y"
+#line 695 "parser.y"
 {/*printf("block -> {statements}\n");*/ is_in_block_mode--; handle_block_end(get_scope()); printf("Prev Scope Space Counter: %d\n", get_prev_scope_space_counter()); set_scope_space_counter(get_prev_scope_space_counter()); printf("Scope Space Counter: %d\n", get_scope_space_counter()); scope_counter--;
 /*std::cout<< "Scope Counter is " << scope_counter<<std::endl;*/}
-#line 2638 "parser.c"
+#line 2685 "parser.c"
     break;
 
   case 71: /* $@2: %empty  */
-#line 743 "parser.y"
+#line 699 "parser.y"
                               {push_blocks_prec(2);set_scope_space_counter(2); push_func_local_offset_table();}
-#line 2644 "parser.c"
+#line 2691 "parser.c"
     break;
 
   case 72: /* funcdef_block: TOK_L_CURLY_BR $@2 statements TOK_R_CURLY_BR  */
-#line 743 "parser.y"
+#line 699 "parser.y"
                                                                                                                                           {
         /*printf("funcdef_block -> {statements}\n");*/
         
@@ -2656,11 +2703,11 @@ yyreduce:
 
         reset_formal_arg_offset();
     }
-#line 2660 "parser.c"
+#line 2707 "parser.c"
     break;
 
   case 73: /* $@3: %empty  */
-#line 756 "parser.y"
+#line 712 "parser.y"
                                            {
     
     is_in_function_mode = 1;
@@ -2673,11 +2720,11 @@ yyreduce:
     set_scope_space_counter(3);
     push_formal_arg_offset_table();
     /*std::cout<<scope_counter<<std::endl;*/}
-#line 2677 "parser.c"
+#line 2724 "parser.c"
     break;
 
   case 74: /* funcdef: TOK_FUNCTION TOK_ID TOK_L_PARENTH $@3 idlist TOK_R_PARENTH funcdef_block  */
-#line 768 "parser.y"
+#line 724 "parser.y"
               {
                    //printf("funcdef -> function id (idlist) funcdef_block\n");
                    //handle_funcdef_block_end(get_scope());
@@ -2690,26 +2737,26 @@ yyreduce:
                    emit_funcdef(FUNCEND, make_func_expression(PROGRAMFUNC_EXPR, get_symbol((yyvsp[-5].strVal), get_scope())));
                    (yyval.expr) = make_func_expression(PROGRAMFUNC_EXPR, get_symbol((yyvsp[-5].strVal), get_scope()));
               }
-#line 2694 "parser.c"
+#line 2741 "parser.c"
     break;
 
   case 75: /* $@4: %empty  */
-#line 780 "parser.y"
+#line 736 "parser.y"
                                       {
          is_in_function_mode = 1;
-         name = func_name_generator();
-         handle_funcdef_anonym_name(name, get_scope(), curr_scope_space(), curr_scope_offset(), yylineno);
+         //name = func_name_generator();
+         handle_funcdef_anonym_name(get_scope(), curr_scope_space(), curr_scope_offset(), yylineno);
          emit_funcdef(FUNCSTART, make_func_expression(PROGRAMFUNC_EXPR, get_symbol(name, get_scope())));
          scope_counter++;
          set_prev_scope_space_counter(get_scope_space_counter());
          set_scope_space_counter(3);
          push_formal_arg_offset_table();
 /*std::cout<<scope_counter<<std::endl;*/}
-#line 2709 "parser.c"
+#line 2756 "parser.c"
     break;
 
   case 76: /* funcdef: TOK_FUNCTION TOK_L_PARENTH $@4 idlist TOK_R_PARENTH funcdef_block  */
-#line 790 "parser.y"
+#line 746 "parser.y"
               {
                     //printf("funcdef -> function (idlist) funcdef_block\n");
                     //handle_funcdef_block_end(get_scope());
@@ -2725,91 +2772,91 @@ yyreduce:
                     //printf("The current scope space is: %d\n", curr_scope_space());
                     (yyval.expr) = make_func_expression(PROGRAMFUNC_EXPR, get_symbol(name, get_scope()));
               }
-#line 2729 "parser.c"
+#line 2776 "parser.c"
     break;
 
   case 77: /* const: TOK_INT  */
-#line 807 "parser.y"
+#line 763 "parser.y"
                {
             printf("const -> integer %d\n", (yyvsp[0].intVal)); 
             (yyval.expr) = make_constnum_expression(CONSTNUM_EXPR, (yyvsp[0].intVal));
         }
-#line 2738 "parser.c"
+#line 2785 "parser.c"
     break;
 
   case 78: /* const: TOK_FLOAT  */
-#line 811 "parser.y"
+#line 767 "parser.y"
                    {
             printf("const -> float %f\n", (yyvsp[0].floatVal));
             (yyval.expr) = make_constnum_expression(CONSTNUM_EXPR, (yyvsp[0].floatVal));
         }
-#line 2747 "parser.c"
+#line 2794 "parser.c"
     break;
 
   case 79: /* const: TOK_STRING  */
-#line 815 "parser.y"
+#line 771 "parser.y"
                     {
             //printf("const -> string %s\n", $1);
             std::cout << "CONST -> STRING " << (yyvsp[0].strVal) << std::endl;
             (yyval.expr) = make_conststring_expression(CONSTSTRING_EXPR, (yyvsp[0].strVal));
         }
-#line 2757 "parser.c"
+#line 2804 "parser.c"
     break;
 
   case 80: /* const: TOK_NIL  */
-#line 820 "parser.y"
+#line 776 "parser.y"
                  {
             //printf("const -> nil\n");
             (yyval.expr) = make_nil_expression(NIL_EXPR);
         }
-#line 2766 "parser.c"
+#line 2813 "parser.c"
     break;
 
   case 81: /* const: TOK_TRUE  */
-#line 824 "parser.y"
+#line 780 "parser.y"
                   {
             //printf("const -> true\n");
             (yyval.expr) = make_constbool_expression(CONSTBOOL_EXPR, (yyvsp[0].intVal));
         }
-#line 2775 "parser.c"
+#line 2822 "parser.c"
     break;
 
   case 82: /* const: TOK_FALSE  */
-#line 828 "parser.y"
+#line 784 "parser.y"
                    {
             //printf("const -> false\n");
             (yyval.expr) = make_constbool_expression(CONSTBOOL_EXPR, (yyvsp[0].intVal));
         }
-#line 2784 "parser.c"
+#line 2831 "parser.c"
     break;
 
   case 83: /* idlist: TOK_ID  */
-#line 834 "parser.y"
+#line 790 "parser.y"
                {
                     //printf("%s", $1);
                     handle_func_w_1arg((yyvsp[0].strVal), get_scope(), curr_scope_space(), curr_scope_offset(), yylineno);
 
                }
-#line 2794 "parser.c"
+#line 2841 "parser.c"
     break;
 
   case 84: /* idlist: idlist TOK_COMMA TOK_ID  */
-#line 839 "parser.y"
+#line 795 "parser.y"
                                   {
                                        //printf("%s", $3);
                                        handle_func_w_1arg((yyvsp[0].strVal), get_scope(), curr_scope_space(), curr_scope_offset(), yylineno);
                                   }
-#line 2803 "parser.c"
+#line 2850 "parser.c"
     break;
 
   case 85: /* idlist: %empty  */
-#line 843 "parser.y"
+#line 799 "parser.y"
                  { push_vector();}
-#line 2809 "parser.c"
+#line 2856 "parser.c"
     break;
 
 
-#line 2813 "parser.c"
+#line 2860 "parser.c"
 
         default: break;
       }
@@ -3044,7 +3091,7 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 866 "parser.y"
+#line 822 "parser.y"
 
 
 int main(int argc, char** argv) {

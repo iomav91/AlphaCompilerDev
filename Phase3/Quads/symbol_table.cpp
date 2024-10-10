@@ -1,16 +1,10 @@
 #include "symbol_table.h"
+#include "icode_managers.h"
 #include <cstdlib>
 
 #define  SIZE  1000
 
-int temp_counter = 0;
-unsigned line_op_counter = 0;
-unsigned prev_scope_space_counter = 1;
-unsigned program_var_offset = 0;
-unsigned function_local_offset = 0;
-unsigned formal_arg_offset = 0;
-unsigned scope_space_counter = 1;
-unsigned curr_quad_label = 0;
+extern int temp_counter = 0;
 
 /*struct Key {
     std::string name;
@@ -48,7 +42,7 @@ struct quad {
 
 std::vector<std::map<std::string, SymbolTableEntry>> symbol_table_alt;
 std::vector<std::map<std::string, SymbolTableEntry>> inactive_symbol_table;
-std::vector<quad> quad_table;
+
 
 Key make_key(const std::string& symbol_name, const int& symbol_scope) {
     Key key;
@@ -138,13 +132,13 @@ void print_symtable_inactive() {
 void insert(std::string name, int scope, int line, scope_space space, unsigned offset, SymbolType type) {
     if (is_scope_change(symbol_table_alt.size(), scope) == 0) {
         //std::cout << "LOCAL" << std::endl;
-        //std::cout << "handle_func_w_1arg 2.1.1" << std::endl;
+        std::cout << "handle_func_w_1arg 2.1.1" << std::endl;
         symbol_table_alt.back()[name] = make_entry(name, scope, line, space, offset, type);
         inc_curr_scope_offset();
-        //symbol_table_alt.back()[name].isActive = true;
+        symbol_table_alt.back()[name].isActive = true;
         
     } else {
-        //std::cout << "THERE !!!!" << std::endl;
+        std::cout << "handle_func_w_1arg 2.1.2" << std::endl;
         push_vector(); // isos na prepei na kaneis push sta action tou parser
         
         symbol_table_alt.back()[name] = make_entry(name, scope, line, space, offset, type);
@@ -155,9 +149,11 @@ void insert(std::string name, int scope, int line, scope_space space, unsigned o
 }
 
 SymbolTableEntry* get_symbol(std::string name, int scope) {
+    //std::cout << "Symbol name is: " << name << ", " << "Symbol scope is: " << scope << std::endl; 
     for (auto& symbol : symbol_table_alt.at(scope)) {
+        std::cout << "Symbol name is: " << symbol.first << ", " << "Symbol scope is: " << symbol.second.scope << std::endl;
         if (symbol.first == name && symbol.second.scope == scope && symbol.second.isActive == true) {
-            //std::cout << "Symbol is here" << std::endl;
+            std::cout << "Symbol is here" << std::endl;
             //make_entry(symbol.second.name, symbol.second.scope, symbol.second.line, symbol.second.space, symbol.second.offset, symbol.second.type);
             return &symbol.second;
         }
@@ -367,6 +363,27 @@ std::map<std::string, SymbolTableEntry> insert_lib_function(std::map<std::string
     return m;
 }
 
+SymbolTableEntry new_temp_var(int line, SymbolType type) {
+    std::string name = new_temp_name(temp_counter);
+    temp_counter++;
+    if (lookup_at_scope(name, 0)) {
+        return symbol_table_alt.at(0)["name"];
+    }
+    SymbolTableEntry symbol;
+    if (type == GLOBAL) {
+        symbol = make_entry(name, 0, line, program_var, curr_scope_offset(), type);
+        insert(symbol.name, symbol.scope, symbol.line, symbol.space, symbol.offset, symbol.type);
+    } else if (type == LOCAL) {
+        symbol = make_entry(name, get_scope(), line, function_local, curr_scope_offset(), type);
+        insert(symbol.name, symbol.scope, symbol.line, symbol.space, symbol.offset, symbol.type);
+    } else {
+        symbol = make_entry(name, get_scope(), line, function_local, curr_scope_offset(), type);
+        insert(symbol.name, symbol.scope, symbol.line, symbol.space, symbol.offset, symbol.type);
+    }
+    return symbol;
+    
+}
+
 /*void print_symtable() {
     for (const auto& map : symbol_table.top()) {
         std::cout << map.first << " " << map.second.scope << " "
@@ -375,7 +392,7 @@ std::map<std::string, SymbolTableEntry> insert_lib_function(std::map<std::string
     }
 }*/
 
-quad make_quad(iopcode op, expression* result, expression* arg1, 
+/*quad make_quad(iopcode op, expression* result, expression* arg1, 
                expression* arg2, unsigned label, unsigned line) {
     quad new_quad;
 
@@ -643,7 +660,7 @@ expression* emit_if_table_item(expression* lvalue) {
 }
 
 void emit_funcdef(iopcode op, expression* result) {
-    //std::cout << "HERE" << std::endl;
+    std::cout << "HERE" << std::endl;
     quad_table.push_back(make_quad(op, result, NULL, NULL, UINT_MAX, line_op_counter));
     line_op_counter++;
     return;
@@ -786,7 +803,7 @@ expression* make_func_expression(expr_value type, SymbolTableEntry* symbol) {
     new_expression->type = type;
     new_expression->symbol = symbol;
     
-    //expression_list.push_back(new_expression);
+    expression_list.push_back(new_expression);
 
     return new_expression;
 }
@@ -1239,7 +1256,7 @@ void set_curr_quad_label(unsigned step) {
 unsigned next_quad_label() {
     std::cout << curr_quad_label << std::endl;
     return curr_quad_label; 
-}
+}*/
 
 /*int main() {
     /*insert_lib_function();

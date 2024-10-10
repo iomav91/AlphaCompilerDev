@@ -172,10 +172,10 @@ SymbolTableEntry new_temp_var(int line, enum SymbolType type) {
 int main() {
     init_vector();
     //SymbolTableEntry entry1 = make_entry("x", 0, 0, GLOBAL);
-    emit(ASSIGN, make_var_num_expression(VAR_EXPR, make_entry("x", 0, 0, GLOBAL), 0.0), make_var_num_expression(VAR_EXPR, make_entry("y", 0, 0, GLOBAL), 1.50), make_var_num_expression(VAR_EXPR, make_entry("z", 0, 0, GLOBAL), 1.50), UINT_MAX, 0);
-    emit(ADD, make_var_num_expression(VAR_EXPR, make_entry("z", 0, 1, GLOBAL), 0.0), make_var_num_expression(VAR_EXPR, make_entry("a", 0, 1, GLOBAL), 1.50), make_var_num_expression(VAR_EXPR, make_entry("b", 0, 1, GLOBAL), 1.50), UINT_MAX, 1);
-    emit(SUB, make_var_num_expression(VAR_EXPR, make_entry("c", 0, 1, GLOBAL), 0.0), make_var_num_expression(VAR_EXPR, make_entry("e", 0, 1, GLOBAL), 1.50), make_var_num_expression(VAR_EXPR, make_entry("d", 0, 1, GLOBAL), 1.50), UINT_MAX, 2);
-    quad_table_print();
+    //emit(ASSIGN, make_var_num_expression(VAR_EXPR, make_entry("x", 0, 0, GLOBAL), 0.0), make_var_num_expression(VAR_EXPR, make_entry("y", 0, 0, GLOBAL), 1.50), make_var_num_expression(VAR_EXPR, make_entry("z", 0, 0, GLOBAL), 1.50), UINT_MAX, 0);
+    //emit(ADD, make_var_num_expression(VAR_EXPR, make_entry("z", 0, 1, GLOBAL), 0.0), make_var_num_expression(VAR_EXPR, make_entry("a", 0, 1, GLOBAL), 1.50), make_var_num_expression(VAR_EXPR, make_entry("b", 0, 1, GLOBAL), 1.50), UINT_MAX, 1);
+    //emit(SUB, make_var_num_expression(VAR_EXPR, make_entry("c", 0, 1, GLOBAL), 0.0), make_var_num_expression(VAR_EXPR, make_entry("e", 0, 1, GLOBAL), 1.50), make_var_num_expression(VAR_EXPR, make_entry("d", 0, 1, GLOBAL), 1.50), UINT_MAX, 2);
+    //quad_table_print();
 
     //std::string new_tmp_name = new_temp_name();
 

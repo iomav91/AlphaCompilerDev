@@ -550,7 +550,8 @@ int yy_flex_debug = 0;
 char *yytext;
 #line 1 "al.l"
 #line 2 "al.l"
-   #include "symbol_table.h"     
+   #include "symbol_table.h"
+   #include "icode_managers.h"     
    #include "help_functions.h"
    #include <stack>
    #include <string>
@@ -565,9 +566,9 @@ char *yytext;
    #define YY_DECL int yylex()
    #include "parser.h"
 
-#line 569 "al.c"
+#line 570 "al.c"
 
-#line 571 "al.c"
+#line 572 "al.c"
 
 #define INITIAL 0
 #define ml_comment 1
@@ -789,10 +790,10 @@ YY_DECL
 		}
 
 	{
-#line 77 "al.l"
+#line 78 "al.l"
 
 
-#line 796 "al.c"
+#line 797 "al.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -862,233 +863,233 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 79 "al.l"
+#line 80 "al.l"
 {handle_keyword(yylineno, yytext); return TOK_IF;}
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 80 "al.l"
+#line 81 "al.l"
 {handle_keyword(yylineno, yytext); return TOK_ELSE;}
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 81 "al.l"
+#line 82 "al.l"
 {handle_keyword(yylineno, yytext); return TOK_WHILE;}
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 82 "al.l"
+#line 83 "al.l"
 {handle_keyword(yylineno, yytext); return TOK_FOR;}
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 83 "al.l"
+#line 84 "al.l"
 {handle_keyword(yylineno, yytext); return TOK_FUNCTION;}
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 84 "al.l"
+#line 85 "al.l"
 {handle_keyword(yylineno, yytext); return TOK_RETURN;}
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 85 "al.l"
+#line 86 "al.l"
 {handle_keyword(yylineno, yytext); return TOK_BREAK;}
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 86 "al.l"
+#line 87 "al.l"
 {handle_keyword(yylineno, yytext); return TOK_CONTINUE;}
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 87 "al.l"
+#line 88 "al.l"
 {handle_keyword(yylineno, yytext); return TOK_AND;}
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 88 "al.l"
+#line 89 "al.l"
 {handle_keyword(yylineno, yytext); return TOK_NOT;}
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 89 "al.l"
+#line 90 "al.l"
 {handle_keyword(yylineno, yytext); return TOK_OR;}
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 90 "al.l"
+#line 91 "al.l"
 {handle_keyword(yylineno, yytext); return TOK_LOCAL;}
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 91 "al.l"
+#line 92 "al.l"
 {handle_keyword(yylineno, yytext); yylval.intVal =
 atoi(yytext); return TOK_TRUE;}
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 93 "al.l"
+#line 94 "al.l"
 {handle_keyword(yylineno, yytext); yylval.intVal =
 atoi(yytext); return TOK_FALSE;}
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 95 "al.l"
+#line 96 "al.l"
 {handle_keyword(yylineno, yytext); return TOK_NIL;}
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 96 "al.l"
+#line 97 "al.l"
 {handle_operator(yylineno, yytext); return TOK_ASSIGN;}
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 97 "al.l"
+#line 98 "al.l"
 {handle_operator(yylineno, yytext); return TOK_PLUS;}
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 98 "al.l"
+#line 99 "al.l"
 {handle_operator(yylineno, yytext); return TOK_MINUS;}
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 99 "al.l"
+#line 100 "al.l"
 {handle_operator(yylineno, yytext); return TOK_MULTIPLY;}
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 100 "al.l"
+#line 101 "al.l"
 {handle_operator(yylineno, yytext); return TOK_DIVIDE;}
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 101 "al.l"
+#line 102 "al.l"
 {handle_operator(yylineno, yytext); return TOK_MODULO;}
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 102 "al.l"
+#line 103 "al.l"
 {handle_operator(yylineno, yytext); return TOK_EQUAL;}
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 103 "al.l"
+#line 104 "al.l"
 {handle_operator(yylineno, yytext); return TOK_N_EQUAL;}
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 104 "al.l"
+#line 105 "al.l"
 {handle_operator(yylineno, yytext); return TOK_DBL_PLUS;}
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 105 "al.l"
+#line 106 "al.l"
 {handle_operator(yylineno, yytext); return TOK_DBL_MINUS;}
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 106 "al.l"
+#line 107 "al.l"
 {handle_operator(yylineno, yytext); return TOK_GREATER;}
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 107 "al.l"
+#line 108 "al.l"
 {handle_operator(yylineno, yytext); return TOK_LESS;}
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 108 "al.l"
+#line 109 "al.l"
 {handle_operator(yylineno, yytext); return TOK_GR_EQUAL;}
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 109 "al.l"
+#line 110 "al.l"
 {handle_operator(yylineno, yytext); return TOK_LS_EQUAL;}
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 110 "al.l"
+#line 111 "al.l"
 {handle_punctuation(yylineno, yytext); return TOK_L_CURLY_BR;}
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 111 "al.l"
+#line 112 "al.l"
 {handle_punctuation(yylineno, yytext); return TOK_R_CURLY_BR;}
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 112 "al.l"
+#line 113 "al.l"
 {handle_punctuation(yylineno, yytext); return TOK_L_BR;}
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 113 "al.l"
+#line 114 "al.l"
 {handle_punctuation(yylineno, yytext); return TOK_R_BR;}
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 114 "al.l"
+#line 115 "al.l"
 {handle_punctuation(yylineno, yytext); return TOK_L_PARENTH;}
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 115 "al.l"
+#line 116 "al.l"
 {handle_punctuation(yylineno, yytext); return TOK_R_PARENTH;}
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 116 "al.l"
+#line 117 "al.l"
 {handle_punctuation(yylineno, yytext); return TOK_SEMICOLON;}
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 117 "al.l"
+#line 118 "al.l"
 {handle_punctuation(yylineno, yytext); return TOK_COMMA;}
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 118 "al.l"
+#line 119 "al.l"
 {handle_punctuation(yylineno, yytext); return TOK_COLON;}
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 119 "al.l"
+#line 120 "al.l"
 {handle_punctuation(yylineno, yytext); return TOK_DBL_COLON;}
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 120 "al.l"
+#line 121 "al.l"
 {handle_punctuation(yylineno, yytext); return TOK_DOT;}
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 121 "al.l"
+#line 122 "al.l"
 {handle_punctuation(yylineno, yytext); return TOK_DBL_DOT;}
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 122 "al.l"
+#line 123 "al.l"
 {handle_identifier(yylineno, yytext); yylval.strVal =
 strdup(yytext); return TOK_ID;}
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 124 "al.l"
+#line 125 "al.l"
 {handle_integer(yylineno, yytext); yylval.intVal =
 atoi(yytext); return TOK_INT;}
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 126 "al.l"
+#line 127 "al.l"
 {handle_float(yylineno, yytext); yylval.floatVal =
 atof(yytext); return TOK_FLOAT;}
 	YY_BREAK
 case 45:
 /* rule 45 can match eol */
 YY_RULE_SETUP
-#line 129 "al.l"
+#line 130 "al.l"
 {
              num_of_line = yylineno;
              //print_token_list();
@@ -1097,14 +1098,14 @@ YY_RULE_SETUP
 case 46:
 /* rule 46 can match eol */
 YY_RULE_SETUP
-#line 133 "al.l"
+#line 134 "al.l"
 {
                //print_token_list();
              }
 	YY_BREAK
 case 47:
 YY_RULE_SETUP
-#line 136 "al.l"
+#line 137 "al.l"
 {
                handle_sl_comment(yylineno, yytext);
                //add_token((struct alpha_token_t*)ylval, yylineno, 0,
@@ -1114,7 +1115,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 48:
 YY_RULE_SETUP
-#line 142 "al.l"
+#line 143 "al.l"
 {
         printf("Undefined Characters or Wrong Identifier\n");
         return -1;
@@ -1122,7 +1123,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 49:
 YY_RULE_SETUP
-#line 147 "al.l"
+#line 148 "al.l"
 {
         start_comment_line = yylineno;
         state = 1;
@@ -1133,7 +1134,7 @@ YY_RULE_SETUP
 
 case 50:
 YY_RULE_SETUP
-#line 154 "al.l"
+#line 155 "al.l"
 {
                 state--;
                 comment_stack.pop();
@@ -1145,7 +1146,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 51:
 YY_RULE_SETUP
-#line 163 "al.l"
+#line 164 "al.l"
 {
                 state++;
                 start_comment_line = yylineno;
@@ -1155,12 +1156,12 @@ YY_RULE_SETUP
 case 52:
 /* rule 52 can match eol */
 YY_RULE_SETUP
-#line 168 "al.l"
+#line 169 "al.l"
 {}
 	YY_BREAK
 
 case YY_STATE_EOF(ml_comment):
-#line 171 "al.l"
+#line 172 "al.l"
 {
         if (comment_stack.empty()) {
                 std::cout << "Error Non Closing Block Comment" << std::endl;
@@ -1173,7 +1174,7 @@ case YY_STATE_EOF(ml_comment):
 	YY_BREAK
 case 53:
 YY_RULE_SETUP
-#line 181 "al.l"
+#line 182 "al.l"
 {
         buffer.clear();
         BEGIN(string);
@@ -1181,35 +1182,35 @@ YY_RULE_SETUP
 	YY_BREAK
 case 54:
 YY_RULE_SETUP
-#line 185 "al.l"
+#line 186 "al.l"
 {
         buffer.push_back('\n');
 }
 	YY_BREAK
 case 55:
 YY_RULE_SETUP
-#line 188 "al.l"
+#line 189 "al.l"
 {
         buffer.push_back('\t');
 }
 	YY_BREAK
 case 56:
 YY_RULE_SETUP
-#line 191 "al.l"
+#line 192 "al.l"
 {
         buffer.push_back('\\');
 }
 	YY_BREAK
 case 57:
 YY_RULE_SETUP
-#line 194 "al.l"
+#line 195 "al.l"
 {
         buffer.push_back('\"');
 }
 	YY_BREAK
 case 58:
 YY_RULE_SETUP
-#line 197 "al.l"
+#line 198 "al.l"
 {
         handle_string(yylineno, buffer);
         //buffer.resize(0);
@@ -1227,7 +1228,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 59:
 YY_RULE_SETUP
-#line 211 "al.l"
+#line 212 "al.l"
 {
         std::cout << "Warning: Undefined Character" << std::endl;
         buffer.push_back(*yytext);
@@ -1236,13 +1237,13 @@ YY_RULE_SETUP
 case 60:
 /* rule 60 can match eol */
 YY_RULE_SETUP
-#line 215 "al.l"
+#line 216 "al.l"
 {
         buffer.push_back(*yytext);
 }
 	YY_BREAK
 case YY_STATE_EOF(string):
-#line 218 "al.l"
+#line 219 "al.l"
 {
         std::cout << "Error non closing string" << std::endl;
         yyterminate();
@@ -1250,10 +1251,10 @@ case YY_STATE_EOF(string):
 	YY_BREAK
 case 61:
 YY_RULE_SETUP
-#line 223 "al.l"
+#line 224 "al.l"
 ECHO;
 	YY_BREAK
-#line 1257 "al.c"
+#line 1258 "al.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -2272,5 +2273,5 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 223 "al.l"
+#line 224 "al.l"
 

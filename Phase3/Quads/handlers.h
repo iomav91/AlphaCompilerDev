@@ -7,12 +7,18 @@
 #include "symbol_table.h"
 
 void push_blocks_prec(int);
-bool handle_assign_expr(std::string, int);
+void pop_blocks_prec();
+int handle_assign_expr(std::string);
+void handle_db_plus_expr(std::string);
+void handle_plus_db_expr(std::string);
+void handle_db_minus_expr(std::string);
+void handle_minus_db_expr(std::string);
+int has_access(std::string);
 void handle_id(std::string, int, scope_space, unsigned, int);
 void handle_local_id(std::string, int, scope_space, unsigned, int);
 void handle_global_access_id(std::string);
 void handle_funcdef_w_name(std::string, int, scope_space, unsigned, int);
-void handle_funcdef_anonym_name(std::string, int, scope_space, unsigned, int);
+void handle_funcdef_anonym_name(int, scope_space, unsigned, int);
 void handle_func_w_1arg(std::string, int, scope_space, unsigned, int);
 void handle_expression(std::string, std::string, int, int);
 void handle_funcdef_block_end(int);

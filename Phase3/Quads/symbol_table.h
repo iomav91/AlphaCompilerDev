@@ -74,7 +74,7 @@ struct SymbolTableEntry {
     int               line;
 };
 
-struct expression {
+/*struct expression {
     enum expr_value     type;
     SymbolTableEntry*   symbol;
     expression*         index;
@@ -91,7 +91,7 @@ struct quad {
     expression*         arg2;
     unsigned            label;
     unsigned            line;
-};
+};*/
 
 Key make_key(const std::string &symbol_name, const int& symbol_scope);
 SymbolTableEntry make_entry(const std::string&, const int&, const int&, scope_space, unsigned, SymbolType);
@@ -126,9 +126,11 @@ void print_symtable_inactive();
 //std::vector<std::map<std::string, SymbolTableEntry>> get_symtable();
 std::map<std::string, SymbolTableEntry> insert_lib_function(std::map<std::string, SymbolTableEntry>);
 
+SymbolTableEntry new_temp_var(int, SymbolType);
+
 // Phase 3
 
-quad make_quad(iopcode, expression*, expression*, 
+/*quad make_quad(iopcode, expression*, expression*, 
                expression*, unsigned, int);
 expression* make_call(expression*);
 void set_elist_expression(expression*);
@@ -226,6 +228,6 @@ bool check_if_is_arithm_alt(expression*);
 
 void set_curr_quad_label(unsigned);
 
-unsigned next_quad_label();
+unsigned next_quad_label();*/
 
 #endif

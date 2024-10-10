@@ -1,99 +1,227 @@
-primary -> const
+handle_func_w_1arg 2.1.1
+Symbol name is: argument, Symbol scope is: 0
+Symbol name is: cos, Symbol scope is: 0
+Symbol name is: input, Symbol scope is: 0
+Symbol name is: objectcopy, Symbol scope is: 0
+Symbol name is: objectmemberkeys, Symbol scope is: 0
+Symbol name is: objecttotalmembers, Symbol scope is: 0
+Symbol name is: print, Symbol scope is: 0
+Symbol name is: sin, Symbol scope is: 0
+Symbol name is: sqrt, Symbol scope is: 0
+Symbol name is: strtonum, Symbol scope is: 0
+Symbol name is: totalarguments, Symbol scope is: 0
+Symbol name is: typeof, Symbol scope is: 0
+Symbol name is: x, Symbol scope is: 0
+Symbol is here
+Symbol name is: argument, Symbol scope is: 0
+Symbol name is: cos, Symbol scope is: 0
+Symbol name is: input, Symbol scope is: 0
+Symbol name is: objectcopy, Symbol scope is: 0
+Symbol name is: objectmemberkeys, Symbol scope is: 0
+Symbol name is: objecttotalmembers, Symbol scope is: 0
+Symbol name is: print, Symbol scope is: 0
+Symbol name is: sin, Symbol scope is: 0
+Symbol name is: sqrt, Symbol scope is: 0
+Symbol name is: strtonum, Symbol scope is: 0
+Symbol name is: totalarguments, Symbol scope is: 0
+Symbol name is: typeof, Symbol scope is: 0
+Symbol name is: x, Symbol scope is: 0
+Symbol is here
+Symbol name is: argument, Symbol scope is: 0
+Symbol name is: cos, Symbol scope is: 0
+Symbol name is: input, Symbol scope is: 0
+Symbol name is: objectcopy, Symbol scope is: 0
+Symbol name is: objectmemberkeys, Symbol scope is: 0
+Symbol name is: objecttotalmembers, Symbol scope is: 0
+Symbol name is: print, Symbol scope is: 0
+Symbol name is: sin, Symbol scope is: 0
+Symbol name is: sqrt, Symbol scope is: 0
+Symbol name is: strtonum, Symbol scope is: 0
+Symbol name is: totalarguments, Symbol scope is: 0
+Symbol name is: typeof, Symbol scope is: 0
+Symbol name is: x, Symbol scope is: 0
+Symbol is here
 term -> primary
-The current scope space is: 1
-Prev Scope Space Counter: 1
-Scope Space Counter: 1
-move
-CONST -> STRING move
-primary -> const
+handle_func_w_1arg 2.1.1
+Symbol name is: argument, Symbol scope is: 0
+Symbol name is: cos, Symbol scope is: 0
+Symbol name is: input, Symbol scope is: 0
+Symbol name is: objectcopy, Symbol scope is: 0
+Symbol name is: objectmemberkeys, Symbol scope is: 0
+Symbol name is: objecttotalmembers, Symbol scope is: 0
+Symbol name is: print, Symbol scope is: 0
+Symbol name is: sin, Symbol scope is: 0
+Symbol name is: sqrt, Symbol scope is: 0
+Symbol name is: strtonum, Symbol scope is: 0
+Symbol name is: totalarguments, Symbol scope is: 0
+Symbol name is: typeof, Symbol scope is: 0
+Symbol name is: x, Symbol scope is: 0
+Symbol name is: y, Symbol scope is: 0
+Symbol is here
+Symbol name is: argument, Symbol scope is: 0
+Symbol name is: cos, Symbol scope is: 0
+Symbol name is: input, Symbol scope is: 0
+Symbol name is: objectcopy, Symbol scope is: 0
+Symbol name is: objectmemberkeys, Symbol scope is: 0
+Symbol name is: objecttotalmembers, Symbol scope is: 0
+Symbol name is: print, Symbol scope is: 0
+Symbol name is: sin, Symbol scope is: 0
+Symbol name is: sqrt, Symbol scope is: 0
+Symbol name is: strtonum, Symbol scope is: 0
+Symbol name is: totalarguments, Symbol scope is: 0
+Symbol name is: typeof, Symbol scope is: 0
+Symbol name is: x, Symbol scope is: 0
+Symbol name is: y, Symbol scope is: 0
+Symbol is here
+Symbol name is: argument, Symbol scope is: 0
+Symbol name is: cos, Symbol scope is: 0
+Symbol name is: input, Symbol scope is: 0
+Symbol name is: objectcopy, Symbol scope is: 0
+Symbol name is: objectmemberkeys, Symbol scope is: 0
+Symbol name is: objecttotalmembers, Symbol scope is: 0
+Symbol name is: print, Symbol scope is: 0
+Symbol name is: sin, Symbol scope is: 0
+Symbol name is: sqrt, Symbol scope is: 0
+Symbol name is: strtonum, Symbol scope is: 0
+Symbol name is: totalarguments, Symbol scope is: 0
+Symbol name is: typeof, Symbol scope is: 0
+Symbol name is: x, Symbol scope is: 0
+Symbol name is: y, Symbol scope is: 0
+Symbol is here
 term -> primary
-Symbol move is a reference
+handle_func_w_1arg 2.1.1
+Symbol name is: __t0, Symbol scope is: 0
+Symbol is here
+$1->type 0
+ARG 1 0  x
+ARG 2 0
+HANDLE ID is already in symbol table
+i = 0
+Symbol name is: __t0, Symbol scope is: 0
+Symbol name is: argument, Symbol scope is: 0
+Symbol name is: cos, Symbol scope is: 0
+Symbol name is: input, Symbol scope is: 0
+Symbol name is: objectcopy, Symbol scope is: 0
+Symbol name is: objectmemberkeys, Symbol scope is: 0
+Symbol name is: objecttotalmembers, Symbol scope is: 0
+Symbol name is: print, Symbol scope is: 0
+Symbol name is: sin, Symbol scope is: 0
+Symbol name is: sqrt, Symbol scope is: 0
+Symbol name is: strtonum, Symbol scope is: 0
+Symbol name is: totalarguments, Symbol scope is: 0
+Symbol name is: typeof, Symbol scope is: 0
+Symbol name is: x, Symbol scope is: 0
+Symbol is here
+Symbol name is: __t0, Symbol scope is: 0
+Symbol name is: argument, Symbol scope is: 0
+Symbol name is: cos, Symbol scope is: 0
+Symbol name is: input, Symbol scope is: 0
+Symbol name is: objectcopy, Symbol scope is: 0
+Symbol name is: objectmemberkeys, Symbol scope is: 0
+Symbol name is: objecttotalmembers, Symbol scope is: 0
+Symbol name is: print, Symbol scope is: 0
+Symbol name is: sin, Symbol scope is: 0
+Symbol name is: sqrt, Symbol scope is: 0
+Symbol name is: strtonum, Symbol scope is: 0
+Symbol name is: totalarguments, Symbol scope is: 0
+Symbol name is: typeof, Symbol scope is: 0
+Symbol name is: x, Symbol scope is: 0
+Symbol is here
+Symbol name is: __t0, Symbol scope is: 0
+Symbol name is: argument, Symbol scope is: 0
+Symbol name is: cos, Symbol scope is: 0
+Symbol name is: input, Symbol scope is: 0
+Symbol name is: objectcopy, Symbol scope is: 0
+Symbol name is: objectmemberkeys, Symbol scope is: 0
+Symbol name is: objecttotalmembers, Symbol scope is: 0
+Symbol name is: print, Symbol scope is: 0
+Symbol name is: sin, Symbol scope is: 0
+Symbol name is: sqrt, Symbol scope is: 0
+Symbol name is: strtonum, Symbol scope is: 0
+Symbol name is: totalarguments, Symbol scope is: 0
+Symbol name is: typeof, Symbol scope is: 0
+Symbol name is: x, Symbol scope is: 0
+Symbol is here
 term -> primary
-indexedelem -> {expression:expression}
-move2
-objectdef -> [indexed]
-__t0
-Index is move
-10
-primary -> objectdef
-OBJECTDEF in PRIMARY__t0
+HANDLE ID is already in symbol table
+i = 0
+Symbol name is: __t0, Symbol scope is: 0
+Symbol name is: argument, Symbol scope is: 0
+Symbol name is: cos, Symbol scope is: 0
+Symbol name is: input, Symbol scope is: 0
+Symbol name is: objectcopy, Symbol scope is: 0
+Symbol name is: objectmemberkeys, Symbol scope is: 0
+Symbol name is: objecttotalmembers, Symbol scope is: 0
+Symbol name is: print, Symbol scope is: 0
+Symbol name is: sin, Symbol scope is: 0
+Symbol name is: sqrt, Symbol scope is: 0
+Symbol name is: strtonum, Symbol scope is: 0
+Symbol name is: totalarguments, Symbol scope is: 0
+Symbol name is: typeof, Symbol scope is: 0
+Symbol name is: x, Symbol scope is: 0
+Symbol name is: y, Symbol scope is: 0
+Symbol is here
+Symbol name is: __t0, Symbol scope is: 0
+Symbol name is: argument, Symbol scope is: 0
+Symbol name is: cos, Symbol scope is: 0
+Symbol name is: input, Symbol scope is: 0
+Symbol name is: objectcopy, Symbol scope is: 0
+Symbol name is: objectmemberkeys, Symbol scope is: 0
+Symbol name is: objecttotalmembers, Symbol scope is: 0
+Symbol name is: print, Symbol scope is: 0
+Symbol name is: sin, Symbol scope is: 0
+Symbol name is: sqrt, Symbol scope is: 0
+Symbol name is: strtonum, Symbol scope is: 0
+Symbol name is: totalarguments, Symbol scope is: 0
+Symbol name is: typeof, Symbol scope is: 0
+Symbol name is: x, Symbol scope is: 0
+Symbol name is: y, Symbol scope is: 0
+Symbol is here
+Symbol name is: __t0, Symbol scope is: 0
+Symbol name is: argument, Symbol scope is: 0
+Symbol name is: cos, Symbol scope is: 0
+Symbol name is: input, Symbol scope is: 0
+Symbol name is: objectcopy, Symbol scope is: 0
+Symbol name is: objectmemberkeys, Symbol scope is: 0
+Symbol name is: objecttotalmembers, Symbol scope is: 0
+Symbol name is: print, Symbol scope is: 0
+Symbol name is: sin, Symbol scope is: 0
+Symbol name is: sqrt, Symbol scope is: 0
+Symbol name is: strtonum, Symbol scope is: 0
+Symbol name is: totalarguments, Symbol scope is: 0
+Symbol name is: typeof, Symbol scope is: 0
+Symbol name is: x, Symbol scope is: 0
+Symbol name is: y, Symbol scope is: 0
+Symbol is here
 term -> primary
-assignexpr -> lvalue = expression
-$3->type 7		0
-ASSIGN EXPR $$$
-ASSIGN EXPR $$$$
-IN ASSIGN L-VALUE Name is sprite
-ASSIGN EXPR $$$$$
-0
-Symbol sprite is a reference
-member -> lvalue.id
-$3 -> move
-Name move
-Table Item Index is move
-term -> primary
-term -> primary
-call -> lvalue callsuffix
-CALLSUFFIX is __t2
-$2 Method is 0
-__t3
-Result is __t3
-term -> primary
-Symbol sprite is a reference
-Symbol dx is a reference
-term -> primary
-Symbol dy is a reference
-term -> primary
-call -> lvalue callsuffix
-CALLSUFFIX is sprite
-$1->symbol->name sprite
-Name move
-Table Item Index is move
-__t5
-Result is __t5
-term -> primary
+handle_func_w_1arg 2.1.1
+Symbol name is: __t0, Symbol scope is: 0
+Symbol name is: __t1, Symbol scope is: 0
+Symbol is here
+$1->type 0
+ARG 1 0
+ARG 2 0
 INSTR. LINE		OPERATION		RESULT		Arg 1		Arg 2
-0				FUNCSTART 		move
-1				FUNCEND   		move
-2		TABLECREATE  		__t0
-3		TABLESETELEM		__t0		move		0
-4		ASSIGN		sprite			__t0
-ASSIGN EXPR 5
-5		ASSIGN		__t1			sprite
-6				TABLEGETELEM	__t2		sprite			move
-7		PARAM		dy
-8		PARAM		dx
-9		CALL		__t2
-10		GETRETVAL		__t3
-11				TABLEGETELEM	__t4		sprite			move
-12		PARAM		dy
-13		PARAM		dx
-14		PARAM		sprite
-15		CALL		__t4
-16		GETRETVAL		__t5
+ADD EXPR 2
+0		DIV		__t0		x		y
+ADD EXPR 2
+1		ADD		__t1		x		y
 
 __t0	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 0	 (Line) -1	 (Scope) 0 (Space) PROGRAM_VAR	 (Offset) 14	(State: [Active -> 1 | Inactive -> 0]) 1
 __t1	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 0	 (Line) -1	 (Scope) 0 (Space) PROGRAM_VAR	 (Offset) 15	(State: [Active -> 1 | Inactive -> 0]) 1
-__t2	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 0	 (Line) 5	 (Scope) 0 (Space) PROGRAM_VAR	 (Offset) 18	(State: [Active -> 1 | Inactive -> 0]) 1
-__t3	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 0	 (Line) 5	 (Scope) 0 (Space) PROGRAM_VAR	 (Offset) 19	(State: [Active -> 1 | Inactive -> 0]) 1
-__t4	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 0	 (Line) 5	 (Scope) 0 (Space) PROGRAM_VAR	 (Offset) 20	(State: [Active -> 1 | Inactive -> 0]) 1
-__t5	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 0	 (Line) 5	 (Scope) 0 (Space) PROGRAM_VAR	 (Offset) 21	(State: [Active -> 1 | Inactive -> 0]) 1
 argument	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 4	 (Line) -1	 (Scope) 0 (Space) PROGRAM_VAR	 (Offset) 6	(State: [Active -> 1 | Inactive -> 0]) 1
 cos	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 4	 (Line) -1	 (Scope) 0 (Space) PROGRAM_VAR	 (Offset) 10	(State: [Active -> 1 | Inactive -> 0]) 1
-dx	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 0	 (Line) 7	 (Scope) 0 (Space) PROGRAM_VAR	 (Offset) 16	(State: [Active -> 1 | Inactive -> 0]) 1
-dy	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 0	 (Line) 7	 (Scope) 0 (Space) PROGRAM_VAR	 (Offset) 17	(State: [Active -> 1 | Inactive -> 0]) 1
 input	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 4	 (Line) -1	 (Scope) 0 (Space) PROGRAM_VAR	 (Offset) 1	(State: [Active -> 1 | Inactive -> 0]) 1
-move	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 3	 (Line) 1	 (Scope) 0 (Space) PROGRAM_VAR	 (Offset) 12	(State: [Active -> 1 | Inactive -> 0]) 1
 objectcopy	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 4	 (Line) -1	 (Scope) 0 (Space) PROGRAM_VAR	 (Offset) 4	(State: [Active -> 1 | Inactive -> 0]) 1
 objectmemberkeys	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 4	 (Line) -1	 (Scope) 0 (Space) PROGRAM_VAR	 (Offset) 2	(State: [Active -> 1 | Inactive -> 0]) 1
 objecttotalmembers	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 4	 (Line) -1	 (Scope) 0 (Space) PROGRAM_VAR	 (Offset) 3	(State: [Active -> 1 | Inactive -> 0]) 1
 print	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 4	 (Line) -1	 (Scope) 0 (Space) PROGRAM_VAR	 (Offset) 0	(State: [Active -> 1 | Inactive -> 0]) 1
 sin	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 4	 (Line) -1	 (Scope) 0 (Space) PROGRAM_VAR	 (Offset) 11	(State: [Active -> 1 | Inactive -> 0]) 1
-sprite	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 0	 (Line) 5	 (Scope) 0 (Space) PROGRAM_VAR	 (Offset) 13	(State: [Active -> 1 | Inactive -> 0]) 1
 sqrt	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 4	 (Line) -1	 (Scope) 0 (Space) PROGRAM_VAR	 (Offset) 9	(State: [Active -> 1 | Inactive -> 0]) 1
 strtonum	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 4	 (Line) -1	 (Scope) 0 (Space) PROGRAM_VAR	 (Offset) 8	(State: [Active -> 1 | Inactive -> 0]) 1
 totalarguments	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 4	 (Line) -1	 (Scope) 0 (Space) PROGRAM_VAR	 (Offset) 5	(State: [Active -> 1 | Inactive -> 0]) 1
 typeof	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 4	 (Line) -1	 (Scope) 0 (Space) PROGRAM_VAR	 (Offset) 7	(State: [Active -> 1 | Inactive -> 0]) 1
-a	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 2	 (Line) 1	 (Scope) 1 (Space) FORMAL_ARG	 (Offset) 0	(State: [Active -> 1 | Inactive -> 0]) 0
-b	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 2	 (Line) 1	 (Scope) 1 (Space) FORMAL_ARG	 (Offset) 1	(State: [Active -> 1 | Inactive -> 0]) 0
+x	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 0	 (Line) 28	 (Scope) 0 (Space) PROGRAM_VAR	 (Offset) 12	(State: [Active -> 1 | Inactive -> 0]) 1
+y	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 0	 (Line) 28	 (Scope) 0 (Space) PROGRAM_VAR	 (Offset) 13	(State: [Active -> 1 | Inactive -> 0]) 1
 
 
