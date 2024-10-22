@@ -1,0 +1,50 @@
+Scope in handle_funcdef_w_name 0
+handle funcdef with namefoo
+handle_func_w_1arg 1
+handle_func_w_1arg 2
+HANDLE ID is already in symbol table
+In function: 1
+i = 1
+i = 0
+HANDLE ID is already in symbol table
+In function: 1
+i = 1
+i = 0
+Ok Symbol is referred at global symbol y
+HANDLE ID is already in symbol table
+In function: 1
+i = 1
+i = 0
+Scope in handle_funcdef_w_name 1
+handle funcdef with nameg
+Ok Symbol is referred at global symbol x
+HANDLE ID is already in symbol table
+In function: 2
+i = 2
+i = 1
+i = 0
+Ok Symbol is referred at global symbol y
+HANDLE ID is already in symbol table
+In function: 2
+i = 2
+i = 1
+i = 0
+argument	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 4	 (Line) -1	 (Scope) 0	(State: [Active -> 1 | Inactive -> 0]) 1
+cos	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 4	 (Line) -1	 (Scope) 0	(State: [Active -> 1 | Inactive -> 0]) 1
+foo	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 3	 (Line) 6	 (Scope) 0	(State: [Active -> 1 | Inactive -> 0]) 1
+i	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 0	 (Line) 2	 (Scope) 0	(State: [Active -> 1 | Inactive -> 0]) 1
+input	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 4	 (Line) -1	 (Scope) 0	(State: [Active -> 1 | Inactive -> 0]) 1
+objectcopy	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 4	 (Line) -1	 (Scope) 0	(State: [Active -> 1 | Inactive -> 0]) 1
+objectmemberkeys	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 4	 (Line) -1	 (Scope) 0	(State: [Active -> 1 | Inactive -> 0]) 1
+objecttotalmembers	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 4	 (Line) -1	 (Scope) 0	(State: [Active -> 1 | Inactive -> 0]) 1
+print	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 4	 (Line) -1	 (Scope) 0	(State: [Active -> 1 | Inactive -> 0]) 1
+sin	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 4	 (Line) -1	 (Scope) 0	(State: [Active -> 1 | Inactive -> 0]) 1
+sqrt	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 4	 (Line) -1	 (Scope) 0	(State: [Active -> 1 | Inactive -> 0]) 1
+strtonum	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 4	 (Line) -1	 (Scope) 0	(State: [Active -> 1 | Inactive -> 0]) 1
+totalarguments	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 4	 (Line) -1	 (Scope) 0	(State: [Active -> 1 | Inactive -> 0]) 1
+typeof	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 4	 (Line) -1	 (Scope) 0	(State: [Active -> 1 | Inactive -> 0]) 1
+x	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 0	 (Line) 3	 (Scope) 0	(State: [Active -> 1 | Inactive -> 0]) 1
+y	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 0	 (Line) 4	 (Scope) 0	(State: [Active -> 1 | Inactive -> 0]) 1
+g	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 3	 (Line) 10	 (Scope) 1	(State: [Active -> 1 | Inactive -> 0]) 0
+x	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 2	 (Line) 6	 (Scope) 1	(State: [Active -> 1 | Inactive -> 0]) 0
+y	 (Type: [0 -> GLOBAL | 1 -> LOCAL | 2 -> FORMAL | 3 -> USERFUNC | 4 -> LIBFUNC]) 2	 (Line) 6	 (Scope) 1	(State: [Active -> 1 | Inactive -> 0]) 0
