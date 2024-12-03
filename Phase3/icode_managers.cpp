@@ -32,7 +32,7 @@ std::map<expression*, expression*> indexed_map;
 void set_elist_expression(expression* table) {
     int i = 0;
     for (auto& expr : expression_list) {
-        std::cout << "Expression in Brackets is of type " << expr->type << std::endl;
+        //std::cout << "Expression in Brackets is of type " << expr->type << std::endl;
         emit_table_set_item(TABLESETELEM, table, make_constnum_expression(CONSTNUM_EXPR, i), expr);
         i = i + 1;
     }
@@ -69,10 +69,10 @@ void pop_expression_list() {
     return;
 }
 
-void get_last_expression() {
+expression* get_last_expression() {
     //std::cout << "Expression List Size is " << expression_list.size() << std::endl; 
     if (expression_list.size() == 0) {
-        return;
+        return NULL;
     }
 
     for (int i = expression_list.size()-1; i >= 0; i--) {
@@ -82,7 +82,8 @@ void get_last_expression() {
             expression_list.pop_back();
         }
     }
-    return;
+    //expression_list.clear();
+    return reversed_expression_list.back();
 }
 
 void print_expression_list() {
@@ -117,26 +118,29 @@ void print_reversed_expression_list() {
     return;
 }
 
-expression* make_call(expression* lvalue) {
+expression* make_call(expression* lvalue, expression* reversed_elist) {
     //std::cout << "MAKE CALL" << lvalue->symbol->name << std::endl;
     expression* func = emit_if_table_item(lvalue);
-    for (auto& expr : reversed_expression_list) {
-        emit_param(PARAM, expr);
+    //std::cout << "MAKE CALL EMIT IF TABLE ITEM" << func->symbol->name << std::endl;
+    while (reversed_elist != NULL) {
+        //std::cout << "MAKE CALL IN WHILE " << reversed_elist->symbol->name << std::endl;
+        emit_param(PARAM, reversed_elist);
+        reversed_elist = reversed_elist->next;
     }
-    reversed_expression_list.clear();
-    expression_list.clear();
-    //std::cout << "Reversed expression list size " << expression_list.size() << std::endl;
+    
     emit_call(CALL, func);
     SymbolTableEntry new_temp = new_temp_var(lvalue->symbol->line, lvalue->symbol->type);
-    std::cout << new_temp.name << std::endl;
+    //std::cout << new_temp.name << std::endl;
     expression* result = make_lvalue_expression(VAR_EXPR, get_symbol(new_temp.name, get_scope()));
-    std::cout << "Result is " << result->symbol->name << std::endl;
+    //std::cout << "Result is " << result->symbol->name << std::endl;
     emit_get_ret_val(GETRETVAL, result);
     return result;
 }
 
 void emit_arithm_one(iopcode op, expression* result, expression* arg1) {
+    //std::cout << "term -> - expression emit_arithm_one " << result->type << std::endl;
     quad_table.push_back(make_quad(op, result, arg1, NULL, UINT_MAX, line_op_counter));
+    //std::cout << "term -> - expression emit_arithm_one after quad_table pushback" << std::endl;
     line_op_counter++;
     return;
 }
@@ -154,89 +158,89 @@ void emit_assign(iopcode op, expression* result, expression* arg1) {
 }
 
 void emit_add(iopcode op, expression* result, expression* arg1, expression* arg2) {
-    std::cout << "ARG 1 " << arg1->type << std::endl;
-    std::cout << "ARG 2 " << arg2->type << std::endl;
+    //std::cout << "ARG 1 " << arg1->type << std::endl;
+    //std::cout << "ARG 2 " << arg2->type << std::endl;
     quad_table.push_back(make_quad(op, result, arg1, arg2, UINT_MAX, line_op_counter));
     line_op_counter++;
     return;
 }
 
 void emit_sub(iopcode op, expression* result, expression* arg1, expression* arg2) {
-    std::cout << "ARG 1 " << arg1->type << "  " << arg1->symbol->name << std::endl;
-    std::cout << "ARG 2 " << arg2->type << std::endl;
+    //std::cout << "ARG 1 " << arg1->type << "  " << arg1->symbol->name << std::endl;
+    //std::cout << "ARG 2 " << arg2->type << std::endl;
     quad_table.push_back(make_quad(op, result, arg1, arg2, UINT_MAX, line_op_counter));
     line_op_counter++;
     return;
 }
 
 void emit_mul(iopcode op, expression* result, expression* arg1, expression* arg2) {
-    std::cout << "ARG 1 " << arg1->type << "  " << arg1->symbol->name << std::endl;
-    std::cout << "ARG 2 " << arg2->type << std::endl;
+    //std::cout << "ARG 1 " << arg1->type << "  " << arg1->symbol->name << std::endl;
+    //std::cout << "ARG 2 " << arg2->type << std::endl;
     quad_table.push_back(make_quad(op, result, arg1, arg2, UINT_MAX, line_op_counter));
     line_op_counter++;
     return;
 }
 
 void emit_div(iopcode op, expression* result, expression* arg1, expression* arg2) {
-    std::cout << "ARG 1 " << arg1->type << "  " << arg1->symbol->name << std::endl;
-    std::cout << "ARG 2 " << arg2->type << std::endl;
+    //std::cout << "ARG 1 " << arg1->type << "  " << arg1->symbol->name << std::endl;
+    //std::cout << "ARG 2 " << arg2->type << std::endl;
     quad_table.push_back(make_quad(op, result, arg1, arg2, UINT_MAX, line_op_counter));
     line_op_counter++;
     return;
 }
 
 void emit_mod(iopcode op, expression* result, expression* arg1, expression* arg2) {
-    std::cout << "ARG 1 " << arg1->type << "  " << arg1->symbol->name << std::endl;
-    std::cout << "ARG 2 " << arg2->type << std::endl;
+    //std::cout << "ARG 1 " << arg1->type << "  " << arg1->symbol->name << std::endl;
+    //std::cout << "ARG 2 " << arg2->type << std::endl;
     quad_table.push_back(make_quad(op, result, arg1, arg2, UINT_MAX, line_op_counter));
     line_op_counter++;
     return;
 }
 
 void emit_if_greater(iopcode op, expression* result, expression* arg1, unsigned label) {
-    std::cout << "Quad Label is " << label << std::endl;
+    //std::cout << "Quad Label is " << label << std::endl;
     quad_table.push_back(make_quad(op, result, arg1, NULL, label, line_op_counter));
     line_op_counter++;
     return;
 }
 
 void emit_if_less(iopcode op, expression* result, expression* arg1, unsigned label) {
-    std::cout << "Quad Label is " << label << std::endl;
+    //std::cout << "Quad Label is " << label << std::endl;
     quad_table.push_back(make_quad(op, result, arg1, NULL, label, line_op_counter));
     line_op_counter++;
     return;
 }
 
 void emit_if_greatereq(iopcode op, expression* result, expression* arg1, unsigned label) {
-    std::cout << "Quad Label is " << label << std::endl;
+    //std::cout << "Quad Label is " << label << std::endl;
     quad_table.push_back(make_quad(op, result, arg1, NULL, label, line_op_counter));
     line_op_counter++;
     return;
 }
 
 void emit_if_lesseq(iopcode op, expression* result, expression* arg1, unsigned label) {
-    std::cout << "Quad Label is " << label << std::endl;
+    //std::cout << "Quad Label is " << label << std::endl;
     quad_table.push_back(make_quad(op, result, arg1, NULL, label, line_op_counter));
     line_op_counter++;
     return;
 }
 
 void emit_if_equal(iopcode op, expression* result, expression* arg1, unsigned label) {
-    std::cout << "Quad Label is " << label << std::endl;
+    //std::cout << "Quad Label is " << label << std::endl;
     quad_table.push_back(make_quad(op, result, arg1, NULL, label, line_op_counter));
     line_op_counter++;
     return;
 }
 
 void emit_if_not_equal(iopcode op, expression* result, expression* arg1, unsigned label) {
-    std::cout << "Quad Label is " << label << std::endl;
+    //std::cout << "Quad Label is " << label << std::endl;
     quad_table.push_back(make_quad(op, result, arg1, NULL, label, line_op_counter));
     line_op_counter++;
     return;
 }
 
 void emit_jump(iopcode op, unsigned label) {
-    std::cout << "Quad Label is " << op << std::endl;
+    //std::cout << "Quad Label is " << op << std::endl;
     quad_table.push_back(make_quad(op, NULL, NULL, NULL, label, line_op_counter));
     line_op_counter++;
     return;
@@ -249,15 +253,16 @@ void emit_table_get_item(iopcode op, expression* result, expression* arg1, expre
 }
 
 void emit_table_set_item(iopcode op, expression* result, expression* arg1, expression* arg2) {
-    std::cout << arg1->type << std::endl;
+    //std::cout << arg1->type << std::endl;
     quad_table.push_back(make_quad(op, result, arg1, arg2, UINT_MAX, line_op_counter));
     line_op_counter++;
     return;
 }
 
 expression* emit_if_table_item(expression* lvalue) {
-    //std::cout << lvalue->type << std::endl;
+    //std::cout << "L-value TYPE: " << lvalue->type << std::endl;
     if (lvalue->type != TABLEITEM_EXPR) {
+        //std::cout << "HERE 1" << std::endl;
         return lvalue;
     } else {
         //std::cout << "HERE 1" << std::endl;
@@ -272,8 +277,9 @@ expression* emit_if_table_item(expression* lvalue) {
 }
 
 void emit_funcdef(iopcode op, expression* result) {
-    std::cout << "HERE" << std::endl;
+    //std::cout << "HERE" << std::endl;
     quad_table.push_back(make_quad(op, result, NULL, NULL, UINT_MAX, line_op_counter));
+    //std::cout << "HERE After PUSHBACK" << std::endl;
     line_op_counter++;
     return;
 }
@@ -334,13 +340,14 @@ expression* make_bool_expression(expr_value type, SymbolTableEntry* symbol) {
 }
 
 expression* make_lvalue_expression(expr_value type, SymbolTableEntry* symbol) {
+    //std::cout << "MAKE LVALUE EXPR" << std::endl;
+    //std::cout << "MAKE LVALUE EXPR Symbol: " << symbol->name << std::endl;
     expression* new_expression = new expression;
 
     new_expression->type = type;
     new_expression->symbol = symbol;
 
-    //expression_list.push_back(new_expression);
-
+    //std::cout << "MAKE LVALUE EXPR NEW EXPR Symbol: " << new_expression->symbol->name << std::endl;
     return new_expression;
 }
 
@@ -403,19 +410,20 @@ expression* make_nil_expression(expr_value type) {
 expression* member_item(expression* lvalue, std::string name) {
     
     lvalue = emit_if_table_item(lvalue);
-    std::cout << "Name " << name << std::endl;
+    //std::cout << "Name " << name << std::endl;
     expression* table_item = make_table_item_expression(TABLEITEM_EXPR, lvalue->symbol, make_conststring_expression(CONSTSTRING_EXPR, name));
-    std::cout << "Table Item Index is " << table_item->index->str_const << std::endl;
+    //std::cout << "Table Item Index is " << table_item->index->str_const << std::endl;
     return table_item;
 }
 
 expression* make_func_expression(expr_value type, SymbolTableEntry* symbol) {
+    std::cout << "MAKE FUNC EXPRESSION" << std::endl;
     expression* new_expression = new expression;
 
     new_expression->type = type;
     new_expression->symbol = symbol;
     
-    expression_list.push_back(new_expression);
+    //expression_list.push_back(new_expression);
 
     return new_expression;
 }
@@ -438,7 +446,7 @@ void quad_table_print() {
             case 0:
                 //std::cout << "ASSIGN EXPR 3" << std::endl;
                 if (quad.result->type != ASSIGN_EXPR) {
-                    //std::cout << "ASSIGN EXPR 3 is of type " << quad.result->symbol->name << std::endl;
+                    //std::cout << "ASSIGN EXPR 3 is of type " << std::endl;
                     if (quad.arg1->type == VAR_EXPR) {
                         //std::cout << "ASSIGN EXPR 4" << std::endl;
                         std::cout << quad.line << "\t\t" << "ASSIGN" << "\t\t" << quad.result->symbol->name << "\t\t\t" << quad.arg1->symbol->name << std::endl;
@@ -449,7 +457,10 @@ void quad_table_print() {
                         break;
                     } else
                     if (quad.arg1->type == CONSTNUM_EXPR) {
-                        //std::cout << "ASSIGN EXPR 3" << std::endl;
+                        //std::cout << "ASSIGN EXPR 3_COSTNUM" << std::endl;
+                        if (quad.result->symbol == NULL) {
+                           
+                        }
                         std::cout << quad.line << "\t\t" << "ASSIGN" << "\t\t" << quad.result->symbol->name << "\t\t\t" << quad.arg1->num_const << std::endl;
                         break;
                     } else if (quad.arg1->type == CONSTBOOL_EXPR) {
@@ -460,7 +471,7 @@ void quad_table_print() {
                         break;
                     }
                 } else {
-                    std::cout << "ASSIGN EXPR 5" << std::endl;
+                    //std::cout << "ASSIGN EXPR 5" << std::endl;
                     if (quad.result->symbol == NULL) {
                         break;
                     } else {
@@ -471,11 +482,11 @@ void quad_table_print() {
                 break;
             case 1:
                 if (quad.arg1->type == VAR_EXPR && quad.arg2->type == VAR_EXPR) {
-                    std::cout << "ADD EXPR 2" << std::endl;
+                    //std::cout << "ADD EXPR 2" << std::endl;
                     std::cout << quad.line << "\t\t" << "ADD" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.arg2->symbol->name << std::endl;
                     break;
                 } else if (quad.arg1->type == VAR_EXPR && quad.arg2->type == CONSTNUM_EXPR) {
-                    std::cout << "ADD EXPR 3" << std::endl;
+                    //std::cout << "ADD EXPR 3" << std::endl;
                     std::cout << quad.line << "\t\t" << "ADD" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.arg2->num_const << std::endl;
                     break;
                 } else if (quad.arg1->type == ARITHM_EXPR && quad.arg2->type == ARITHM_EXPR) {
@@ -496,11 +507,11 @@ void quad_table_print() {
                 break;
             case 2:
                 if (quad.arg1->type == VAR_EXPR && quad.arg2->type == VAR_EXPR) {
-                    std::cout << "ADD EXPR 2" << std::endl;
+                    //std::cout << "ADD EXPR 2" << std::endl;
                     std::cout << quad.line << "\t\t" << "SUB" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.arg2->symbol->name << std::endl;
                     break;
                 } else if (quad.arg1->type == VAR_EXPR && quad.arg2->type == CONSTNUM_EXPR) {
-                    std::cout << "ADD EXPR 3" << std::endl;
+                    //std::cout << "ADD EXPR 3" << std::endl;
                     std::cout << quad.line << "\t\t" << "SUB" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.arg2->num_const << std::endl;
                     break;
                 } else {
@@ -517,11 +528,11 @@ void quad_table_print() {
                 break;
             case 3:
                 if (quad.arg1->type == VAR_EXPR && quad.arg2->type == VAR_EXPR) {
-                    std::cout << "ADD EXPR 2" << std::endl;
+                    //std::cout << "ADD EXPR 2" << std::endl;
                     std::cout << quad.line << "\t\t" << "MUL" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.arg2->symbol->name << std::endl;
                     break;
                 } else if (quad.arg1->type == VAR_EXPR && quad.arg2->type == CONSTNUM_EXPR) {
-                    std::cout << "ADD EXPR 3" << std::endl;
+                    //std::cout << "ADD EXPR 3" << std::endl;
                     std::cout << quad.line << "\t\t" << "MUL" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.arg2->num_const << std::endl;
                     break;
                 } else {
@@ -538,11 +549,11 @@ void quad_table_print() {
                 break;
             case 4:
                 if (quad.arg1->type == VAR_EXPR && quad.arg2->type == VAR_EXPR) {
-                    std::cout << "ADD EXPR 2" << std::endl;
+                    //std::cout << "ADD EXPR 2" << std::endl;
                     std::cout << quad.line << "\t\t" << "DIV" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.arg2->symbol->name << std::endl;
                     break;
                 } else if (quad.arg1->type == VAR_EXPR && quad.arg2->type == CONSTNUM_EXPR) {
-                    std::cout << "ADD EXPR 3" << std::endl;
+                    //std::cout << "ADD EXPR 3" << std::endl;
                     std::cout << quad.line << "\t\t" << "DIV" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.arg2->num_const << std::endl;
                     break;
                 } else {
@@ -559,11 +570,11 @@ void quad_table_print() {
                 break;
             case 5:
                 if (quad.arg1->type == VAR_EXPR && quad.arg2->type == VAR_EXPR) {
-                    std::cout << "ADD EXPR 2" << std::endl;
+                    //std::cout << "ADD EXPR 2" << std::endl;
                     std::cout << quad.line << "\t\t" << "MOD" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.arg2->symbol->name << std::endl;
                     break;
                 } else if (quad.arg1->type == VAR_EXPR && quad.arg2->type == CONSTNUM_EXPR) {
-                    std::cout << "ADD EXPR 3" << std::endl;
+                    //std::cout << "ADD EXPR 3" << std::endl;
                     std::cout << quad.line << "\t\t" << "MOD" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.arg2->num_const << std::endl;
                     break;
                 } else {
@@ -579,7 +590,11 @@ void quad_table_print() {
                 }
                 break;
             case 6:
-                std::cout << quad.line << "\t\t" << "UMINUS" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << std::endl;
+                if (quad.arg1->type == CONSTNUM_EXPR){
+                    std::cout << quad.line << "\t\t" << "UMINUS" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << std::endl;
+                } else {
+                    std::cout << quad.line << "\t\t" << "UMINUS" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << std::endl;
+                }
                 break;
             case 7:
                 std::cout << quad.line << "\t\t" << "AND" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.arg2->symbol->name << std::endl;
@@ -615,6 +630,9 @@ void quad_table_print() {
                 if (quad.result->type == CONSTNUM_EXPR) {
                     std::cout << quad.line << "\t\t" << "PARAM" << "\t\t" << quad.result->num_const << std::endl;
                     break;
+                } else if (quad.result->type == CONSTSTRING_EXPR) {
+                    std::cout << quad.line << "\t\t" << "PARAM" << "\t\t" << quad.result->str_const << std::endl;
+                    break;
                 } else {
                     std::cout << quad.line << "\t\t" << "PARAM" << "\t\t" << quad.result->symbol->name << std::endl;
                     break;
@@ -639,8 +657,9 @@ void quad_table_print() {
                 if (quad.arg2->type == CONSTNUM_EXPR) {
                     std::cout << quad.line << "\t\t\t\t" << "TABLEGETELEM" << "\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t\t" << quad.arg2->num_const << std::endl;
                     break;
+                } else { 
+                    std::cout << quad.line << "\t\t\t\t" << "TABLEGETELEM" << "\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t\t" << quad.arg2->str_const << std::endl;
                 }
-                std::cout << quad.line << "\t\t\t\t" << "TABLEGETELEM" << "\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t\t" << quad.arg2->str_const << std::endl;
                 break;
             case 24:
                 if (quad.arg1->type == CONSTNUM_EXPR) {
@@ -664,6 +683,8 @@ void quad_table_print() {
                         //std::cout << "TABLESETELEM HERE 3" << std::endl;
                         std::cout << quad.line << "\t\t" << "TABLESETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << quad.arg2->symbol->name << std::endl;
                         break;
+                    } else if (quad.arg2->type == ARITHM_EXPR) {
+                        std::cout << quad.line << "\t\t" << "TABLESETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << quad.arg2->symbol->name << std::endl;
                     } else {
                         //std::cout << "Quad Arg2 Type is " << quad.arg2->type << std::endl;
                         //std::cout << "TABLESETELEM HERE 2" << std::endl;
@@ -684,7 +705,7 @@ void quad_table_print() {
                     break;
                 } else {
                     if (quad.arg2->type == CONSTNUM_EXPR) {
-                        std::cout << "TABLESETELEM HERE 1" << std::endl;
+                        //std::cout << "TABLESETELEM HERE 1" << std::endl;
                         std::cout << quad.line << "\t\t" << "TABLESETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.arg2->num_const << std::endl;
                         break;
                     }
@@ -833,8 +854,7 @@ bool check_if_is_arithm(expression* expr) {
 }
 
 bool check_if_is_arithm_alt(expression* expr) {
-    if (expr->type == CONSTSTRING_EXPR || expr->type == NIL_EXPR || expr->type == PROGRAMFUNC_EXPR 
-        || expr->type == LIBFUNC_EXPR) {
+    if (expr->type == CONSTSTRING_EXPR || expr->type == NIL_EXPR) {
         return false;
     }
     return true;
@@ -855,9 +875,9 @@ expression* manage_expr_plus_expr(expression* result, expression* expr1, express
             type = LOCAL;
         }
         SymbolTableEntry new_temp = new_temp_var(-1, type);
-        //std::cout << new_temp.scope << std::endl;
+        std::cout << new_temp.scope << std::endl;
         result = make_arithm_expression(ARITHM_EXPR, get_symbol(new_temp.name, get_scope()));
-        //std::cout << "$1->type " << expr1->type << std::endl;
+        std::cout << "$1->type " << expr1->type << std::endl;
         emit_add(ADD, result, expr1, expr2);
    }
    return result;
@@ -1014,9 +1034,11 @@ expression* manage_expr_not_eq_expr(expression* result, expression* expr1, expre
     return result;
 }
 
-expression* manage_minus_expr(expression* result, expression* expr1) {
-    //printf("term -> - expression\n");
+expression* manage_uminus_expr(expression* result, expression* expr1) {
+    //std::cout << "term -> - expression" << std::endl;
     if (check_if_is_arithm(expr1)) {
+        //std::cout << "term -> - expression in check_if_is_arithm" << std::endl;
+
         SymbolType type = GLOBAL;
         if (get_scope() != 0) {
             type = LOCAL;
@@ -1024,6 +1046,8 @@ expression* manage_minus_expr(expression* result, expression* expr1) {
         SymbolTableEntry new_temp = new_temp_var(-1, type);
         std::cout << new_temp.scope << std::endl;
         result = make_arithm_expression(ARITHM_EXPR, get_symbol(new_temp.name, get_scope()));
+        //std::cout << "term -> - expression after make_arithm_expression" << std::endl;
+
         emit_arithm_one(UMINUS, result, expr1);
     }
     return result;
@@ -1064,6 +1088,9 @@ expression* manage_db_plus_lvalue(expression* result, expression* expr1) {
                 emit_assign(ASSIGN, result, expr1);
                 
             }
+        } else {
+            std::cout <<"Error r-value: " << expr1->symbol->name << "is not arithmetic value" << std::endl;
+            return NULL;
         }
     }
 
@@ -1087,10 +1114,13 @@ expression* manage_lvalue_db_plus(expression* result, expression* expr1) {
                 emit_add(ADD, val, val, make_constnum_expression(CONSTNUM_EXPR, 1));
                 emit_table_set_item(TABLESETELEM, expr1, expr1->index, val);
             } else {
-                std::cout << "EMIT ASSIGN 1" << std::endl;
+                //std::cout << "EMIT ASSIGN 1" << std::endl;
                 emit_assign(ASSIGN, result, expr1);
                 emit_add(ADD, expr1, expr1, make_constnum_expression(CONSTNUM_EXPR, 1));
             }
+        } else {
+            std::cout <<"Error r-value: " << expr1->symbol->name << "is not arithmetic value" << std::endl;
+            return NULL;
         }
     }
     return result;
@@ -1118,6 +1148,9 @@ expression* manage_db_minus_lvalue(expression* result, expression* expr1) {
                 emit_assign(ASSIGN, result, expr1);
                 
             }
+        } else {
+            std::cout <<"Error r-value: " << expr1->symbol->name << "is not arithmetic value" << std::endl;
+            return NULL;
         }
     }
 
@@ -1141,10 +1174,13 @@ expression* manage_lvalue_db_minus(expression* result, expression* expr1) {
                 emit_sub(SUB, val, val, make_constnum_expression(CONSTNUM_EXPR, 1));
                 emit_table_set_item(TABLESETELEM, expr1, expr1->index, val);
             } else {
-                std::cout << "EMIT ASSIGN 1" << std::endl;
+                //std::cout << "EMIT ASSIGN 1" << std::endl;
                 emit_assign(ASSIGN, result, expr1);
                 emit_sub(SUB, expr1, expr1, make_constnum_expression(CONSTNUM_EXPR, 1));
             }
+        } else {
+            std::cout <<"Error r-value: " << expr1->symbol->name << "is not arithmetic value" << std::endl;
+            return NULL;
         }
     }
 
@@ -1153,9 +1189,9 @@ expression* manage_lvalue_db_minus(expression* result, expression* expr1) {
 
 expression* manage_assign_expr(expression* result, expression* expr1, expression* expr2) {
     
-    std::cout << "$3->type " << expr2->type << "\t\t" << expr2->num_const << std::endl;
+    //std::cout << "MANAGE ASSIGN EXPR" << std::endl;
     if (handle_expr(expr1->symbol->name, expr1->type) == 0) {
-        std::cout << "ASSIGN EXPR $$$" << std::endl;
+        //std::cout << "ASSIGN EXPR $$$" << std::endl;
         if (expr1->type == TABLEITEM_EXPR) {
             //std::cout << "Expression has symbol " << $3->symbol->name << std::endl;
             emit_table_set_item(TABLESETELEM, expr1, expr1->index, expr2);
@@ -1163,11 +1199,11 @@ expression* manage_assign_expr(expression* result, expression* expr1, expression
             result->type = ASSIGN_EXPR;
             //std::cout << "ASSIGN EXPR 2" << std::endl;
         } else {
-            std::cout << "ASSIGN EXPR $$$$" << std::endl;
-            std::cout << "IN ASSIGN L-VALUE Name is "<< expr1->symbol->name << std::endl;
+            //std::cout << "ASSIGN EXPR $$$$" << std::endl;
+            //std::cout << "IN ASSIGN L-VALUE Name is "<< expr1->symbol->name << std::endl;
             //std::cout << "IN ASSIGN EXPRESSION is " << $3->symbol->name << std::endl;
             if (check_if_is_arithm_alt(expr1) == true && check_if_is_arithm_alt(expr2) == true) {
-                std::cout << "ASSIGN EXPR $$$$$" << std::endl;
+                //std::cout << "ASSIGN EXPR $$$$$" << std::endl;
                 emit_assign(ASSIGN, expr1, expr2);
 
                 SymbolType type = GLOBAL;
@@ -1193,20 +1229,54 @@ expression* manage_assign_expr(expression* result, expression* expr1, expression
 }
 
 expression* manage_lvalue_id(expression* result, std::string symbol, int line_num) {
-    handle_id(symbol, get_scope(), line_num, curr_scope_space(), curr_scope_offset());
-    if (get_symbol(symbol, get_scope())->type == LIBFUNC) {
-        result = make_lvalue_expression(LIBFUNC_EXPR, get_symbol(symbol, get_scope()));
+    std::cout << "MANAGE LVALUE ID" << std::endl;
+    int symbol_flag = handle_id(symbol, get_scope(), line_num, curr_scope_space(), curr_scope_offset());
+    std::cout << "MANAGE LVALUE ID AFTER HANDLE ID Symbol Flag: " << symbol_flag << std::endl;
+    if (symbol_flag == 1) {
+        if (get_symbol(symbol, get_scope())->type == LIBFUNC) {
+            //std::cout << "MANAGE LVALUE ID LIBFUNC" << std::endl;
+            result = make_lvalue_expression(LIBFUNC_EXPR, get_symbol(symbol, get_scope()));
 
-    } else if (get_symbol(symbol, get_scope())->type == USERFUNC) {
-        result = make_lvalue_expression(PROGRAMFUNC_EXPR, get_symbol(symbol, get_scope()));
+        } else if (get_symbol(symbol, get_scope())->type == USERFUNC) {
+            //std::cout << "MANAGE LVALUE ID USERFUNC" << std::endl;
+            result = make_lvalue_expression(PROGRAMFUNC_EXPR, get_symbol(symbol, get_scope()));
+            //std::cout << "MANAGE LVALUE ID USERFUNC AFTER" << std::endl;
+        } else {
+            std::cout << "MANAGE LVALUE ID OTHERWISE" << std::endl;
+            std::cout << "GET SYMBOL: " << get_symbol(symbol, get_scope())->name << std::endl;
+            result = make_lvalue_expression(VAR_EXPR, get_symbol(symbol, get_scope()));
+        }
+    } else if (symbol_flag == 0) {
+        //std::cout << "GET SYMBOL NAME: " << get_symbol(symbol, 1)->name << std::endl;
+        for (int i = 0; i <= get_scope(); i++) {
+            if (get_symbol(symbol, i) != NULL) {
+                //std::cout << "GET SYMBOL TYPE: " << get_symbol(symbol, i)->name << std::endl;
+                if (get_symbol(symbol, i)->type == LIBFUNC) {
+                    //std::cout << "MANAGE LVALUE ID LIBFUNC" << std::endl;
+                    result = make_lvalue_expression(LIBFUNC_EXPR, get_symbol(symbol, i));
+                    continue;
+                } else if (get_symbol(symbol, i)->type == USERFUNC) {
+                    //std::cout << "MANAGE LVALUE ID USERFUNC" << std::endl;
+                    result = make_lvalue_expression(PROGRAMFUNC_EXPR, get_symbol(symbol, i));
+                    //std::cout << "MANAGE LVALUE ID USERFUNC AFTER" << std::endl;
+                    continue;
+                } else {
+                    std::cout << "MANAGE LVALUE ID OTHERWISE" << std::endl;
+                    std::cout << "GET SYMBOL: " << get_symbol(symbol, i)->name << std::endl;
+                    result = make_lvalue_expression(VAR_EXPR, get_symbol(symbol, i));
+                    std::cout << "MANAGE LVALUE ID OTHERWISE AFTER MAKE LVALUE EXPR" << std::endl;
+                    continue;
+                }
+            }
+        }
     } else {
-        result = make_lvalue_expression(VAR_EXPR, get_symbol(symbol, get_scope()));
+        return NULL;
     }
-
     return result;
 }
 
 expression* manage_lvalue_local_id(expression* result, std::string symbol, int line_num) {
+    //std::cout << "Current Scope Space: " << curr_scope_space() << ", Current Scope Offset: " << curr_scope_offset() << std::endl;
     handle_local_id(symbol, get_scope(), line_num, curr_scope_space(), curr_scope_offset());
     if (get_symbol(symbol, get_scope())->type == LIBFUNC) {
         result = make_lvalue_expression(LIBFUNC_EXPR, get_symbol(symbol, get_scope()));
@@ -1240,24 +1310,32 @@ expression* manage_lvalue_lbr_expr_rbr(expression* result, expression* expr1, ex
     return result;
 }
 
-expression* manage_lvalue_callsuffix(expression* result, expression* expr1, std::string name, int method) {
-    expr1 = emit_if_table_item(expr1);
+expression* manage_lvalue_callsuffix(expression* result, expression* lvalue, expression* callsuffix, int method) {
+    //std::cout << "MANAGE LVALUE CALLSUFFIX" << std::endl;
+    lvalue = emit_if_table_item(lvalue);
     if (method == 0) {
     
-        if (expr1->type == LIBFUNC_EXPR || expr1->type == PROGRAMFUNC_EXPR || expr1->type == VAR_EXPR) {
+        if (lvalue->type == LIBFUNC_EXPR || lvalue->type == PROGRAMFUNC_EXPR || lvalue->type == VAR_EXPR) {
             
         } else {
-            push_expression_list(expr1);
-            get_last_expression();
-            expr1 = emit_if_table_item(member_item(expr1, expr1->index->str_const));
+            while (callsuffix) {
+                callsuffix = callsuffix->next;
+            }
+            callsuffix->next = lvalue;
+            lvalue = emit_if_table_item(member_item(lvalue, callsuffix->symbol->name));
         }
     } else {
-        push_expression_list(expr1);
-        get_last_expression();
-        expr1 = emit_if_table_item(member_item(expr1, name));
-        
+        if (lvalue->type == LIBFUNC_EXPR || lvalue->type == PROGRAMFUNC_EXPR || lvalue->type == VAR_EXPR) {
+            
+        } else {
+            while (callsuffix) {
+                callsuffix = callsuffix->next;
+            }
+            callsuffix->next = lvalue;
+            lvalue = emit_if_table_item(member_item(lvalue, callsuffix->symbol->name));
+        }
     }
-    result = make_call(expr1);
+    result = make_call(lvalue, callsuffix);
     if (get_scope() > 0) {
         quad_table_print();
     }
@@ -1275,6 +1353,7 @@ SymbolTableEntry* manage_funcprefix(SymbolTableEntry* symbol, std::string name, 
         set_scope_space_counter(3);
         push_formal_arg_offset_table();
     } else {
+        //std::cout << "Manage_funcprefix_w_name" << std::endl;
         handle_funcdef_w_name(name, get_scope(), line_num, curr_scope_space(), curr_scope_offset());
         symbol = get_symbol(name, get_scope());
         symbol->i_address = next_quad_label();
@@ -1285,4 +1364,56 @@ SymbolTableEntry* manage_funcprefix(SymbolTableEntry* symbol, std::string name, 
         push_formal_arg_offset_table();
     }
     return symbol;
+}
+
+expression* manage_funcdef(SymbolTableEntry* symbol, unsigned funcbody) {
+    std::cout << "MANAGE FUNCDEF" << std::endl;
+    symbol->total_locals = funcbody;
+    expression* res = make_func_expression(PROGRAMFUNC_EXPR, symbol);
+    std::cout << "AFTER MAKE FUNC EXPRESSION" << std::endl;
+    emit_funcdef(FUNCEND,res);
+    std::cout << "AFTER EMIT FUNCDEF" << std::endl;
+    handle_funcdef_block_end(get_scope());
+    std::cout << "AFTER HANDLE FUNCDEF BLOCK END" << std::endl;
+    return res;
+}
+
+expression* manage_lbr_elist_rbr(expression* objectdef, expression* elist) {
+    //std::cout << "OBJECTDEF" << std::endl;
+    SymbolType type = GLOBAL;
+    if (get_scope() != 0) {
+        type = LOCAL;
+    }
+    SymbolTableEntry new_temp = new_temp_var(-1, type);
+    expression* table = make_new_table_expression(NEWTABLE_EXPR, get_symbol(new_temp.name, get_scope()));
+    emit_table_create(TABLECREATE, table);
+    std::list<expression*> e_list;
+    
+    while (elist) {
+        e_list.push_front(elist);
+        elist = elist->next;
+    }
+    int i = 0;
+    for (auto& e : e_list) {
+        emit_table_set_item(TABLESETELEM, table, make_constnum_expression(CONSTNUM_EXPR, i++), e);
+    }
+    objectdef = table;
+
+    return objectdef;
+}
+
+expression* manage_lbr_indexed_rbr(expression* objectdef, expression* indexed) {
+    //printf("objectdef -> [indexed]\n");
+    SymbolType type = GLOBAL;
+    if (get_scope() != 0) {
+        type = LOCAL;
+    }
+    SymbolTableEntry new_temp = new_temp_var(-1, type);
+    std::cout << new_temp.name << std::endl;
+    expression* table = make_new_table_expression(NEWTABLE_EXPR, get_symbol(new_temp.name, get_scope()));
+    emit_table_create(TABLECREATE, table);
+    set_indexed_map(table);
+    objectdef = table;
+
+    return objectdef;
 }

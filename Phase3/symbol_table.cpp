@@ -132,13 +132,13 @@ void print_symtable_inactive() {
 void insert(std::string name, int scope, int line, scope_space space, unsigned offset, SymbolType type) {
     if (is_scope_change(symbol_table_alt.size(), scope) == 0) {
         //std::cout << "LOCAL" << std::endl;
-        std::cout << "handle_func_w_1arg 2.1.1" << std::endl;
+        //std::cout << "handle_func_w_1arg 2.1.1" << std::endl;
         symbol_table_alt.back()[name] = make_entry(name, scope, line, space, offset, type);
         inc_curr_scope_offset();
         symbol_table_alt.back()[name].isActive = true;
         
     } else {
-        std::cout << "handle_func_w_1arg 2.1.2" << std::endl;
+        //std::cout << "handle_func_w_1arg 2.1.2" << std::endl;
         push_vector(); // isos na prepei na kaneis push sta action tou parser
         
         symbol_table_alt.back()[name] = make_entry(name, scope, line, space, offset, type);
@@ -151,13 +151,14 @@ void insert(std::string name, int scope, int line, scope_space space, unsigned o
 SymbolTableEntry* get_symbol(std::string name, int scope) {
     //std::cout << "Symbol name is: " << name << ", " << "Symbol scope is: " << scope << std::endl; 
     for (auto& symbol : symbol_table_alt.at(scope)) {
-        std::cout << "Symbol name is: " << symbol.first << ", " << "Symbol scope is: " << symbol.second.scope << std::endl;
+        //std::cout << "Symbol name is: " << symbol.first << ", " << "Symbol scope is: " << symbol.second.scope << std::endl;
         if (symbol.first == name && symbol.second.scope == scope && symbol.second.isActive == true) {
-            std::cout << "Symbol is here" << std::endl;
+            //std::cout << "Symbol is here" << std::endl;
             //make_entry(symbol.second.name, symbol.second.scope, symbol.second.line, symbol.second.space, symbol.second.offset, symbol.second.type);
             return &symbol.second;
         }
     }
+    return NULL;
 }
 
 bool lookup_at_scope(std::string name, int scope) {
@@ -274,6 +275,7 @@ void hide() {
     for (auto& symbol : symbol_table_alt.back()) {
         symbol.second.isActive = false;
     }
+
     push_vector_inactive(symbol_table_alt.back());
     symbol_table_alt.pop_back();
     return;

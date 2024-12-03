@@ -13,7 +13,7 @@ void handle_break_st();
 void handle_continue_st();
 int handle_expr(std::string, int);
 int has_access(std::string);
-void handle_id(std::string, int, int, scope_space, unsigned);
+int handle_id(std::string, int, int, scope_space, unsigned);
 void handle_local_id(std::string, int, int, scope_space, unsigned);
 void handle_global_access_id(std::string);
 void handle_funcdef_w_name(std::string, int, int, scope_space, unsigned);

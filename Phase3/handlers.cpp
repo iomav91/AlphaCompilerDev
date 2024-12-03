@@ -27,7 +27,7 @@ void handle_return_st() {
 }
 
 void handle_break_st() {
-    std::cout << "In loop: " << is_in_loop_mode << std::endl;
+    //std::cout << "In loop: " << is_in_loop_mode << std::endl;
     if (is_in_loop_mode == 0) {
         std::cout << "Error break statement while not in a loop" << std::endl;
     }
@@ -57,12 +57,13 @@ int handle_expr(std::string name, int type) {
 }
 
 int has_access(std::string name) {
-    std::cout << "In function: " << is_in_function_mode << std::endl;
+    //std::cout << "In function: " << is_in_function_mode << std::endl;
     if (is_in_function_mode != 0) {
         for (int i = get_scope(); i>=0; i--) {
-            std::cout << "i = " << i << std::endl;
+            //std::cout << "i = " << i << std::endl;
         
             if (lookup_at_scope(name,i)) {
+                //std::cout << "name, i = " << name << ", " << i << std::endl;
                 if (lookup_and_return_scope(name) != get_scope() && lookup_and_return_scope(name) != 0) {
                     if (!is_a_func_name(name) && !is_a_lib_func(name)) {
                         if (is_in_function_mode <= get_scope() && get_scope() != 1) {
@@ -76,7 +77,7 @@ int has_access(std::string name) {
     return 1;
 }
 
-void handle_id(std::string name, int scope, int line, scope_space space, unsigned offset) {
+int handle_id(std::string name, int scope, int line, scope_space space, unsigned offset) {
     if (!lookup(name)) {
     	//std::cout << "false Scope " << scope << std::endl;
         
@@ -91,13 +92,14 @@ void handle_id(std::string name, int scope, int line, scope_space space, unsigne
         std::cout << "HANDLE ID is already in symbol table" << std::endl;
 
         if (has_access(name)) {
-
+            std::cout << "AFTER HANDLE ID HAS ACCESS" << std::endl;
+            return 0;
         } else {
             std::cout << "Error: " << name << " :: " << name << " at line " << line << " (local) not accessible" << std::endl;
-            return;
+            return -1;
         }
     }
-    return;
+    return 1;
 }
 
 void handle_local_id(std::string name,  int scope, int line, scope_space space, unsigned offset) {
@@ -134,9 +136,9 @@ void handle_global_access_id(std::string name) {
 }
 
 void handle_funcdef_w_name(std::string name, int scope, int line, scope_space space, unsigned offset) {
-    std::cout << "Scope in handle_funcdef_w_name " << scope << std::endl;
+    //std::cout << "Scope in handle_funcdef_w_name " << scope << std::endl;
     if (!lookup_at_scope(name, scope)) {
-        std::cout << "handle funcdef with name" << name << std::endl;
+        //std::cout << "handle funcdef with name" << name << std::endl;
         if (is_a_lib_func(name) == 1) {
             std::cout << "Error: Shadowing of library function " << name << " is not allowed" << std::endl;
             return;
@@ -184,7 +186,7 @@ void handle_funcdef_anonym_name(int scope, int line, scope_space space, unsigned
 void handle_func_w_1arg(std::string name, int scope, int line, scope_space space, unsigned offset) {
     //std::cout << "Scope is: " << get_scope() << std::endl;
     if (get_vector_size() > scope) {
-        std::cout << "handle_func_w_1arg 2" << std::endl;
+        //std::cout << "handle_func_w_1arg 2" << std::endl;
 
         if (!lookup_at_scope(name, get_scope())) {
             if (!is_a_lib_func(name)) {
@@ -217,7 +219,7 @@ void handle_func_w_1arg(std::string name, int scope, int line, scope_space space
             return;
         }*/
     } else {
-        std::cout << "handle_func_w_1arg 1" << std::endl;
+        //std::cout << "handle_func_w_1arg 1" << std::endl;
         if (is_a_lib_func(name) == 1) {
             std::cout << "Error: Shadowing of library function " << name << " is not allowed" << std::endl;
             return;

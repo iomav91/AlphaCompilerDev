@@ -71,6 +71,7 @@ struct SymbolTableEntry {
     unsigned          scope;
     unsigned          i_address;
     unsigned          total_locals;
+    std::string       func_name;
     int               line;
 };
 
@@ -81,7 +82,7 @@ struct expression {
     double              num_const; 
     std::string         str_const;
     int                 bool_const;
-    //expression*         next_expr;         
+    expression*         next;         
 };
 
 /*struct quad {

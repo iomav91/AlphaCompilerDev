@@ -19,7 +19,7 @@ struct quad {
 
 quad make_quad(iopcode, expression*, expression*, 
                expression*, unsigned, int);
-expression* make_call(expression*);
+expression* make_call(expression*, expression*);
 void set_elist_expression(expression*);
 void set_indexed_map(expression*);
 
@@ -67,7 +67,7 @@ void clear_expression_list();
 void push_expression_list(expression*);
 void pop_expression_list();
 void print_expression_list();
-void get_last_expression();
+expression* get_last_expression();
 void print_reversed_expression_list();
 void print_indexed_map();
 
@@ -128,7 +128,7 @@ expression* manage_expr_gr_eq_expr(expression*, expression*, expression*);
 expression* manage_expr_ls_eq_expr(expression*, expression*, expression*);
 expression* manage_expr_eq_expr(expression*, expression*, expression*);
 expression* manage_expr_not_eq_expr(expression*, expression*, expression*);
-expression* manage_minus_expr(expression*, expression*);
+expression* manage_uminus_expr(expression*, expression*);
 expression* manage_not_expr(expression*, expression*);
 expression* manage_db_plus_lvalue(expression*, expression*);
 expression* manage_lvalue_db_plus(expression*, expression*);
@@ -143,13 +143,14 @@ expression* manage_lvalue_lbr_expr_rbr(expression*, expression*, expression*);
 expression* manage_call_dot_id();
 expression* manage_call_lbr_expr_rbr();
 expression* manage_call_normcall(expression*);
-expression* manage_lvalue_callsuffix(expression*, expression*, std::string, int);
+expression* manage_lvalue_callsuffix(expression*, expression*, expression*, int);
 expression* manage_lpar_funcdef_rpar_normcall(expression*);
 expression* manage_lpar_elist_rpar(expression*);
 expression* manage_db_dot_id_normcall(expression*);
-expression* manage_lbr_elist_rbr();
+expression* manage_lbr_elist_rbr(expression*, expression*);
+expression* manage_lbr_indexed_rbr(expression*, expression*);
 expression* manage_lcbr_expr_rcbr_expr(expression*, expression*);
 SymbolTableEntry* manage_funcprefix(SymbolTableEntry*, std::string, int);
-//SymbolTableEntry* manage_funcdef(std::string);
+expression* manage_funcdef(SymbolTableEntry*, unsigned);
 
 #endif

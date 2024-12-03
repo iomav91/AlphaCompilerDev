@@ -220,7 +220,7 @@ term: TOK_L_PARENTH expression TOK_R_PARENTH {
       }
       | TOK_MINUS expression %prec TOK_UMINUS                                                          {
             
-                                                                                                            $$ = manage_minus_expr($$, $2);
+                                                                                                            $$ = manage_uminus_expr($$, $2);
 
                                                                                                        }
       | TOK_NOT expression                                                                             {
@@ -239,9 +239,7 @@ term: TOK_L_PARENTH expression TOK_R_PARENTH {
                                                                                                             $$ = manage_lvalue_db_minus($$, $1);    
                                                                                                        }
       | primary {
-            printf("term -> primary\n");
             $$ = $1;
-            //std::cout << "$$->type " << $$->type << "\t\t" << $$->symbol->name << std::endl;
       }
 ;
 
@@ -253,7 +251,7 @@ assignexpr: lvalue TOK_ASSIGN expression                                        
 primary: lvalue                                                                                        {
                                                                                                             $$ = emit_if_table_item($1);
                                                                                                        }
-         | call                                                                                        {}
+         | call                                                                                        {$$=$1;}
          | objectdef                                                                                   {
                                                                                                             $$ = $1;
                                                                                                        }
@@ -265,10 +263,12 @@ primary: lvalue                                                                 
                                                                                                        }
 ;
 
-lvalue: TOK_ID                                                                                         { 
+lvalue: TOK_ID                                                                                         {
                                                                                                             $$ = manage_lvalue_id($$, $1, yylineno);
+                                                                                                            //std::cout << "LVALUE EXPR SYMBOL AFTER MANAGE LVALUE ID: "  << std::endl;
                                                                                                        }
         | TOK_LOCAL TOK_ID                                                                             {
+                                                                                                            std::cout << "LOCAL ID: " << $2 << std::endl;  
                                                                                                             $$ = manage_lvalue_local_id($$, $2, yylineno);
                                                                                                        }
         | TOK_DBL_COLON TOK_ID                                                                         {
@@ -277,7 +277,6 @@ lvalue: TOK_ID                                                                  
         | member {
                     is_a_member_access = 1;
                     $$ = $1;
-
                  }
 ;
 
@@ -295,14 +294,16 @@ member: lvalue TOK_DOT TOK_ID                                                   
 ;
 
 call: call normcall {
-            $$ = make_call($1);
+            std::cout << "CALL NORMCALL" << std::endl;
+            $$ = make_call($1, $2.elist);
+            
        }
       | lvalue callsuffix                                                                              {
-                                                                                                            $$ = manage_lvalue_callsuffix($$, $1, $2.name, $2.method);
+                                                                                                            $$ = manage_lvalue_callsuffix($$, $1, $2.elist, $2.method);
                                                                                                        }
       | TOK_L_PARENTH funcdef TOK_R_PARENTH normcall {
             //expression* func = make_func_expression(PROGRAMFUNC_EXPR, get_symbol($2->symbol->name, get_scope()));
-            $$ = make_call($2);     
+            $$ = make_call($2, $4.elist);     
       }
 ;
 
@@ -317,17 +318,18 @@ callsuffix: normcall {
 ;
 
 normcall: TOK_L_PARENTH elist TOK_R_PARENTH {
+    std::cout << "(elist)" << std::endl;
     $$.elist = $2;
     $$.method = 0;
     $$.name = NULL;
 
-    get_last_expression();
+    //get_last_expression();
     //pop_expression_list();
 }
 ;
 
 methodcall: TOK_DBL_DOT TOK_ID normcall {
-    //printf("methodcall -> ..id normcall\n");
+    printf("methodcall -> ..id normcall\n");
     $$.elist = $3.elist;
     $$.method = 1;
     $$.name = $2;
@@ -336,14 +338,22 @@ methodcall: TOK_DBL_DOT TOK_ID normcall {
 }
 ;
 
-elist: expression {
-            //printf("elist -> expression\n");
-            push_expression_list($1);
+elist: elist TOK_COMMA expression {
+            printf("elist -> elist,\n");
+            //push_expression_list($1);
+            //push_expression_list($3);
+            //std::cout << "Last expression elem: " << get_last_expression()->symbol->name << std::endl; 
+            $3->next = $1;
+            $$ = $3;
         }
-       | elist TOK_COMMA expression {
-            //printf("elist -> elist,\n");
-            push_expression_list($3);
+        | expression {
+            printf("elist -> expression\n");
+            //push_expression_list($1);
+            $1->next = NULL;
+            std::cout << " ELIST Elem: " << $1->symbol->name << std::endl;
+            $$ = $1;
         }
+       
        |  %empty {
             //printf("elist -> \n");
             //push_expression_list(NULL);
@@ -361,32 +371,10 @@ indexed: indexedelem {
 ;
 
 objectdef: TOK_L_BR elist TOK_R_BR {
-                std::cout << "OBJECTDEF" << std::endl;
-                //printf("objectdef -> [elist]\n");
-                SymbolType type = GLOBAL;
-                if (get_scope() != 0) {
-                    type = LOCAL;
-                }
-                SymbolTableEntry new_temp = new_temp_var(-1, type);
-                //std::cout << new_temp.name << std::endl;
-                expression* table = make_new_table_expression(NEWTABLE_EXPR, get_symbol(new_temp.name, get_scope()));
-                emit_table_create(TABLECREATE, table);
-                set_elist_expression(table);
-                $$ = table;
+               $$ = manage_lbr_elist_rbr($$,$2);
           }
          | TOK_L_BR indexed TOK_R_BR {
-                printf("objectdef -> [indexed]\n");
-                SymbolType type = GLOBAL;
-                if (get_scope() != 0) {
-                    type = LOCAL;
-                }
-                SymbolTableEntry new_temp = new_temp_var(-1, type);
-                std::cout << new_temp.name << std::endl;
-                expression* table = make_new_table_expression(NEWTABLE_EXPR, get_symbol(new_temp.name, get_scope()));
-                emit_table_create(TABLECREATE, table);
-                set_indexed_map(table);
-                $$ = table;
-
+                $$ = manage_lbr_indexed_rbr($$,$2);
          }
 ;
 
@@ -412,12 +400,18 @@ block: TOK_L_CURLY_BR {
 ;
 
 funcdef_block: TOK_L_CURLY_BR statements TOK_R_CURLY_BR {
-        handle_funcdef_block_end(get_scope());
         reset_formal_arg_offset();
     }
 ;
 
-funcprefix: TOK_FUNCTION TOK_ID {
+funcname: TOK_ID {
+    $$ = $1;
+} | %empty {
+
+}
+;
+
+funcprefix: TOK_FUNCTION funcname {
         is_in_function_mode++;
         $$ = manage_funcprefix($$, $2, yylineno);
         scope_counter++;
@@ -426,28 +420,22 @@ funcprefix: TOK_FUNCTION TOK_ID {
 
 funcargs: TOK_L_PARENTH idlist TOK_R_PARENTH {
         push_blocks_prec(2);
-        set_scope_space_counter(2); 
+        set_scope_space_counter(2);
         push_func_local_offset_table();
     }
 ;
 
 funcbody: funcdef_block {
         $$ = curr_scope_offset();
-        
-        printf("Prev Scope Space Counter: %d\n", get_prev_scope_space_counter()); 
         set_scope_space_counter(get_prev_scope_space_counter());
-        printf("Scope Space Counter: %d\n", get_scope_space_counter());
         pop_func_local_offset_table();
         reset_func_local_offset();
     }
 ;
 
 funcdef: funcprefix funcargs funcbody {
-
-        $1->total_locals = $3;
-        $$ = make_func_expression(PROGRAMFUNC_EXPR, get_symbol($1->name, get_scope()));
-        emit_funcdef(FUNCEND,$$);
-
+        $$ = manage_funcdef($1, $3);
+        scope_counter--;
     }
 ;
 
@@ -523,7 +511,6 @@ int main(int argc, char** argv) {
     //print_expression_list();
     printf("\n");
     //print_reversed_expression_list();
-
 
     return 0;
 }
