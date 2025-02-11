@@ -77,7 +77,7 @@ void quad_creation(int, expression* result, expression* arg1, expression* arg2, 
 
 std::string new_temp_name(int);
 int reset_temp_counter(int);
-SymbolTableEntry new_temp_var(int, SymbolType);
+SymbolTableEntry* new_temp_var(int, SymbolType);
 
 void set_scope_space_counter(int);
 int get_scope_space_counter();

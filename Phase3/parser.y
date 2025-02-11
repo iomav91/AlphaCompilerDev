@@ -528,10 +528,10 @@ int main(int argc, char** argv) {
             yyparse();
         }
     }
-    //quad_table_print();
+    quad_table_print();
     printf("\n");
-    print_symtable();
-    print_symtable_inactive();
+    //print_symtable();
+    //print_symtable_inactive();
     printf("\n");
     //print_expression_list();
     printf("\n");
