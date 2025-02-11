@@ -2,6 +2,9 @@
     #include "symbol_table.h"
     #include "handlers.h"
     #include "icode_managers.h"
+    #include <iostream>
+    #include <fstream>
+    #include <string>
     extern int yylex();
     extern void yyerror(const char *);
     extern int yyparse();
@@ -107,6 +110,8 @@
 %type <expr> term
 %type <expr> indexed
 %type <expr> indexedelem
+%type <unsignedVal> ifprefix
+%type <unsignedVal> elseprefix
 
 %right TOK_ASSIGN
 %left TOK_OR
@@ -192,7 +197,7 @@ expression: assignexpr                                                          
                 
                                                                                                        }
             | expression TOK_EQUAL expression                                                          {
-                                                                                                            $$ = manage_expr_gr_expr($$, $1, $3);
+                                                                                                            $$ = manage_expr_eq_expr($$, $1, $3);
                                                                                                        }
             | expression TOK_N_EQUAL expression                                                        {
                    
@@ -202,10 +207,14 @@ expression: assignexpr                                                          
             | expression TOK_AND expression {
                     //printf("expression -> expression and expression\n");
                     //handle_expression($1,$3, get_scope(), yylineno);
+
+                    $$ = manage_expr_and_expr($$, $1, $3);
                 }
             | expression TOK_OR expression {
                     //printf("expression -> expression or expression\n");
                     //handle_expression($1,$3, get_scope(), yylineno);
+
+                    $$ = manage_expr_or_expr($$, $1, $3);
                 }
             | term {
                 //printf("expression -> term\n");
@@ -299,7 +308,10 @@ call: call normcall {
             
        }
       | lvalue callsuffix                                                                              {
-                                                                                                            $$ = manage_lvalue_callsuffix($$, $1, $2.elist, $2.method);
+                                                                                                            if ($2.method == 0) {
+                                                                                                                $$= make_call($1, $2.elist);
+                                                                                                            } else                           
+                                                                                                                $$ = manage_lvalue_callsuffix($$, $1, $2.name, $2.elist, $2.method);
                                                                                                        }
       | TOK_L_PARENTH funcdef TOK_R_PARENTH normcall {
             //expression* func = make_func_expression(PROGRAMFUNC_EXPR, get_symbol($2->symbol->name, get_scope()));
@@ -323,8 +335,6 @@ normcall: TOK_L_PARENTH elist TOK_R_PARENTH {
     $$.method = 0;
     $$.name = NULL;
 
-    //get_last_expression();
-    //pop_expression_list();
 }
 ;
 
@@ -340,23 +350,19 @@ methodcall: TOK_DBL_DOT TOK_ID normcall {
 
 elist: elist TOK_COMMA expression {
             printf("elist -> elist,\n");
-            //push_expression_list($1);
-            //push_expression_list($3);
-            //std::cout << "Last expression elem: " << get_last_expression()->symbol->name << std::endl; 
             $3->next = $1;
+            $1->next = NULL;
             $$ = $3;
         }
         | expression {
             printf("elist -> expression\n");
-            //push_expression_list($1);
             $1->next = NULL;
-            std::cout << " ELIST Elem: " << $1->symbol->name << std::endl;
             $$ = $1;
         }
        
        |  %empty {
-            //printf("elist -> \n");
-            //push_expression_list(NULL);
+            //$1 = NULL;
+            //$$ = $1;
         }
 ;
 
@@ -381,7 +387,7 @@ objectdef: TOK_L_BR elist TOK_R_BR {
 indexedelem: TOK_L_CURLY_BR expression TOK_COLON expression 
 TOK_R_CURLY_BR {
     printf("indexedelem -> {expression:expression}\n");
-    std::cout << $2->str_const << $4->type << std::endl;
+    //std::cout << $2->str_const << $4->type << std::endl;
     insert_indexed_map($2,$4);
     $$ = $2;
 }
@@ -406,14 +412,16 @@ funcdef_block: TOK_L_CURLY_BR statements TOK_R_CURLY_BR {
 
 funcname: TOK_ID {
     $$ = $1;
-} | %empty {
-
 }
 ;
 
 funcprefix: TOK_FUNCTION funcname {
         is_in_function_mode++;
         $$ = manage_funcprefix($$, $2, yylineno);
+        scope_counter++;
+    } | TOK_FUNCTION {
+        is_in_function_mode++;
+        $$ = manage_funcprefix_anonym($$, yylineno);
         scope_counter++;
     }
 ;
@@ -435,7 +443,10 @@ funcbody: funcdef_block {
 
 funcdef: funcprefix funcargs funcbody {
         $$ = manage_funcdef($1, $3);
+        //quad_table_print();
+        
         scope_counter--;
+        is_in_function_mode--;
     }
 ;
 
@@ -471,10 +482,24 @@ idlist: TOK_ID {
         | %empty { push_vector();}
 ;
 
-if_statement: TOK_IF TOK_L_PARENTH expression TOK_R_PARENTH statement
-                                                                           {}
-              | TOK_IF TOK_L_PARENTH expression TOK_R_PARENTH
-statement TOK_ELSE statement                                               {}
+ifprefix: TOK_IF TOK_L_PARENTH expression TOK_R_PARENTH {
+    $$ = manage_ifprefix($$, $3);
+    std::cout << "IFPREFIX: " << $$ << std::endl;
+}
+
+elseprefix: TOK_ELSE {
+            $$ = next_quad_label(); 
+            emit_jump(JUMP,0);
+
+           }
+           | %empty {}
+; 
+
+if_statement: ifprefix statement {patchlabel($1,next_quad_label());} elseprefix statement
+                                                                           { 
+                                                                               patchlabel($1, $4+1);
+                                                                               patchlabel($4, next_quad_label());
+                                                                           }
 ;
 
 while_statement: TOK_WHILE TOK_L_PARENTH expression TOK_R_PARENTH
@@ -503,7 +528,7 @@ int main(int argc, char** argv) {
             yyparse();
         }
     }
-    quad_table_print();
+    //quad_table_print();
     printf("\n");
     print_symtable();
     print_symtable_inactive();
@@ -511,7 +536,7 @@ int main(int argc, char** argv) {
     //print_expression_list();
     printf("\n");
     //print_reversed_expression_list();
-
+    //quad_table_print();
     return 0;
 }
 

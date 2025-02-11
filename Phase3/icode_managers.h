@@ -20,11 +20,12 @@ struct quad {
 quad make_quad(iopcode, expression*, expression*, 
                expression*, unsigned, int);
 expression* make_call(expression*, expression*);
+expression* make_call_in(expression*, std::vector<expression*>);
 void set_elist_expression(expression*);
 void set_indexed_map(expression*);
 
 void emit_arithm_one(iopcode, expression*, expression*);
-void emit_bool(iopcode, expression*, expression*);
+void emit_bool(iopcode, expression*, expression*, expression*);
 void emit_assign(iopcode, expression*, expression*);
 void emit_add(iopcode, expression*, expression*, expression*);
 void emit_sub(iopcode, expression*, expression*, expression*);
@@ -33,7 +34,7 @@ void emit_div(iopcode, expression*, expression*, expression*);
 void emit_mod(iopcode, expression*, expression*, expression*);
 
 void emit_jump(iopcode, unsigned);
-void emit_if_greater(iopcode, expression*, expression*, unsigned);
+void emit_if_greater(iopcode, expression*, expression*, expression*, unsigned);
 void emit_if_less(iopcode, expression*, expression*, unsigned);
 void emit_if_greatereq(iopcode, expression*, expression*, unsigned);
 void emit_if_lesseq(iopcode, expression*, expression*, unsigned);
@@ -72,6 +73,7 @@ void print_reversed_expression_list();
 void print_indexed_map();
 
 void quad_table_print();
+void quad_creation(int, expression* result, expression* arg1, expression* arg2, unsigned, unsigned);
 
 std::string new_temp_name(int);
 int reset_temp_counter(int);
@@ -116,7 +118,8 @@ bool check_if_is_arithm_alt(expression*);
 void set_curr_quad_label(unsigned);
 
 unsigned next_quad_label();
-
+expression* manage_expr_and_expr(expression*, expression*, expression*);
+expression* manage_expr_or_expr(expression*, expression*, expression*);
 expression* manage_expr_plus_expr(expression*, expression*, expression*);
 expression* manage_expr_minus_expr(expression*, expression*, expression*);
 expression* manage_expr_mul_expr(expression*, expression*, expression*);
@@ -143,7 +146,7 @@ expression* manage_lvalue_lbr_expr_rbr(expression*, expression*, expression*);
 expression* manage_call_dot_id();
 expression* manage_call_lbr_expr_rbr();
 expression* manage_call_normcall(expression*);
-expression* manage_lvalue_callsuffix(expression*, expression*, expression*, int);
+expression* manage_lvalue_callsuffix(expression*, expression*, std::string, expression*, int);
 expression* manage_lpar_funcdef_rpar_normcall(expression*);
 expression* manage_lpar_elist_rpar(expression*);
 expression* manage_db_dot_id_normcall(expression*);
@@ -151,6 +154,10 @@ expression* manage_lbr_elist_rbr(expression*, expression*);
 expression* manage_lbr_indexed_rbr(expression*, expression*);
 expression* manage_lcbr_expr_rcbr_expr(expression*, expression*);
 SymbolTableEntry* manage_funcprefix(SymbolTableEntry*, std::string, int);
+SymbolTableEntry* manage_funcprefix_anonym(SymbolTableEntry*, int);
 expression* manage_funcdef(SymbolTableEntry*, unsigned);
+unsigned manage_ifprefix(unsigned, expression*);
+unsigned manage_elseprefix(unsigned);
+void patchlabel(unsigned, unsigned);
 
 #endif

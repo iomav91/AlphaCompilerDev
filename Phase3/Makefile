@@ -1,4 +1,4 @@
-CFLAGS = -ansi -pedantic -Wall -Wextra -std=c++11
+CFLAGS = -g -O0 -ansi -pedantic -Wall -Wextra -std=c++11
 
 all:
 	flex al.l

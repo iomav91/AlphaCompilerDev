@@ -60,7 +60,7 @@ int has_access(std::string name) {
     //std::cout << "In function: " << is_in_function_mode << std::endl;
     if (is_in_function_mode != 0) {
         for (int i = get_scope(); i>=0; i--) {
-            //std::cout << "i = " << i << std::endl;
+            std::cout << "i = " << i << std::endl;
         
             if (lookup_at_scope(name,i)) {
                 //std::cout << "name, i = " << name << ", " << i << std::endl;
@@ -103,7 +103,6 @@ int handle_id(std::string name, int scope, int line, scope_space space, unsigned
 }
 
 void handle_local_id(std::string name,  int scope, int line, scope_space space, unsigned offset) {
-
     if (!lookup_at_scope(name, get_scope())) {    
         if (is_a_lib_func(name)) {
             std::cout << "Error: Shadowing of library function " << name << " is not allowed" << std::endl;
@@ -155,7 +154,7 @@ void handle_funcdef_w_name(std::string name, int scope, int line, scope_space sp
     return;
 }
 
-void handle_funcdef_anonym_name(int scope, int line, scope_space space, unsigned offset) {
+std::string handle_funcdef_anonym_name(int scope, int line, scope_space space, unsigned offset) {
     std::string name = func_name_generator();
     ++func_anonym_counter;
     /*if (!lookup_at_scope(name, get_scope())) {
@@ -169,18 +168,18 @@ void handle_funcdef_anonym_name(int scope, int line, scope_space space, unsigned
         //std::cout << "THERE !!!" << std::endl;
         if (is_a_lib_func(name) == 1) {
             std::cout << "Error: Shadowing of library function " << name << " is not allowed" << std::endl;
-            return;
+            return NULL;
         }
         insert(name, scope, line, space, offset, USERFUNC);
     } else {
         if (is_a_lib_func(name) == 1) {
             std::cout << "Error: Shadowing of library function " << name << " is not allowed" << std::endl;
-            return;
+            return NULL;
         }
         std::cout << "Error: Symbol " << name << " is in the symbol table" << std::endl;
-        return;
+        return NULL;
     }
-    return;
+    return name;
 }
 
 void handle_func_w_1arg(std::string name, int scope, int line, scope_space space, unsigned offset) {

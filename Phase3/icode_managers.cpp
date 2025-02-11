@@ -1,5 +1,8 @@
 #include "icode_managers.h"
 #include "handlers.h"
+#include <iostream>
+#include <fstream>
+#include <string>
 
 unsigned line_op_counter = 0;
 unsigned prev_scope_space_counter = 1;
@@ -118,14 +121,559 @@ void print_reversed_expression_list() {
     return;
 }
 
+void quad_creation(int op, expression* result, expression* arg1, expression* arg2, unsigned label, unsigned line) {
+    //std::cout << "HERE After PUSHBACK" << std::endl;
+    std::string filename = "outfile1.asc";
+    std::ofstream outfile;
+
+    // Open the file in append mode
+    outfile.open(filename, std::ios_base::app);
+
+    // Check if the file is open
+    if (outfile.is_open()) {
+        // Write to the file
+        if (op == 0) {
+            if (arg1->type == CONSTNUM_EXPR) {
+                outfile << "\n" << line << "\t\t" << "ASSIGN" << "\t\t" << result->symbol->name << "\t\t" << arg1->num_const;
+            } else if (arg1->type == CONSTSTRING_EXPR) {
+                outfile << "\n" << line << "\t\t" << "ASSIGN" << "\t\t" << result->symbol->name << "\t\t" << arg1->str_const;
+            } else if (arg1->type == CONSTBOOL_EXPR) {
+                outfile << "\n" << line << "\t\t" << "ASSIGN" << "\t\t" << result->symbol->name << "\t\t" << arg1->bool_const;
+            } else {
+                outfile << "\n" << line << "\t\t" << "ASSIGN" << "\t\t" << result->symbol->name << "\t\t" << arg1->symbol->name;
+            }
+        }
+        if (op == 1) {
+            if (arg1->type == CONSTNUM_EXPR) {
+                if (arg2->type == CONSTNUM_EXPR) {
+                    outfile << "\n" << line << "\t\t" << "ADD" << "\t\t" << result->num_const << "\t\t" << arg1->num_const << "\t\t" << arg2->num_const;
+                } else if (arg2->type == CONSTSTRING_EXPR) {
+                    outfile << "\n" << line << "\t\t" << "ADD" << "\t\t" << result->symbol->name << "\t\t" << arg1->num_const << "\t\t" << arg2->str_const;
+                } else if (arg2->type == CONSTBOOL_EXPR) {
+                    outfile << "\n" << line << "\t\t" << "ADD" << "\t\t" << result->symbol->name << "\t\t" << arg1->num_const << "\t\t" << arg2->bool_const;
+                } else {
+                    outfile << "\n" << line << "\t\t" << "ADD" << "\t\t" << result->symbol->name << "\t\t" << arg1->num_const << "\t\t" << arg2->symbol->name;
+                }
+            } else if (arg2-> type == CONSTNUM_EXPR) {
+                if (arg1->type == CONSTNUM_EXPR) {
+                    outfile << "\n" << line << "\t\t" << "ADD" << "\t\t" << result->num_const << "\t\t" << arg1->num_const << "\t\t" << arg2->num_const;
+                } else if (arg1->type == CONSTSTRING_EXPR) {
+                    outfile << "\n" << line << "\t\t" << "ADD" << "\t\t" << result->symbol->name << "\t\t" << arg1->str_const << "\t\t" << arg2->num_const;
+                } else if (arg1->type == CONSTBOOL_EXPR) {
+                    outfile << "\n" << line << "\t\t" << "ADD" << "\t\t" << result->symbol->name << "\t\t" << arg1->bool_const << "\t\t" << arg2->num_const;
+                } else {
+                    outfile << "\n" << line << "\t\t" << "ADD" << "\t\t" << result->symbol->name << "\t\t" << arg1->symbol->name << "\t\t" << arg2->num_const;
+                }
+            } else if (arg1->type == CONSTBOOL_EXPR) {
+                if (arg2->type == CONSTNUM_EXPR) {
+                    outfile << "\n" << line << "\t\t" << "ADD" << "\t\t" << result->symbol->name << "\t\t" << arg1->bool_const << "\t\t" << arg2->num_const;
+                } else if (arg2->type == CONSTSTRING_EXPR) {
+                    outfile << "\n" << line << "\t\t" << "ADD" << "\t\t" << result->symbol->name << "\t\t" << arg1->bool_const << "\t\t" << arg2->str_const;
+                } else if (arg2->type == CONSTBOOL_EXPR) {
+                    outfile << "\n" << line << "\t\t" << "ADD" << "\t\t" << result->symbol->name << "\t\t" << arg1->bool_const << "\t\t" << arg2->bool_const;
+                } else {
+                    outfile << "\n" << line << "\t\t" << "ADD" << "\t\t" << result->symbol->name << "\t\t" << arg1->bool_const << "\t\t" << arg2->symbol->name;
+                }
+            } else if (arg2->type == CONSTBOOL_EXPR) {
+                if (arg1->type == CONSTNUM_EXPR) {
+                    outfile << "\n" << line << "\t\t" << "ADD" << "\t\t" << result->symbol->name << "\t\t" << arg1->num_const << "\t\t" << arg2->bool_const;
+                } else if (arg1->type == CONSTSTRING_EXPR) {
+                    outfile << "\n" << line << "\t\t" << "ADD" << "\t\t" << result->symbol->name << "\t\t" << arg1->str_const << "\t\t" << arg2->bool_const;
+                } else if (arg1->type == CONSTBOOL_EXPR) {
+                    outfile << "\n" << line << "\t\t" << "ADD" << "\t\t" << result->symbol->name << "\t\t" << arg1->bool_const << "\t\t" << arg2->bool_const;
+                } else {
+                    outfile << "\n" << line << "\t\t" << "ADD" << "\t\t" << result->symbol->name << "\t\t" << arg1->symbol->name << "\t\t" << arg2->bool_const;
+                }
+            } else {
+                outfile << "\n" << line << "\t\t" << "ADD" << "\t\t" << result->symbol->name << "\t\t" << arg1->symbol->name << "\t\t" << arg2->symbol->name;
+            }
+        }
+        if (op == 2) {
+            if (arg1->type == CONSTNUM_EXPR) {
+                if (arg2->type == CONSTNUM_EXPR) {
+                    outfile << "\n" << line << "\t\t" << "SUB" << "\t\t" << result->num_const << "\t\t" << arg1->num_const << "\t\t" << arg2->num_const;
+                } else if (arg2->type == CONSTSTRING_EXPR) {
+                    outfile << "\n" << line << "\t\t" << "SUB" << "\t\t" << result->symbol->name << "\t\t" << arg1->num_const << "\t\t" << arg2->str_const;
+                } else if (arg2->type == CONSTBOOL_EXPR) {
+                    outfile << "\n" << line << "\t\t" << "SUB" << "\t\t" << result->symbol->name << "\t\t" << arg1->num_const << "\t\t" << arg2->bool_const;
+                } else {
+                    outfile << "\n" << line << "\t\t" << "SUB" << "\t\t" << result->symbol->name << "\t\t" << arg1->num_const << "\t\t" << arg2->symbol->name;
+                }
+            } else if (arg2-> type == CONSTNUM_EXPR) {
+                if (arg1->type == CONSTNUM_EXPR) {
+                    outfile << "\n" << line << "\t\t" << "SUB" << "\t\t" << result->symbol->name << "\t\t" << arg1->num_const << "\t\t" << arg2->num_const;
+                } else if (arg1->type == CONSTSTRING_EXPR) {
+                    outfile << "\n" << line << "\t\t" << "SUB" << "\t\t" << result->symbol->name << "\t\t" << arg1->str_const << "\t\t" << arg2->num_const;
+                } else if (arg1->type == CONSTBOOL_EXPR) {
+                    outfile << "\n" << line << "\t\t" << "SUB" << "\t\t" << result->symbol->name << "\t\t" << arg1->bool_const << "\t\t" << arg2->num_const;
+                } else {
+                    outfile << "\n" << line << "\t\t" << "SUB" << "\t\t" << result->symbol->name << "\t\t" << arg1->symbol->name << "\t\t" << arg2->num_const;
+                }
+            } else if (arg1->type == CONSTBOOL_EXPR) {
+                if (arg2->type == CONSTNUM_EXPR) {
+                    outfile << "\n" << line << "\t\t" << "SUB" << "\t\t" << result->symbol->name << "\t\t" << arg1->bool_const << "\t\t" << arg2->num_const;
+                } else if (arg2->type == CONSTSTRING_EXPR) {
+                    outfile << "\n" << line << "\t\t" << "SUB" << "\t\t" << result->symbol->name << "\t\t" << arg1->bool_const << "\t\t" << arg2->str_const;
+                } else if (arg2->type == CONSTBOOL_EXPR) {
+                    outfile << "\n" << line << "\t\t" << "SUB" << "\t\t" << result->symbol->name << "\t\t" << arg1->bool_const << "\t\t" << arg2->bool_const;
+                } else {
+                    outfile << "\n" << line << "\t\t" << "SUB" << "\t\t" << result->symbol->name << "\t\t" << arg1->bool_const << "\t\t" << arg2->symbol->name;
+                }
+            } else if (arg2->type == CONSTBOOL_EXPR) {
+                if (arg1->type == CONSTNUM_EXPR) {
+                    outfile << "\n" << line << "\t\t" << "SUB" << "\t\t" << result->symbol->name << "\t\t" << arg1->num_const << "\t\t" << arg2->bool_const;
+                } else if (arg1->type == CONSTSTRING_EXPR) {
+                    outfile << "\n" << line << "\t\t" << "SUB" << "\t\t" << result->symbol->name << "\t\t" << arg1->str_const << "\t\t" << arg2->bool_const;
+                } else if (arg1->type == CONSTBOOL_EXPR) {
+                    outfile << "\n" << line << "\t\t" << "SUB" << "\t\t" << result->symbol->name << "\t\t" << arg1->bool_const << "\t\t" << arg2->bool_const;
+                } else {
+                    outfile << "\n" << line << "\t\t" << "SUB" << "\t\t" << result->symbol->name << "\t\t" << arg1->symbol->name << "\t\t" << arg2->bool_const;
+                }
+            }  else {
+                outfile << "\n" << line << "\t\t" << "SUB" << "\t\t" << result->symbol->name << "\t\t" << arg1->symbol->name << "\t\t" << arg2->symbol->name;
+            }
+        }
+        if (op == 3) {
+            if (arg1->type == CONSTNUM_EXPR) {
+                if (arg2->type == CONSTNUM_EXPR) {
+                    outfile << "\n" << line << "\t\t" << "MUL" << "\t\t" << result->num_const << "\t\t" << arg1->num_const << "\t\t" << arg2->num_const;
+                } else if (arg2->type == CONSTSTRING_EXPR) {
+                    outfile << "\n" << line << "\t\t" << "MUL" << "\t\t" << result->symbol->name << "\t\t" << arg1->num_const << "\t\t" << arg2->str_const;
+                } else if (arg2->type == CONSTBOOL_EXPR) {
+                    outfile << "\n" << line << "\t\t" << "MUL" << "\t\t" << result->symbol->name << "\t\t" << arg1->num_const << "\t\t" << arg2->bool_const;
+                } else {
+                    outfile << "\n" << line << "\t\t" << "MUL" << "\t\t" << result->symbol->name << "\t\t" << arg1->num_const << "\t\t" << arg2->symbol->name;
+                }
+            } else if (arg2-> type == CONSTNUM_EXPR) {
+                if (arg1->type == CONSTNUM_EXPR) {
+                    outfile << "\n" << line << "\t\t" << "MUL" << "\t\t" << result->symbol->name << "\t\t" << arg1->num_const << "\t\t" << arg2->num_const;
+                } else if (arg1->type == CONSTSTRING_EXPR) {
+                    outfile << "\n" << line << "\t\t" << "MUL" << "\t\t" << result->symbol->name << "\t\t" << arg1->str_const << "\t\t" << arg2->num_const;
+                } else if (arg1->type == CONSTBOOL_EXPR) {
+                    outfile << "\n" << line << "\t\t" << "MUL" << "\t\t" << result->symbol->name << "\t\t" << arg1->bool_const << "\t\t" << arg2->num_const;
+                } else {
+                    outfile << "\n" << line << "\t\t" << "MUL" << "\t\t" << result->symbol->name << "\t\t" << arg1->symbol->name << "\t\t" << arg2->num_const;
+                }
+            } else if (arg1->type == CONSTBOOL_EXPR) {
+                if (arg2->type == CONSTNUM_EXPR) {
+                    outfile << "\n" << line << "\t\t" << "MUL" << "\t\t" << result->symbol->name << "\t\t" << arg1->bool_const << "\t\t" << arg2->num_const;
+                } else if (arg2->type == CONSTSTRING_EXPR) {
+                    outfile << "\n" << line << "\t\t" << "MUL" << "\t\t" << result->symbol->name << "\t\t" << arg1->bool_const << "\t\t" << arg2->str_const;
+                } else if (arg2->type == CONSTBOOL_EXPR) {
+                    outfile << "\n" << line << "\t\t" << "MUL" << "\t\t" << result->symbol->name << "\t\t" << arg1->bool_const << "\t\t" << arg2->bool_const;
+                } else {
+                    outfile << "\n" << line << "\t\t" << "MUL" << "\t\t" << result->symbol->name << "\t\t" << arg1->bool_const << "\t\t" << arg2->symbol->name;
+                }
+            } else if (arg2->type == CONSTBOOL_EXPR) {
+                if (arg1->type == CONSTNUM_EXPR) {
+                    outfile << "\n" << line << "\t\t" << "MUL" << "\t\t" << result->symbol->name << "\t\t" << arg1->num_const << "\t\t" << arg2->bool_const;
+                } else if (arg1->type == CONSTSTRING_EXPR) {
+                    outfile << "\n" << line << "\t\t" << "MUL" << "\t\t" << result->symbol->name << "\t\t" << arg1->str_const << "\t\t" << arg2->bool_const;
+                } else if (arg1->type == CONSTBOOL_EXPR) {
+                    outfile << "\n" << line << "\t\t" << "MUL" << "\t\t" << result->symbol->name << "\t\t" << arg1->bool_const << "\t\t" << arg2->bool_const;
+                } else {
+                    outfile << "\n" << line << "\t\t" << "MUL" << "\t\t" << result->symbol->name << "\t\t" << arg1->symbol->name << "\t\t" << arg2->bool_const;
+                }
+            } else {
+                outfile << "\n" << line << "\t\t" << "MUL" << "\t\t" << result->symbol->name << "\t\t" << arg1->symbol->name << "\t\t" << arg2->symbol->name;
+            }
+        }
+        if (op == 4) {
+            if (arg1->type == CONSTNUM_EXPR) {
+                if (arg2->type == CONSTNUM_EXPR) {
+                    outfile << "\n" << line << "\t\t" << "DIV" << "\t\t" << result->num_const << "\t\t" << arg1->num_const << "\t\t" << arg2->num_const;
+                } else if (arg2->type == CONSTSTRING_EXPR) {
+                    outfile << "\n" << line << "\t\t" << "DIV" << "\t\t" << result->symbol->name << "\t\t" << arg1->num_const << "\t\t" << arg2->str_const;
+                } else if (arg2->type == CONSTBOOL_EXPR) {
+                    outfile << "\n" << line << "\t\t" << "DIV" << "\t\t" << result->symbol->name << "\t\t" << arg1->num_const << "\t\t" << arg2->bool_const;
+                } else {
+                    outfile << "\n" << line << "\t\t" << "DIV" << "\t\t" << result->symbol->name << "\t\t" << arg1->num_const << "\t\t" << arg2->symbol->name;
+                }
+            } else if (arg2-> type == CONSTNUM_EXPR) {
+                if (arg1->type == CONSTNUM_EXPR) {
+                    outfile << "\n" << line << "\t\t" << "DIV" << "\t\t" << result->symbol->name << "\t\t" << arg1->num_const << "\t\t" << arg2->num_const;
+                } else if (arg1->type == CONSTSTRING_EXPR) {
+                    outfile << "\n" << line << "\t\t" << "DIV" << "\t\t" << result->symbol->name << "\t\t" << arg1->str_const << "\t\t" << arg2->num_const;
+                } else if (arg1->type == CONSTBOOL_EXPR) {
+                    outfile << "\n" << line << "\t\t" << "DIV" << "\t\t" << result->symbol->name << "\t\t" << arg1->bool_const << "\t\t" << arg2->num_const;
+                } else {
+                    outfile << "\n" << line << "\t\t" << "DIV" << "\t\t" << result->symbol->name << "\t\t" << arg1->symbol->name << "\t\t" << arg2->num_const;
+                }
+            } else if (arg1->type == CONSTBOOL_EXPR) {
+                if (arg2->type == CONSTNUM_EXPR) {
+                    outfile << "\n" << line << "\t\t" << "DIV" << "\t\t" << result->symbol->name << "\t\t" << arg1->bool_const << "\t\t" << arg2->num_const;
+                } else if (arg2->type == CONSTSTRING_EXPR) {
+                    outfile << "\n" << line << "\t\t" << "DIV" << "\t\t" << result->symbol->name << "\t\t" << arg1->bool_const << "\t\t" << arg2->str_const;
+                } else if (arg2->type == CONSTBOOL_EXPR) {
+                    outfile << "\n" << line << "\t\t" << "DIV" << "\t\t" << result->symbol->name << "\t\t" << arg1->bool_const << "\t\t" << arg2->bool_const;
+                } else {
+                    outfile << "\n" << line << "\t\t" << "DIV" << "\t\t" << result->symbol->name << "\t\t" << arg1->bool_const << "\t\t" << arg2->symbol->name;
+                }
+            } else if (arg2->type == CONSTBOOL_EXPR) {
+                if (arg1->type == CONSTNUM_EXPR) {
+                    outfile << "\n" << line << "\t\t" << "DIV" << "\t\t" << result->symbol->name << "\t\t" << arg1->num_const << "\t\t" << arg2->bool_const;
+                } else if (arg1->type == CONSTSTRING_EXPR) {
+                    outfile << "\n" << line << "\t\t" << "DIV" << "\t\t" << result->symbol->name << "\t\t" << arg1->str_const << "\t\t" << arg2->bool_const;
+                } else if (arg1->type == CONSTBOOL_EXPR) {
+                    outfile << "\n" << line << "\t\t" << "DIV" << "\t\t" << result->symbol->name << "\t\t" << arg1->bool_const << "\t\t" << arg2->bool_const;
+                } else {
+                    outfile << "\n" << line << "\t\t" << "DIV" << "\t\t" << result->symbol->name << "\t\t" << arg1->symbol->name << "\t\t" << arg2->bool_const;
+                }
+            } else {
+                outfile << "\n" << line << "\t\t" << "DIV" << "\t\t" << result->symbol->name << "\t\t" << arg1->symbol->name << "\t\t" << arg2->symbol->name;
+            }
+        }
+        if (op == 5) {
+            if (arg1->type == CONSTNUM_EXPR) {
+                if (arg2->type == CONSTNUM_EXPR) {
+                    outfile << "\n" << line << "\t\t" << "MOD" << "\t\t" << result->num_const << "\t\t" << arg1->num_const << "\t\t" << arg2->num_const;
+                } else if (arg2->type == CONSTSTRING_EXPR) {
+                    outfile << "\n" << line << "\t\t" << "MOD" << "\t\t" << result->symbol->name << "\t\t" << arg1->num_const << "\t\t" << arg2->str_const;
+                } else if (arg2->type == CONSTBOOL_EXPR) {
+                    outfile << "\n" << line << "\t\t" << "MOD" << "\t\t" << result->symbol->name << "\t\t" << arg1->num_const << "\t\t" << arg2->bool_const;
+                } else {
+                    outfile << "\n" << line << "\t\t" << "MOD" << "\t\t" << result->symbol->name << "\t\t" << arg1->num_const << "\t\t" << arg2->symbol->name;
+                }
+            } else if (arg2-> type == CONSTNUM_EXPR) {
+                if (arg1->type == CONSTNUM_EXPR) {
+                    outfile << "\n" << line << "\t\t" << "MOD" << "\t\t" << result->symbol->name << "\t\t" << arg1->num_const << "\t\t" << arg2->num_const;
+                } else if (arg1->type == CONSTSTRING_EXPR) {
+                    outfile << "\n" << line << "\t\t" << "MOD" << "\t\t" << result->symbol->name << "\t\t" << arg1->str_const << "\t\t" << arg2->num_const;
+                } else if (arg1->type == CONSTBOOL_EXPR) {
+                    outfile << "\n" << line << "\t\t" << "MOD" << "\t\t" << result->symbol->name << "\t\t" << arg1->bool_const << "\t\t" << arg2->num_const;
+                } else {
+                    outfile << "\n" << line << "\t\t" << "MOD" << "\t\t" << result->symbol->name << "\t\t" << arg1->symbol->name << "\t\t" << arg2->num_const;
+                }
+            } else if (arg1->type == CONSTBOOL_EXPR) {
+                if (arg2->type == CONSTNUM_EXPR) {
+                    outfile << "\n" << line << "\t\t" << "MOD" << "\t\t" << result->symbol->name << "\t\t" << arg1->bool_const << "\t\t" << arg2->num_const;
+                } else if (arg2->type == CONSTSTRING_EXPR) {
+                    outfile << "\n" << line << "\t\t" << "MOD" << "\t\t" << result->symbol->name << "\t\t" << arg1->bool_const << "\t\t" << arg2->str_const;
+                } else if (arg2->type == CONSTBOOL_EXPR) {
+                    outfile << "\n" << line << "\t\t" << "MOD" << "\t\t" << result->symbol->name << "\t\t" << arg1->bool_const << "\t\t" << arg2->bool_const;
+                } else {
+                    outfile << "\n" << line << "\t\t" << "MOD" << "\t\t" << result->symbol->name << "\t\t" << arg1->bool_const << "\t\t" << arg2->symbol->name;
+                }
+            } else if (arg2->type == CONSTBOOL_EXPR) {
+                if (arg1->type == CONSTNUM_EXPR) {
+                    outfile << "\n" << line << "\t\t" << "MOD" << "\t\t" << result->symbol->name << "\t\t" << arg1->num_const << "\t\t" << arg2->bool_const;
+                } else if (arg1->type == CONSTSTRING_EXPR) {
+                    outfile << "\n" << line << "\t\t" << "MOD" << "\t\t" << result->symbol->name << "\t\t" << arg1->str_const << "\t\t" << arg2->bool_const;
+                } else if (arg1->type == CONSTBOOL_EXPR) {
+                    outfile << "\n" << line << "\t\t" << "MOD" << "\t\t" << result->symbol->name << "\t\t" << arg1->bool_const << "\t\t" << arg2->bool_const;
+                } else {
+                    outfile << "\n" << line << "\t\t" << "MOD" << "\t\t" << result->symbol->name << "\t\t" << arg1->symbol->name << "\t\t" << arg2->bool_const;
+                }
+            } else {
+                outfile << "\n" << line << "\t\t" << "MOD" << "\t\t" << result->symbol->name << "\t\t" << arg1->symbol->name << "\t\t" << arg2->symbol->name;
+            }
+        }
+        if (op == 6) {
+            if (arg1->type == CONSTNUM_EXPR) {
+                outfile << "\n" << line << "\t\t" << "UMINUS" << "\t\t" << result->symbol->name << "\t\t" << arg1->num_const;
+            } else if (arg1->type == CONSTBOOL_EXPR) {
+                outfile << "\n" << line << "\t\t" << "UMINUS" << "\t\t" << result->symbol->name << "\t\t" << arg1->bool_const;
+            } else {
+                outfile << "\n" << line << "\t\t" << "UMINUS" << "\t\t" << result->symbol->name << "\t\t" << arg1->symbol->name;
+            }
+        }
+        if (op == 7) {
+            outfile << "\n" << line << "\t\t" << "AND" << "\t\t" << result->symbol->name << "\t\t" << arg1->symbol->name << "\t\t" << arg2->symbol->name;
+        }
+        if (op == 8) {
+            outfile << "\n" << line << "\t\t" << "OR" << "\t\t" << result->symbol->name << "\t\t" << arg1->symbol->name << "\t\t" << arg2->symbol->name;
+        }
+        if (op == 9) {
+
+        }
+        if (op == 10) {
+            if (result->type == CONSTNUM_EXPR) {
+                if (arg1->type == CONSTNUM_EXPR) { 
+                    outfile << "\n" << line << "\t" << "IF EQUAL" << "\t\t" << result->num_const << "\t\t" << arg1->num_const << "\t\t" << label; 
+                } else if (arg1->type == CONSTSTRING_EXPR) {
+                    outfile << "\n" << line << "Error: the symbol" << "\t\t" << arg1->str_const << " is a string";
+                } else {
+                    outfile << "\n" << line << "\t" << "IF EQUAL" << "\t\t" << result->num_const << "\t\t" << arg1->symbol->name << "\t\t" << label;
+                }
+            } else if (result->type == CONSTSTRING_EXPR) {
+                outfile << "\n" << line << "Error: the symbol" << "\t\t" << result->str_const << " is a string";
+            } else {
+                if (arg1->type == CONSTNUM_EXPR) { 
+                    outfile << "\n" << line << "\t" << "IF EQUAL" << "\t\t" << result->symbol->name << "\t\t" << arg1->num_const << "\t\t" << label; 
+                } else if (arg1->type == CONSTSTRING_EXPR) {
+                    outfile << "\n" << line << "Error: the symbol" << "\t\t" << arg1->str_const << " is a string";
+                } else if (arg1->type == CONSTBOOL_EXPR) {
+                    outfile << "\n" << line << "\t" << "IF EQUAL" << "\t\t" << result->symbol->name << "\t\t" << arg1->bool_const << "\t\t" << label;
+                }
+            }
+        }
+        if (op == 11) {
+            if (result->type == CONSTNUM_EXPR) {
+                if (arg1->type == CONSTNUM_EXPR) { 
+                    outfile << "\n" << line << "\t" << "IF NOT EQUAL" << "\t\t" << result->num_const << "\t\t" << arg1->num_const << "\t\t" << label; 
+                } else if (arg1->type == CONSTSTRING_EXPR) {
+                    outfile << "\n" << line << "Error: the symbol" << "\t\t" << arg1->str_const << " is a string";
+                } else {
+                    outfile << "\n" << line << "\t" << "IF NOT EQUAL" << "\t\t" << result->num_const << "\t\t" << arg1->symbol->name << "\t\t" << label;
+                }
+            } else if (result->type == CONSTSTRING_EXPR) {
+                outfile << "\n" << line << "Error: the symbol" << "\t\t" << result->str_const << " is a string";
+            } else {
+                if (arg1->type == CONSTNUM_EXPR) { 
+                    outfile << "\n" << line << "\t" << "IF NOT EQUAL" << "\t\t" << result->symbol->name << "\t\t" << arg1->num_const << "\t\t" << label; 
+                } else if (arg1->type == CONSTSTRING_EXPR) {
+                    outfile << "\n" << line << "Error: the symbol" << "\t\t" << arg1->str_const << " is a string";
+                } else {
+                    outfile << "\n" << line << "\t" << "IF NOT EQUAL" << "\t\t" << result->symbol->name << "\t\t" << arg1->symbol->name << "\t\t" << label;
+                }
+            }
+        }
+        if (op == 12) {
+            if (result->type == CONSTNUM_EXPR) {
+                if (arg1->type == CONSTNUM_EXPR) { 
+                    outfile << "\n" << line << "\t" << "IF LESS EQUAL" << "\t\t" << result->num_const << "\t\t" << arg1->num_const << "\t\t" << label; 
+                } else if (arg1->type == CONSTSTRING_EXPR) {
+                    outfile << "\n" << line << "Error: the symbol" << "\t\t" << arg1->str_const << " is a string";
+                } else {
+                    outfile << "\n" << line << "\t" << "IF LESS EQUAL" << "\t\t" << result->num_const << "\t\t" << arg1->symbol->name << "\t\t" << label;
+                }
+            } else if (result->type == CONSTSTRING_EXPR) {
+                outfile << "\n" << line << "Error: the symbol" << "\t\t" << result->str_const << " is a string";
+            } else {
+                if (arg1->type == CONSTNUM_EXPR) { 
+                    outfile << "\n" << line << "\t" << "IF LESS EQUAL" << "\t\t" << result->symbol->name << "\t\t" << arg1->num_const << "\t\t" << label; 
+                } else if (arg1->type == CONSTSTRING_EXPR) {
+                    outfile << "\n" << line << "Error: the symbol" << "\t\t" << arg1->str_const << " is a string";
+                } else {
+                    outfile << "\n" << line << "\t" << "IF LESS EQUAL" << "\t\t" << result->symbol->name << "\t\t" << arg1->symbol->name << "\t\t" << label;
+                }
+            }
+        }
+        if (op == 13) {
+            if (result->type == CONSTNUM_EXPR) {
+                if (arg1->type == CONSTNUM_EXPR) { 
+                    outfile << "\n" << line << "\t" << "IF GREATER EQUAL" << "\t\t" << result->num_const << "\t\t" << arg1->num_const << "\t\t" << label; 
+                } else if (arg1->type == CONSTSTRING_EXPR) {
+                    outfile << "\n" << line << "Error: the symbol" << "\t\t" << arg1->str_const << " is a string";
+                } else {
+                    outfile << "\n" << line << "\t" << "IF GREATER EQUAL" << "\t\t" << result->num_const << "\t\t" << arg1->symbol->name << "\t\t" << label;
+                }
+            } else if (result->type == CONSTSTRING_EXPR) {
+                outfile << "\n" << line << "Error: the symbol" << "\t\t" << result->str_const << " is a string";
+            } else {
+                if (arg1->type == CONSTNUM_EXPR) { 
+                    outfile << "\n" << line << "\t" << "IF GREATER EQUAL" << "\t\t" << result->symbol->name << "\t\t" << arg1->num_const << "\t\t" << label; 
+                } else if (arg1->type == CONSTSTRING_EXPR) {
+                    outfile << "\n" << line << "Error: the symbol" << "\t\t" << arg1->str_const << " is a string";
+                } else {
+                    outfile << "\n" << line << "\t" << "IF GREATER EQUAL" << "\t\t" << result->symbol->name << "\t\t" << arg1->symbol->name << "\t\t" << label;
+                }
+            }
+        }
+        if (op == 14) {
+            if (result->type == CONSTNUM_EXPR) {
+                if (arg1->type == CONSTNUM_EXPR) { 
+                    outfile << "\n" << line << "\t" << "IF LESS" << "\t\t" << result->num_const << "\t\t" << arg1->num_const << "\t\t" << label; 
+                } else if (arg1->type == CONSTSTRING_EXPR) {
+                    outfile << "\n" << line << "Error: the symbol" << "\t\t" << arg1->str_const << " is a string";
+                } else {
+                    outfile << "\n" << line << "\t" << "IF LESS" << "\t\t" << result->num_const << "\t\t" << arg1->symbol->name << "\t\t" << label;
+                }
+            } else if (result->type == CONSTSTRING_EXPR) {
+                outfile << "\n" << line << "Error: the symbol" << "\t\t" << result->str_const << " is a string";
+            } else {
+                if (arg1->type == CONSTNUM_EXPR) { 
+                    outfile << "\n" << line << "\t" << "IF LESS" << "\t\t" << result->symbol->name << "\t\t" << arg1->num_const << "\t\t" << label; 
+                } else if (arg1->type == CONSTSTRING_EXPR) {
+                    outfile << "\n" << line << "Error: the symbol" << "\t\t" << arg1->str_const << " is a string";
+                } else {
+                    outfile << "\n" << line << "\t" << "IF LESS" << "\t\t" << result->symbol->name << "\t\t" << arg1->symbol->name << "\t\t" << label;
+                }
+            }
+        }
+        if (op == 15) {
+            if (result->type == CONSTNUM_EXPR) {
+                if (arg1->type == CONSTNUM_EXPR) { 
+                    outfile << "\n" << line << "\t" << "IF GREATER" << "\t\t" << result->num_const << "\t\t" << arg1->num_const << "\t\t" << label; 
+                } else if (arg1->type == CONSTSTRING_EXPR) {
+                    outfile << "\n" << line << "Error: the symbol" << "\t\t" << arg1->str_const << " is a string";
+                } else {
+                    outfile << "\n" << line << "\t" << "IF GREATER" << "\t\t" << result->num_const << "\t\t" << arg1->symbol->name << "\t\t" << label;
+                }
+            } else if (result->type == CONSTSTRING_EXPR) {
+                outfile << "\n" << line << "Error: the symbol" << "\t\t" << result->str_const << " is a string";
+            } else {
+                if (arg1->type == CONSTNUM_EXPR) { 
+                    outfile << "\n" << line << "\t" << "IF GREATER" << "\t\t" << result->symbol->name << "\t\t" << arg1->num_const << "\t\t" << label; 
+                } else if (arg1->type == CONSTSTRING_EXPR) {
+                    outfile << "\n" << line << "Error: the symbol" << "\t\t" << arg1->str_const << " is a string";
+                } else {
+                    outfile << "\n" << line << "\t" << "IF GREATER" << "\t\t" << result->symbol->name << "\t\t" << arg1->symbol->name << "\t\t" << label;
+                }
+            }
+        }
+        if (op == 16) {
+            outfile << "\n" << line << "\t" << "CALL" << "\t\t" << result->symbol->name;
+        }
+        if (op == 17) {
+            if (result->type == CONSTNUM_EXPR) {
+                outfile << "\n" << line << "\t" << "PARAM" << "\t\t" << result->num_const;
+            } else {
+                outfile << "\n" << line << "\t" << "PARAM" << "\t\t" << result->symbol->name;
+            }
+        }
+        if (op == 18) {
+            outfile << "\n" << line << "\t" << "RETURN" << "\t\t" << result->symbol->name;
+        }
+        if (op == 19) {
+            outfile << "\n" << line << "\t" << "GETRETVAL" << "\t\t" << result->symbol->name;
+        }
+        if (op == 20) {
+            outfile << "\n" << line << "\t" << "FUNCSTART" << "\t" << result->symbol->name;
+            //std::cout << "Content appended successfully.\n";
+        }
+        if (op == 21) {
+            outfile << "\n" << line << "\t" << "FUNCEND" << "\t\t" << result->symbol->name;
+            //std::cout << "Content appended successfully.\n";
+        } 
+        if (op == 22) {
+            outfile << "\n" << line << "\t" << "TABLECREATE" << "\t\t" << result->symbol->name;
+        }
+        if (op == 23) {
+            if (arg2->type == CONSTNUM_EXPR) {
+                if (arg1->type == CONSTNUM_EXPR) {
+                    outfile << "\n" << line << "\t" << "TABLEGETELEM" << "\t\t" << result->symbol->name << "\t\t" << arg1->num_const << "\t\t" << arg2->num_const;
+                } else if (arg1->type == CONSTSTRING_EXPR) {
+                    outfile << "\n" << line << "\t" << "TABLEGETELEM" << "\t\t" << result->symbol->name << "\t\t" << arg1->str_const << "\t\t" << arg2->num_const;
+                } else if (arg1->type == CONSTBOOL_EXPR) {
+                    outfile << "\n" << line << "\t" << "TABLEGETELEM" << "\t\t" << result->symbol->name << "\t\t" << arg1->bool_const << "\t\t" << arg2->num_const;
+                } else {
+                    outfile << "\n" << line << "\t" << "TABLEGETELEM" << "\t\t" << result->symbol->name << "\t\t" << arg1->symbol->name << "\t\t" << arg2->num_const;
+                }
+            } else if (arg2->type == CONSTSTRING_EXPR) {
+                if (arg1->type == CONSTNUM_EXPR) {
+                    outfile << "\n" << line << "\t" << "TABLEGETELEM" << "\t\t" << result->symbol->name << "\t\t" << arg1->num_const << "\t\t" << arg2->str_const;
+                } else if (arg1->type == CONSTSTRING_EXPR) {
+                    outfile << "\n" << line << "\t" << "TABLEGETELEM" << "\t\t" << result->symbol->name << "\t\t" << arg1->str_const << "\t\t" << arg2->str_const;
+                } else if (arg1->type == CONSTBOOL_EXPR) {
+                    outfile << "\n" << line << "\t" << "TABLEGETELEM" << "\t\t" << result->symbol->name << "\t\t" << arg1->bool_const << "\t\t" << arg2->str_const;
+                } else {
+                    outfile << "\n" << line << "\t" << "TABLEGETELEM" << "\t\t" << result->symbol->name << "\t\t" << arg1->symbol->name << "\t\t" << arg2->str_const;
+                }
+            } else if (arg2->type == CONSTBOOL_EXPR) {
+                if (arg1->type == CONSTNUM_EXPR) {
+                    outfile << "\n" << line << "\t" << "TABLEGETELEM" << "\t\t" << result->symbol->name << "\t\t" << arg1->num_const << "\t\t" << arg2->bool_const;
+                } else if (arg1->type == CONSTSTRING_EXPR) {
+                    outfile << "\n" << line << "\t" << "TABLEGETELEM" << "\t\t" << result->symbol->name << "\t\t" << arg1->str_const << "\t\t" << arg2->bool_const;
+                } else if (arg1->type == CONSTBOOL_EXPR) {
+                    outfile << "\n" << line << "\t" << "TABLEGETELEM" << "\t\t" << result->symbol->name << "\t\t" << arg1->bool_const << "\t\t" << arg2->bool_const;
+                } else {
+                    outfile << "\n" << line << "\t" << "TABLEGETELEM" << "\t\t" << result->symbol->name << "\t\t" << arg1->symbol->name << "\t\t" << arg2->bool_const;
+                }
+            } else {
+                if (arg1->type == CONSTNUM_EXPR) {
+                    outfile << "\n" << line << "\t" << "TABLEGETELEM" << "\t\t" << result->symbol->name << "\t\t" << arg1->num_const << "\t\t" << arg2->symbol->name;
+                } else if (arg1->type == CONSTSTRING_EXPR) {
+                    outfile << "\n" << line << "\t" << "TABLEGETELEM" << "\t\t" << result->symbol->name << "\t\t" << arg1->str_const << "\t\t" << arg2->symbol->name;
+                } else if (arg1->type == CONSTBOOL_EXPR) {
+                    outfile << "\n" << line << "\t" << "TABLEGETELEM" << "\t\t" << result->symbol->name << "\t\t" << arg1->bool_const << "\t\t" << arg2->symbol->name;
+                } else {
+                    outfile << "\n" << line << "\t" << "TABLEGETELEM" << "\t\t" << result->symbol->name << "\t\t" << arg1->symbol->name << "\t\t" << arg2->symbol->name;
+                }
+            } 
+        }
+        if (op == 24) {
+            if (arg2->type == CONSTNUM_EXPR) {
+                if (arg1->type == CONSTNUM_EXPR) {
+                    outfile << "\n" << line << "\t" << "TABLESETELEM" << "\t\t" << result->symbol->name << "\t\t" << arg1->num_const << "\t\t" << arg2->num_const;
+                } else if (arg1->type == CONSTSTRING_EXPR) {
+                    outfile << "\n" << line << "\t" << "TABLESETELEM" << "\t\t" << result->symbol->name << "\t\t" << arg1->str_const << "\t\t" << arg2->num_const;
+                } else if (arg1->type == CONSTBOOL_EXPR) {
+                    outfile << "\n" << line << "\t" << "TABLESETELEM" << "\t\t" << result->symbol->name << "\t\t" << arg1->bool_const << "\t\t" << arg2->num_const;
+                } else {
+                    outfile << "\n" << line << "\t" << "TABLESETELEM" << "\t\t" << result->symbol->name << "\t\t" << arg1->symbol->name << "\t\t" << arg2->num_const;
+                }
+            } else if (arg2->type == CONSTSTRING_EXPR) {
+                if (arg1->type == CONSTNUM_EXPR) {
+                    outfile << "\n" << line << "\t" << "TABLESETELEM" << "\t\t" << result->symbol->name << "\t\t" << arg1->num_const << "\t\t" << arg2->str_const;
+                } else if (arg1->type == CONSTSTRING_EXPR) {
+                    outfile << "\n" << line << "\t" << "TABLESETELEM" << "\t\t" << result->symbol->name << "\t\t" << arg1->str_const << "\t\t" << arg2->str_const;
+                } else if (arg1->type == CONSTBOOL_EXPR) {
+                    outfile << "\n" << line << "\t" << "TABLESETELEM" << "\t\t" << result->symbol->name << "\t\t" << arg1->bool_const << "\t\t" << arg2->str_const;
+                } else {
+                    outfile << "\n" << line << "\t" << "TABLESETELEM" << "\t\t" << result->symbol->name << "\t\t" << arg1->symbol->name << "\t\t" << arg2->str_const;
+                }
+            } else if (arg2->type == CONSTBOOL_EXPR) {
+                if (arg1->type == CONSTNUM_EXPR) {
+                    outfile << "\n" << line << "\t" << "TABLESETELEM" << "\t\t" << result->symbol->name << "\t\t" << arg1->num_const << "\t\t" << arg2->bool_const;
+                } else if (arg1->type == CONSTSTRING_EXPR) {
+                    outfile << "\n" << line << "\t" << "TABLESETELEM" << "\t\t" << result->symbol->name << "\t\t" << arg1->str_const << "\t\t" << arg2->bool_const;
+                } else if (arg1->type == CONSTBOOL_EXPR) {
+                    outfile << "\n" << line << "\t" << "TABLESETELEM" << "\t\t" << result->symbol->name << "\t\t" << arg1->bool_const << "\t\t" << arg2->bool_const;
+                } else {
+                    outfile << "\n" << line << "\t" << "TABLESETELEM" << "\t\t" << result->symbol->name << "\t\t" << arg1->symbol->name << "\t\t" << arg2->bool_const;
+                }
+            } else {
+                if (arg1->type == CONSTNUM_EXPR) {
+                    outfile << "\n" << line << "\t" << "TABLESETELEM" << "\t\t" << result->symbol->name << "\t\t" << arg1->num_const << "\t\t" << arg2->symbol->name;
+                } else if (arg1->type == CONSTSTRING_EXPR) {
+                    outfile << "\n" << line << "\t" << "TABLESETELEM" << "\t\t" << result->symbol->name << "\t\t" << arg1->str_const << "\t\t" << arg2->symbol->name;
+                } else if (arg1->type == CONSTBOOL_EXPR) {
+                    outfile << "\n" << line << "\t" << "TABLESETELEM" << "\t\t" << result->symbol->name << "\t\t" << arg1->bool_const << "\t\t" << arg2->symbol->name;
+                } else {
+                    outfile << "\n" << line << "\t" << "TABLESETELEM" << "\t\t" << result->symbol->name << "\t\t" << arg1->symbol->name << "\t\t" << arg2->symbol->name;
+                }
+            } 
+        }
+        if (op == 25) {
+            
+            outfile << "\n" << line << "\t" << "JUMP" << "\t\t" << label;
+                
+        }
+        //std::cout << "Content appended successfully.\n";
+    } else {
+        std::cerr << "Error opening file for appending.\n";
+    }
+
+    // Close the file
+    outfile.close();
+}
+
 expression* make_call(expression* lvalue, expression* reversed_elist) {
-    //std::cout << "MAKE CALL" << lvalue->symbol->name << std::endl;
+    std::cout << "MAKE CALL" << lvalue->symbol->name << std::endl;
+     
     expression* func = emit_if_table_item(lvalue);
     //std::cout << "MAKE CALL EMIT IF TABLE ITEM" << func->symbol->name << std::endl;
-    while (reversed_elist != NULL) {
+    while (reversed_elist) {
         //std::cout << "MAKE CALL IN WHILE " << reversed_elist->symbol->name << std::endl;
+        //std::cout << "MAKE CALL elist " << reversed_elist->symbol->name << std::endl;
         emit_param(PARAM, reversed_elist);
         reversed_elist = reversed_elist->next;
+    }
+    
+    emit_call(CALL, func);
+    SymbolTableEntry new_temp = new_temp_var(lvalue->symbol->line, lvalue->symbol->type);
+    //std::cout << new_temp.name << std::endl;
+    expression* result = make_lvalue_expression(VAR_EXPR, get_symbol(new_temp.name, get_scope()));
+    //std::cout << "Result is " << result->symbol->name << std::endl;
+    emit_get_ret_val(GETRETVAL, result);
+    return result;
+}
+
+expression* make_call_in(expression* lvalue, std::vector<expression*> callsuffix) {
+    std::cout << "MAKE CALL" << lvalue->symbol->name << std::endl;
+     
+    expression* func = emit_if_table_item(lvalue);
+    //std::cout << "MAKE CALL EMIT IF TABLE ITEM" << func->symbol->name << std::endl;
+    /*while (reversed_elist) {
+        //std::cout << "MAKE CALL IN WHILE " << reversed_elist->symbol->name << std::endl;
+        std::cout << "MAKE CALL elist " << reversed_elist->symbol->name << std::endl;
+        emit_param(PARAM, reversed_elist);
+        reversed_elist = reversed_elist->next;
+    }*/
+
+    for (const auto& elem : callsuffix) {
+        emit_param(PARAM, elem);
     }
     
     emit_call(CALL, func);
@@ -141,18 +689,28 @@ void emit_arithm_one(iopcode op, expression* result, expression* arg1) {
     //std::cout << "term -> - expression emit_arithm_one " << result->type << std::endl;
     quad_table.push_back(make_quad(op, result, arg1, NULL, UINT_MAX, line_op_counter));
     //std::cout << "term -> - expression emit_arithm_one after quad_table pushback" << std::endl;
+    quad_creation(op, result, arg1, NULL, UINT_MAX, line_op_counter);
     line_op_counter++;
     return;
 }
 
-void emit_bool(iopcode op, expression* result, expression* arg1) {
-    quad_table.push_back(make_quad(op, result, arg1, NULL, UINT_MAX, line_op_counter));
-    line_op_counter++;
+void emit_bool(iopcode op, expression* result, expression* arg1, expression* arg2) {
+    if (op == AND || op == OR) {
+        quad_table.push_back(make_quad(op, result, arg1, arg2, UINT_MAX, line_op_counter));
+        quad_creation(op, result, arg1, arg2, UINT_MAX, line_op_counter);
+        line_op_counter++;
+    } else {
+        quad_table.push_back(make_quad(op, result, arg1, NULL, UINT_MAX, line_op_counter));
+        quad_creation(op, result, arg1, NULL, UINT_MAX, line_op_counter);
+        line_op_counter++;
+    }
     return;
 }
 
 void emit_assign(iopcode op, expression* result, expression* arg1) {
+    std::cout << "EMIT ASSIGN RESULT NAME: " << result->symbol->name << std::endl;
     quad_table.push_back(make_quad(op, result, arg1, NULL, UINT_MAX, line_op_counter));
+    quad_creation(op, result, arg1, NULL, UINT_MAX, line_op_counter);
     line_op_counter++;
     return;
 }
@@ -161,6 +719,7 @@ void emit_add(iopcode op, expression* result, expression* arg1, expression* arg2
     //std::cout << "ARG 1 " << arg1->type << std::endl;
     //std::cout << "ARG 2 " << arg2->type << std::endl;
     quad_table.push_back(make_quad(op, result, arg1, arg2, UINT_MAX, line_op_counter));
+    quad_creation(op, result, arg1, arg2, UINT_MAX, line_op_counter);
     line_op_counter++;
     return;
 }
@@ -169,30 +728,28 @@ void emit_sub(iopcode op, expression* result, expression* arg1, expression* arg2
     //std::cout << "ARG 1 " << arg1->type << "  " << arg1->symbol->name << std::endl;
     //std::cout << "ARG 2 " << arg2->type << std::endl;
     quad_table.push_back(make_quad(op, result, arg1, arg2, UINT_MAX, line_op_counter));
+    quad_creation(op, result, arg1, arg2, UINT_MAX, line_op_counter);
     line_op_counter++;
     return;
 }
 
 void emit_mul(iopcode op, expression* result, expression* arg1, expression* arg2) {
-    //std::cout << "ARG 1 " << arg1->type << "  " << arg1->symbol->name << std::endl;
-    //std::cout << "ARG 2 " << arg2->type << std::endl;
     quad_table.push_back(make_quad(op, result, arg1, arg2, UINT_MAX, line_op_counter));
+    quad_creation(op, result, arg1, arg2, UINT_MAX, line_op_counter);
     line_op_counter++;
     return;
 }
 
 void emit_div(iopcode op, expression* result, expression* arg1, expression* arg2) {
-    //std::cout << "ARG 1 " << arg1->type << "  " << arg1->symbol->name << std::endl;
-    //std::cout << "ARG 2 " << arg2->type << std::endl;
     quad_table.push_back(make_quad(op, result, arg1, arg2, UINT_MAX, line_op_counter));
+    quad_creation(op, result, arg1, arg2, UINT_MAX, line_op_counter);
     line_op_counter++;
     return;
 }
 
 void emit_mod(iopcode op, expression* result, expression* arg1, expression* arg2) {
-    //std::cout << "ARG 1 " << arg1->type << "  " << arg1->symbol->name << std::endl;
-    //std::cout << "ARG 2 " << arg2->type << std::endl;
     quad_table.push_back(make_quad(op, result, arg1, arg2, UINT_MAX, line_op_counter));
+    quad_creation(op, result, arg1, arg2, UINT_MAX, line_op_counter);
     line_op_counter++;
     return;
 }
@@ -200,6 +757,7 @@ void emit_mod(iopcode op, expression* result, expression* arg1, expression* arg2
 void emit_if_greater(iopcode op, expression* result, expression* arg1, unsigned label) {
     //std::cout << "Quad Label is " << label << std::endl;
     quad_table.push_back(make_quad(op, result, arg1, NULL, label, line_op_counter));
+    quad_creation(op, result, arg1, NULL, label, line_op_counter);
     line_op_counter++;
     return;
 }
@@ -207,6 +765,7 @@ void emit_if_greater(iopcode op, expression* result, expression* arg1, unsigned 
 void emit_if_less(iopcode op, expression* result, expression* arg1, unsigned label) {
     //std::cout << "Quad Label is " << label << std::endl;
     quad_table.push_back(make_quad(op, result, arg1, NULL, label, line_op_counter));
+    quad_creation(op, result, arg1, NULL, label, line_op_counter);
     line_op_counter++;
     return;
 }
@@ -214,6 +773,7 @@ void emit_if_less(iopcode op, expression* result, expression* arg1, unsigned lab
 void emit_if_greatereq(iopcode op, expression* result, expression* arg1, unsigned label) {
     //std::cout << "Quad Label is " << label << std::endl;
     quad_table.push_back(make_quad(op, result, arg1, NULL, label, line_op_counter));
+    quad_creation(op, result, arg1, NULL, label, line_op_counter);
     line_op_counter++;
     return;
 }
@@ -221,6 +781,7 @@ void emit_if_greatereq(iopcode op, expression* result, expression* arg1, unsigne
 void emit_if_lesseq(iopcode op, expression* result, expression* arg1, unsigned label) {
     //std::cout << "Quad Label is " << label << std::endl;
     quad_table.push_back(make_quad(op, result, arg1, NULL, label, line_op_counter));
+    quad_creation(op, result, arg1, NULL, label, line_op_counter);
     line_op_counter++;
     return;
 }
@@ -228,6 +789,7 @@ void emit_if_lesseq(iopcode op, expression* result, expression* arg1, unsigned l
 void emit_if_equal(iopcode op, expression* result, expression* arg1, unsigned label) {
     //std::cout << "Quad Label is " << label << std::endl;
     quad_table.push_back(make_quad(op, result, arg1, NULL, label, line_op_counter));
+    quad_creation(op, result, arg1, NULL, label, line_op_counter);
     line_op_counter++;
     return;
 }
@@ -235,6 +797,7 @@ void emit_if_equal(iopcode op, expression* result, expression* arg1, unsigned la
 void emit_if_not_equal(iopcode op, expression* result, expression* arg1, unsigned label) {
     //std::cout << "Quad Label is " << label << std::endl;
     quad_table.push_back(make_quad(op, result, arg1, NULL, label, line_op_counter));
+    quad_creation(op, result, arg1, NULL, label, line_op_counter);
     line_op_counter++;
     return;
 }
@@ -242,12 +805,14 @@ void emit_if_not_equal(iopcode op, expression* result, expression* arg1, unsigne
 void emit_jump(iopcode op, unsigned label) {
     //std::cout << "Quad Label is " << op << std::endl;
     quad_table.push_back(make_quad(op, NULL, NULL, NULL, label, line_op_counter));
+    quad_creation(op, NULL, NULL, NULL, label, line_op_counter);
     line_op_counter++;
     return;
 }
 
 void emit_table_get_item(iopcode op, expression* result, expression* arg1, expression* arg2) {
     quad_table.push_back(make_quad(op, result, arg1, arg2, UINT_MAX, line_op_counter));
+    quad_creation(op, result, arg1, arg2, UINT_MAX, line_op_counter);
     line_op_counter++;
     return;
 }
@@ -255,6 +820,7 @@ void emit_table_get_item(iopcode op, expression* result, expression* arg1, expre
 void emit_table_set_item(iopcode op, expression* result, expression* arg1, expression* arg2) {
     //std::cout << arg1->type << std::endl;
     quad_table.push_back(make_quad(op, result, arg1, arg2, UINT_MAX, line_op_counter));
+    quad_creation(op, result, arg1, arg2, UINT_MAX, line_op_counter);
     line_op_counter++;
     return;
 }
@@ -279,31 +845,36 @@ expression* emit_if_table_item(expression* lvalue) {
 void emit_funcdef(iopcode op, expression* result) {
     //std::cout << "HERE" << std::endl;
     quad_table.push_back(make_quad(op, result, NULL, NULL, UINT_MAX, line_op_counter));
-    //std::cout << "HERE After PUSHBACK" << std::endl;
+    quad_creation(op, result, NULL, NULL, UINT_MAX, line_op_counter);
     line_op_counter++;
+
     return;
 }
 
 void emit_param(iopcode op, expression* result) {
     quad_table.push_back(make_quad(op, result, NULL, NULL, UINT_MAX, line_op_counter));
+    quad_creation(op, result, NULL, NULL, UINT_MAX, line_op_counter);
     line_op_counter++;
     return;
 }
 
 void emit_call(iopcode op, expression* result) {
     quad_table.push_back(make_quad(op, result, NULL, NULL, UINT_MAX, line_op_counter));
+    quad_creation(op, result, NULL, NULL, UINT_MAX, line_op_counter);
     line_op_counter++;
     return;
 }
 
 void emit_get_ret_val(iopcode op, expression* result) {
     quad_table.push_back(make_quad(op, result, NULL, NULL, UINT_MAX, line_op_counter));
+    quad_creation(op, result, NULL, NULL, UINT_MAX, line_op_counter);
     line_op_counter++;
     return;
 }
 
 void emit_table_create(iopcode op, expression* result) {
     quad_table.push_back(make_quad(op, result, NULL, NULL, UINT_MAX, line_op_counter));
+    quad_creation(op, result, NULL, NULL, UINT_MAX, line_op_counter);
     line_op_counter++;
     return;
 }
@@ -439,7 +1010,7 @@ expression* make_new_table_expression(expr_value type, SymbolTableEntry* symbol)
     return new_expression;
 }
 
-void quad_table_print() {
+/*void quad_table_print() {
     std::cout << "INSTR. LINE" << "\t\t" << "OPERATION" << "\t\t" << "RESULT" << "\t\t" << "Arg 1" << "\t\t" << "Arg 2" << std::endl;
     for (auto& quad : quad_table) {
         switch (quad.op) {
@@ -466,17 +1037,37 @@ void quad_table_print() {
                     } else if (quad.arg1->type == CONSTBOOL_EXPR) {
                         std::cout << quad.line << "\t\t" << "ASSIGN" << "\t\t" << quad.result->symbol->name << "\t\t\t" << quad.arg1->bool_const << std::endl;
                         break;
+                    } else if (quad.arg1->type == CONSTSTRING_EXPR) {
+                        std::cout << quad.line << "\t\t" << "ASSIGN" << "\t\t" << quad.result->symbol->name << "\t\t\t" << quad.arg1->str_const << std::endl;
+                        break;
                     } else {
-                        std::cout << quad.line << "\t\t" << "ASSIGN" << "\t\t" << quad.result->symbol->name << "\t\t\t" << quad.arg1->symbol->name << std::endl;
+                        //std::cout << quad.line << "\t\t" << "ASSIGN" << "\t\t" << quad.result->symbol->name << "\t\t\t" << quad.arg1->symbol->name << std::endl;
                         break;
                     }
                 } else {
                     //std::cout << "ASSIGN EXPR 5" << std::endl;
                     if (quad.result->symbol == NULL) {
-                        break;
+                    
                     } else {
-                        std::cout << quad.line << "\t\t" << "ASSIGN" << "\t\t" << quad.result->symbol->name << "\t\t\t" << quad.arg1->symbol->name << std::endl;
-                        break;
+                        //std::cout << "NEW TEMP NAME: " << quad.result->symbol->name << std::endl;
+                        //std::cout << quad.line << "\t\t" << "ASSIGN" << "\t\t" << quad.result->symbol->name << "\t\t\t" << quad.arg1->symbol->name << std::endl;
+                        std::string filename = "outfile.alpha";
+                        std::ofstream outfile;
+
+                        // Open the file in append mode
+                        outfile.open(filename, std::ios_base::app);
+
+                        // Check if the file is open
+                        if (outfile.is_open()) {
+                            // Write to the file
+                            outfile << quad.line << "\t\t" << "ASSIGN" << "\t\t" << quad.result->symbol->name << "\t\t\t" << quad.arg1->symbol->name;
+                            std::cout << "Content appended successfully.\n";
+                        } else {
+                            std::cerr << "Error opening file for appending.\n";
+                        }
+
+                        // Close the file
+                        outfile.close();
                     }
                 }
                 break;
@@ -720,7 +1311,7 @@ void quad_table_print() {
         
     }
     return;
-}
+}*/
 
 std::string new_temp_name(int temp_counter) {
     //temp_counter++;
@@ -846,7 +1437,7 @@ void reset_formal_arg_offset() {
 }
 
 bool check_if_is_arithm(expression* expr) {
-    if (expr->type == CONSTBOOL_EXPR || expr->type == CONSTSTRING_EXPR || expr->type == NIL_EXPR || 
+    if (expr->type == CONSTSTRING_EXPR || expr->type == NIL_EXPR || expr->type == CONSTBOOL_EXPR || 
         expr->type == NEWTABLE_EXPR || expr->type == PROGRAMFUNC_EXPR || expr->type == LIBFUNC_EXPR || expr->type == BOOL_EXPR) {
         return false;
     }
@@ -854,7 +1445,7 @@ bool check_if_is_arithm(expression* expr) {
 }
 
 bool check_if_is_arithm_alt(expression* expr) {
-    if (expr->type == CONSTSTRING_EXPR || expr->type == NIL_EXPR) {
+    if (expr->type == NIL_EXPR) {
         return false;
     }
     return true;
@@ -876,9 +1467,17 @@ expression* manage_expr_plus_expr(expression* result, expression* expr1, express
         }
         SymbolTableEntry new_temp = new_temp_var(-1, type);
         std::cout << new_temp.scope << std::endl;
-        result = make_arithm_expression(ARITHM_EXPR, get_symbol(new_temp.name, get_scope()));
-        std::cout << "$1->type " << expr1->type << std::endl;
-        emit_add(ADD, result, expr1, expr2);
+        if (expr1->type == 8 && expr2->type == 8) {
+            result = make_constnum_expression(CONSTNUM_EXPR, expr1->num_const+expr2->num_const);
+            //std::cout << "$1->type " << expr1->type << std::endl;
+            emit_add(ADD, result, expr1, expr2);
+        } else {  
+            result = make_arithm_expression(ARITHM_EXPR, get_symbol(new_temp.name, get_scope()));
+            //std::cout << "$1->type " << expr1->type << std::endl;
+            emit_add(ADD, result, expr1, expr2);
+        }
+   } else {
+       std::cout << "We cannot do arithmetic actions to a no numerable expression" << std::endl;
    }
    return result;
 }
@@ -890,10 +1489,17 @@ expression* manage_expr_minus_expr(expression* result, expression* expr1, expres
             type = LOCAL;
         }
         SymbolTableEntry new_temp = new_temp_var(-1, type);
-        //std::cout << new_temp.scope << std::endl;
-        result = make_arithm_expression(ARITHM_EXPR, get_symbol(new_temp.name, get_scope()));
-        //std::cout << "$1->type " << expr1->type << std::endl;
-        emit_sub(SUB, result, expr1, expr2);
+        if (expr1->type == 8 && expr2->type == 8) {
+            result = make_constnum_expression(CONSTNUM_EXPR, expr1->num_const-expr2->num_const);
+            //std::cout << "$1->type " << expr1->type << std::endl;
+            emit_sub(SUB, result, expr1, expr2);
+        } else {  
+            result = make_arithm_expression(ARITHM_EXPR, get_symbol(new_temp.name, get_scope()));
+            //std::cout << "$1->type " << expr1->type << std::endl;
+            emit_sub(SUB, result, expr1, expr2);
+        }
+    } else {
+       std::cout << "We cannot do arithmetic actions to a no numerable expression" << std::endl;
     }
     return result;
 }
@@ -905,11 +1511,18 @@ expression* manage_expr_mul_expr(expression* result, expression* expr1, expressi
             type = LOCAL;
         }
         SymbolTableEntry new_temp = new_temp_var(-1, type);
-        //std::cout << new_temp.scope << std::endl;
-        result = make_arithm_expression(ARITHM_EXPR, get_symbol(new_temp.name, get_scope()));
-        //std::cout << "$1->type " << expr1->type << std::endl;
-        emit_mul(MUL, result, expr1, expr2);
+        if (expr1->type == 8 && expr2->type == 8) {
+            result = make_constnum_expression(CONSTNUM_EXPR, expr1->num_const*expr2->num_const);
+            //std::cout << "$1->type " << expr1->type << std::endl;
+            emit_mul(MUL, result, expr1, expr2);
+        } else {  
+            result = make_arithm_expression(ARITHM_EXPR, get_symbol(new_temp.name, get_scope()));
+            //std::cout << "$1->type " << expr1->type << std::endl;
+            emit_mul(MUL, result, expr1, expr2);
+        }
                     
+    } else {
+        std::cout << "We cannot do arithmetic actions to a no numerable expression" << std::endl;
     }
     return result;
 }
@@ -921,10 +1534,17 @@ expression* manage_expr_div_expr(expression* result, expression* expr1, expressi
             type = LOCAL;
         }
         SymbolTableEntry new_temp = new_temp_var(-1, type);
-        //std::cout << new_temp.scope << std::endl;
-        result = make_arithm_expression(ARITHM_EXPR, get_symbol(new_temp.name, get_scope()));
-        //std::cout << "$1->type " << expr1->type << std::endl;
-        emit_div(DIV, result, expr1, expr2);
+        if (expr1->type == 8 && expr2->type == 8) {
+            result = make_constnum_expression(CONSTNUM_EXPR, expr1->num_const/expr2->num_const);
+            //std::cout << "$1->type " << expr1->type << std::endl;
+            emit_div(DIV, result, expr1, expr2);
+        } else {  
+            result = make_arithm_expression(ARITHM_EXPR, get_symbol(new_temp.name, get_scope()));
+            //std::cout << "$1->type " << expr1->type << std::endl;
+            emit_div(DIV, result, expr1, expr2);
+        }
+    } else {
+       std::cout << "We cannot do arithmetic actions to a no numerable expression" << std::endl;
     }
     return result;
 }
@@ -936,10 +1556,17 @@ expression* manage_expr_mod_expr(expression* result, expression* expr1, expressi
             type = LOCAL;
         }
         SymbolTableEntry new_temp = new_temp_var(-1, type);
-        //std::cout << new_temp.scope << std::endl;
-        result = make_arithm_expression(ARITHM_EXPR, get_symbol(new_temp.name, get_scope()));
-        //std::cout << "$1->type " << expr1->type << std::endl;
-        emit_mod(MOD, result, expr1, expr2);
+        if (expr1->type == 8 && expr2->type == 8) {
+            result = make_constnum_expression(CONSTNUM_EXPR, 1);
+            //std::cout << "$1->type " << expr1->type << std::endl;
+            emit_mod(MOD, result, expr1, expr2);
+        } else {  
+            result = make_arithm_expression(ARITHM_EXPR, get_symbol(new_temp.name, get_scope()));
+            //std::cout << "$1->type " << expr1->type << std::endl;
+            emit_mod(MOD, result, expr1, expr2);
+        }
+    } else {
+       std::cout << "We cannot do arithmetic actions to a no numerable expression" << std::endl;
     }
     return result;
 }
@@ -954,10 +1581,10 @@ expression* manage_expr_gr_expr(expression* result, expression* expr1, expressio
     result = make_bool_expression(BOOL_EXPR, get_symbol(new_temp.name, get_scope()));
     emit_if_greater(IF_GR, expr1, expr2, next_quad_label()+3);
     set_curr_quad_label((next_quad_label()+3));
-    emit_assign(ASSIGN, result, make_constbool_expression(CONSTBOOL_EXPR, 1));
+    emit_assign(ASSIGN, result, make_constbool_expression(CONSTBOOL_EXPR, 0));
     emit_jump(JUMP, (next_quad_label()+2));
     set_curr_quad_label((next_quad_label()+2));
-    emit_assign(ASSIGN, result, make_constbool_expression(CONSTBOOL_EXPR, 0));
+    emit_assign(ASSIGN, result, make_constbool_expression(CONSTBOOL_EXPR, 1));
 
     return result;
 }
@@ -972,10 +1599,10 @@ expression* manage_expr_ls_expr(expression* result, expression* expr1, expressio
     result = make_bool_expression(BOOL_EXPR, get_symbol(new_temp.name, get_scope()));
     emit_if_less(IF_L, expr1, expr2, next_quad_label()+3);
     set_curr_quad_label((next_quad_label()+3));
-    emit_assign(ASSIGN, result, make_constbool_expression(CONSTBOOL_EXPR, 1));
+    emit_assign(ASSIGN, result, make_constbool_expression(CONSTBOOL_EXPR, 0));
     emit_jump(JUMP, (next_quad_label()+2));
     set_curr_quad_label((next_quad_label()+2));
-    emit_assign(ASSIGN, result, make_constbool_expression(CONSTBOOL_EXPR, 0));
+    emit_assign(ASSIGN, result, make_constbool_expression(CONSTBOOL_EXPR, 1));
 
     return result;
 }
@@ -990,10 +1617,10 @@ expression* manage_expr_gr_eq_expr(expression* result, expression* expr1, expres
     result = make_bool_expression(BOOL_EXPR, get_symbol(new_temp.name, get_scope()));
     emit_if_greatereq(IF_GR_EQ, expr1, expr2, next_quad_label()+3);
     set_curr_quad_label((next_quad_label()+3));
-    emit_assign(ASSIGN, result, make_constbool_expression(CONSTBOOL_EXPR, 1));
+    emit_assign(ASSIGN, result, make_constbool_expression(CONSTBOOL_EXPR, 0));
     emit_jump(JUMP, (next_quad_label()+2));
     set_curr_quad_label((next_quad_label()+2));
-    emit_assign(ASSIGN, result, make_constbool_expression(CONSTBOOL_EXPR, 0));
+    emit_assign(ASSIGN, result, make_constbool_expression(CONSTBOOL_EXPR, 1));
 
     return result;
 }
@@ -1008,10 +1635,28 @@ expression* manage_expr_ls_eq_expr(expression* result, expression* expr1, expres
     result = make_bool_expression(BOOL_EXPR, get_symbol(new_temp.name, get_scope()));
     emit_if_lesseq(IF_L_EQ, expr1, expr2, next_quad_label()+3);
     set_curr_quad_label((next_quad_label()+3));
-    emit_assign(ASSIGN, result, make_constbool_expression(CONSTBOOL_EXPR, 1));
+    emit_assign(ASSIGN, result, make_constbool_expression(CONSTBOOL_EXPR, 0));
     emit_jump(JUMP, (next_quad_label()+2));
     set_curr_quad_label((next_quad_label()+2));
+    emit_assign(ASSIGN, result, make_constbool_expression(CONSTBOOL_EXPR, 1));
+
+    return result;
+}
+
+expression* manage_expr_eq_expr(expression* result, expression* expr1, expression* expr2) {
+	SymbolType type = GLOBAL;
+    if (get_scope() != 0) {
+        type = LOCAL;
+    }
+    SymbolTableEntry new_temp = new_temp_var(-1, type);
+    //std::cout << new_temp.scope << std::endl;
+    result = make_bool_expression(BOOL_EXPR, get_symbol(new_temp.name, get_scope()));
+    emit_if_not_equal(IF_EQ, expr1, expr2, next_quad_label()+3);
+    set_curr_quad_label((next_quad_label()+3));
     emit_assign(ASSIGN, result, make_constbool_expression(CONSTBOOL_EXPR, 0));
+    emit_jump(JUMP, (next_quad_label()+2));
+    set_curr_quad_label((next_quad_label()+2));
+    emit_assign(ASSIGN, result, make_constbool_expression(CONSTBOOL_EXPR, 1));
 
     return result;
 }
@@ -1026,11 +1671,35 @@ expression* manage_expr_not_eq_expr(expression* result, expression* expr1, expre
     result = make_bool_expression(BOOL_EXPR, get_symbol(new_temp.name, get_scope()));
     emit_if_not_equal(IF_N_EQ, expr1, expr2, next_quad_label()+3);
     set_curr_quad_label((next_quad_label()+3));
-    emit_assign(ASSIGN, result, make_constbool_expression(CONSTBOOL_EXPR, 1));
+    emit_assign(ASSIGN, result, make_constbool_expression(CONSTBOOL_EXPR, 0));
     emit_jump(JUMP, (next_quad_label()+2));
     set_curr_quad_label((next_quad_label()+2));
-    emit_assign(ASSIGN, result, make_constbool_expression(CONSTBOOL_EXPR, 0));
+    emit_assign(ASSIGN, result, make_constbool_expression(CONSTBOOL_EXPR, 1));
 
+    return result;
+}
+
+expression* manage_expr_and_expr(expression* result, expression* expr1, expression* expr2) {
+    SymbolType type = GLOBAL;
+    if (get_scope() != 0) {
+        type = LOCAL;
+    }
+    SymbolTableEntry new_temp = new_temp_var(-1, type);
+    //std::cout << new_temp.scope << std::endl;
+    result = make_bool_expression(BOOL_EXPR, get_symbol(new_temp.name, get_scope()));
+    emit_bool(AND, result, expr1, expr2);
+    return result;
+}
+
+expression* manage_expr_or_expr(expression* result, expression* expr1, expression* expr2) {
+    SymbolType type = GLOBAL;
+    if (get_scope() != 0) {
+        type = LOCAL;
+    }
+    SymbolTableEntry new_temp = new_temp_var(-1, type);
+    //std::cout << new_temp.scope << std::endl;
+    result = make_bool_expression(BOOL_EXPR, get_symbol(new_temp.name, get_scope()));
+    emit_bool(OR, result, expr1, expr2);
     return result;
 }
 
@@ -1062,7 +1731,7 @@ expression* manage_not_expr(expression* result, expression* expr1) {
     SymbolTableEntry new_temp = new_temp_var(-1, type);
     std::cout << new_temp.scope << std::endl;
     result = make_bool_expression(BOOL_EXPR, get_symbol(new_temp.name, get_scope()));
-    emit_bool(NOT, result, expr1);
+    emit_bool(NOT, result, expr1, NULL);
     return result;
 }
 
@@ -1211,13 +1880,17 @@ expression* manage_assign_expr(expression* result, expression* expr1, expression
                     type = LOCAL;
                 }
                 SymbolTableEntry new_temp = new_temp_var(-1, type);
-                std::cout << new_temp.scope << std::endl;
-                result = make_assign_expression(ASSIGN_EXPR, get_symbol(new_temp.name, get_scope()));
-                //std::cout << $$->symbol->name << std::endl;
-                //std::cout << $1->type << std::endl;
-                emit_assign(ASSIGN, result, expr1);
-                if (get_scope() > 0) {
-                    quad_table_print();
+                std::cout << new_temp.name << std::endl;
+                if (get_symbol(new_temp.name, get_scope()) != NULL) {
+                    std::cout << "NEW TEMP NAME: " << new_temp.name << std::endl;
+                    result = make_assign_expression(ASSIGN_EXPR, get_symbol(new_temp.name, get_scope()));
+                    std::cout << "ASSIGN RESULT NAME: " << result->symbol->name << std::endl;
+                    emit_assign(ASSIGN, result, expr1);
+                    //quad_table_print();
+                } else {
+                    std::cout << new_temp.name << std::endl;
+                    result = make_assign_expression(ASSIGN_EXPR, get_symbol_inactive(new_temp.name, get_scope()));
+                    emit_assign(ASSIGN, result, expr1);
                 }
             } else {
                 std::cout << "Error r-value is not an arithmetic expression" << std::endl;
@@ -1243,8 +1916,17 @@ expression* manage_lvalue_id(expression* result, std::string symbol, int line_nu
             //std::cout << "MANAGE LVALUE ID USERFUNC AFTER" << std::endl;
         } else {
             std::cout << "MANAGE LVALUE ID OTHERWISE" << std::endl;
-            std::cout << "GET SYMBOL: " << get_symbol(symbol, get_scope())->name << std::endl;
-            result = make_lvalue_expression(VAR_EXPR, get_symbol(symbol, get_scope()));
+            /*std::cout << "GET SYMBOL: " << get_symbol(symbol, get_scope())->name << std::endl;
+            result = make_lvalue_expression(VAR_EXPR, get_symbol(symbol, get_scope()));*/
+            if (get_symbol(symbol, get_scope()) != NULL) {
+                std::cout << "MANAGE LVALUE ID OTHERWISE" << std::endl;
+                std::cout << "GET SYMBOL: " << get_symbol(symbol, get_scope())->name << std::endl;
+                std::cout << "GET SYMBOL SCOPE: " << get_scope() << std::endl;
+                result = make_lvalue_expression(VAR_EXPR, get_symbol(symbol, get_scope()));
+                std::cout << "MANAGE LVALUE ID OTHERWISE AFTER MAKE LVALUE EXPR" << std::endl;
+            } else {
+                result = make_lvalue_expression(VAR_EXPR, get_symbol_inactive(symbol, get_scope()));
+            }
         }
     } else if (symbol_flag == 0) {
         //std::cout << "GET SYMBOL NAME: " << get_symbol(symbol, 1)->name << std::endl;
@@ -1254,18 +1936,23 @@ expression* manage_lvalue_id(expression* result, std::string symbol, int line_nu
                 if (get_symbol(symbol, i)->type == LIBFUNC) {
                     //std::cout << "MANAGE LVALUE ID LIBFUNC" << std::endl;
                     result = make_lvalue_expression(LIBFUNC_EXPR, get_symbol(symbol, i));
-                    continue;
+                    break;
                 } else if (get_symbol(symbol, i)->type == USERFUNC) {
                     //std::cout << "MANAGE LVALUE ID USERFUNC" << std::endl;
                     result = make_lvalue_expression(PROGRAMFUNC_EXPR, get_symbol(symbol, i));
                     //std::cout << "MANAGE LVALUE ID USERFUNC AFTER" << std::endl;
-                    continue;
+                    break;
                 } else {
-                    std::cout << "MANAGE LVALUE ID OTHERWISE" << std::endl;
-                    std::cout << "GET SYMBOL: " << get_symbol(symbol, i)->name << std::endl;
-                    result = make_lvalue_expression(VAR_EXPR, get_symbol(symbol, i));
-                    std::cout << "MANAGE LVALUE ID OTHERWISE AFTER MAKE LVALUE EXPR" << std::endl;
-                    continue;
+                    if (get_symbol(symbol, i) != NULL) {
+                        std::cout << "MANAGE LVALUE ID OTHERWISE" << std::endl;
+                        std::cout << "GET SYMBOL: " << get_symbol(symbol, i)->name << std::endl;
+                        result = make_lvalue_expression(VAR_EXPR, get_symbol(symbol, i));
+                        std::cout << "MANAGE LVALUE ID OTHERWISE AFTER MAKE LVALUE EXPR" << std::endl;
+                        break;
+                    } else {
+                        result = make_lvalue_expression(VAR_EXPR, get_symbol_inactive(symbol, i));
+                        break;
+                    }
                 }
             }
         }
@@ -1283,7 +1970,11 @@ expression* manage_lvalue_local_id(expression* result, std::string symbol, int l
     } else if (get_symbol(symbol, get_scope())->type == USERFUNC) {
         result = make_lvalue_expression(PROGRAMFUNC_EXPR, get_symbol(symbol, get_scope()));
     } else {
-        result = make_lvalue_expression(VAR_EXPR, get_symbol(symbol, get_scope()));
+        if (get_symbol(symbol, get_scope() != NULL)) {
+            result = make_lvalue_expression(VAR_EXPR, get_symbol(symbol, get_scope()));
+        } else {
+            result = make_lvalue_expression(VAR_EXPR, get_symbol_inactive(symbol, get_scope()));
+        }
     }
     return result;
 }
@@ -1310,60 +2001,64 @@ expression* manage_lvalue_lbr_expr_rbr(expression* result, expression* expr1, ex
     return result;
 }
 
-expression* manage_lvalue_callsuffix(expression* result, expression* lvalue, expression* callsuffix, int method) {
-    //std::cout << "MANAGE LVALUE CALLSUFFIX" << std::endl;
+expression* manage_lvalue_callsuffix(expression* result, expression* lvalue, std::string id_name, expression* callsuffix, int method) {
+    //std::cout << "MANAGE LVALUE CALLSUFFIX ID NAME: " << lvalue->symbol->name << std::endl;
+    expression* callsuffix_2;
     lvalue = emit_if_table_item(lvalue);
-    if (method == 0) {
+    std::vector<expression*> callsuffix_stack;
+    if (method) {
     
-        if (lvalue->type == LIBFUNC_EXPR || lvalue->type == PROGRAMFUNC_EXPR || lvalue->type == VAR_EXPR) {
+        /*if (lvalue->type == LIBFUNC_EXPR || lvalue->type == PROGRAMFUNC_EXPR || lvalue->type == VAR_EXPR) {
             
-        } else {
+        } else {*/
             while (callsuffix) {
+                std::cout << "Callsuffix Elem: " << callsuffix->symbol->name << std::endl;
+                callsuffix_stack.push_back(callsuffix);
                 callsuffix = callsuffix->next;
             }
-            callsuffix->next = lvalue;
-            lvalue = emit_if_table_item(member_item(lvalue, callsuffix->symbol->name));
-        }
-    } else {
-        if (lvalue->type == LIBFUNC_EXPR || lvalue->type == PROGRAMFUNC_EXPR || lvalue->type == VAR_EXPR) {
+            callsuffix_stack.push_back(lvalue);
+            /*for (const auto& elem : callsuffix_stack) {
+                callsuffix_stack_rev.push_back(elem);
+                //std::cout << "Elem: " <<  elem->symbol->name << std::endl;
+            }*/
+            lvalue = emit_if_table_item(member_item(lvalue, id_name));
+            //callsuffix_2 = callsuffix_stack.front();
+            //std::cout << "CALLSUFFIX ELEM: " << callsuffix_stack.front()->next->next->symbol->name << std::endl;
+
             
-        } else {
-            while (callsuffix) {
-                callsuffix = callsuffix->next;
-            }
-            callsuffix->next = lvalue;
-            lvalue = emit_if_table_item(member_item(lvalue, callsuffix->symbol->name));
         }
-    }
-    result = make_call(lvalue, callsuffix);
-    if (get_scope() > 0) {
-        quad_table_print();
-    }
+    //}
+    result = make_call_in(lvalue, callsuffix_stack);
     return result;
 }
 
 SymbolTableEntry* manage_funcprefix(SymbolTableEntry* symbol, std::string name, int line_num) {
-    if (name.empty()) {
-        handle_funcdef_anonym_name(get_scope(), line_num, curr_scope_space(), curr_scope_offset());
-        symbol = get_symbol(name, get_scope());
-        symbol->i_address = next_quad_label();
+    
+    //std::cout << "Manage_funcprefix_w_name" << std::endl;
+    handle_funcdef_w_name(name, get_scope(), line_num, curr_scope_space(), curr_scope_offset());
+    symbol = get_symbol(name, get_scope());
+    symbol->i_address = next_quad_label();
 
-        emit_funcdef(FUNCSTART, make_func_expression(PROGRAMFUNC_EXPR, get_symbol(symbol->name, get_scope())));
-        set_prev_scope_space_counter(get_scope_space_counter());
-        set_scope_space_counter(3);
-        push_formal_arg_offset_table();
-    } else {
-        //std::cout << "Manage_funcprefix_w_name" << std::endl;
-        handle_funcdef_w_name(name, get_scope(), line_num, curr_scope_space(), curr_scope_offset());
-        symbol = get_symbol(name, get_scope());
-        symbol->i_address = next_quad_label();
-
-        emit_funcdef(FUNCSTART, make_func_expression(PROGRAMFUNC_EXPR, get_symbol(symbol->name, get_scope())));
-        set_prev_scope_space_counter(get_scope_space_counter());
-        set_scope_space_counter(3);
-        push_formal_arg_offset_table();
-    }
+    emit_funcdef(FUNCSTART, make_func_expression(PROGRAMFUNC_EXPR, get_symbol(symbol->name, get_scope())));
+    set_prev_scope_space_counter(get_scope_space_counter());
+    set_scope_space_counter(3);
+    push_formal_arg_offset_table();
+    
     return symbol;
+}
+
+SymbolTableEntry* manage_funcprefix_anonym(SymbolTableEntry* symbol, int line_num) {
+    std::string name = handle_funcdef_anonym_name(get_scope(), line_num, curr_scope_space(), curr_scope_offset());
+    symbol = get_symbol(name, get_scope());
+    symbol->i_address = next_quad_label();
+
+    emit_funcdef(FUNCSTART, make_func_expression(PROGRAMFUNC_EXPR, get_symbol(symbol->name, get_scope())));
+    set_prev_scope_space_counter(get_scope_space_counter());
+    set_scope_space_counter(3);
+    push_formal_arg_offset_table();
+
+    return symbol;
+
 }
 
 expression* manage_funcdef(SymbolTableEntry* symbol, unsigned funcbody) {
@@ -1416,4 +2111,23 @@ expression* manage_lbr_indexed_rbr(expression* objectdef, expression* indexed) {
     objectdef = table;
 
     return objectdef;
+}
+
+unsigned manage_ifprefix(unsigned ifprefix, expression* expr) {
+    emit_if_equal(IF_EQ, expr, make_constbool_expression(CONSTBOOL_EXPR, 1), next_quad_label()+2);
+    ifprefix = next_quad_label();
+    emit_jump(JUMP, 0);
+    return ifprefix;
+}
+
+unsigned manage_ifprefix(unsigned elseprefix) {
+    elseprefix = next_quad_label();
+    emit_jump(JUMP, elseprefix);
+    return elseprefix;
+}
+
+void patchlabel(unsigned quad_num, unsigned label) {
+    std::cout << "Quad Label: " << quad_table.at(quad_num).op << std::endl;
+    quad_table.at(quad_num).label = label;
+    std::cout << "Quad Label: " << quad_table.at(quad_num).label << std::endl;
 }

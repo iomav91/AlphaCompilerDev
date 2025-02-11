@@ -100,6 +100,7 @@ SymbolTableEntry make_entry(const std::string&, const int&, const int&, scope_sp
 
 void insert(std::string, int, int, scope_space, unsigned, SymbolType);
 SymbolTableEntry* get_symbol(std::string, int);
+SymbolTableEntry* get_symbol_inactive(std::string, int);
 bool lookup_at_scope(std::string, int);
 bool lookup(std::string);
 SymbolTableEntry lookup_and_ret_sym(std::string, int);

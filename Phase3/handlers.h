@@ -17,7 +17,7 @@ int handle_id(std::string, int, int, scope_space, unsigned);
 void handle_local_id(std::string, int, int, scope_space, unsigned);
 void handle_global_access_id(std::string);
 void handle_funcdef_w_name(std::string, int, int, scope_space, unsigned);
-void handle_funcdef_anonym_name(int, int, scope_space, unsigned);
+std::string handle_funcdef_anonym_name(int, int, scope_space, unsigned);
 void handle_func_w_1arg(std::string, int, int, scope_space, unsigned);
 void handle_expression(std::string, std::string, int, int);
 void handle_funcdef_block_end(int);

@@ -161,6 +161,19 @@ SymbolTableEntry* get_symbol(std::string name, int scope) {
     return NULL;
 }
 
+SymbolTableEntry* get_symbol_inactive(std::string name, int scope) {
+    //std::cout << "Symbol name is: " << name << ", " << "Symbol scope is: " << scope << std::endl; 
+    for (auto& symbol : inactive_symbol_table.at(scope)) {
+        //std::cout << "Symbol name is: " << symbol.first << ", " << "Symbol scope is: " << symbol.second.scope << std::endl;
+        if (symbol.first == name && symbol.second.scope == scope) {
+            //std::cout << "Symbol is here" << std::endl;
+            //make_entry(symbol.second.name, symbol.second.scope, symbol.second.line, symbol.second.space, symbol.second.offset, symbol.second.type);
+            return &symbol.second;
+        }
+    }
+    return NULL;
+}
+
 bool lookup_at_scope(std::string name, int scope) {
     //std::cout << "Scope is at lookup_at_scope " << scope << std::endl;
     if (symbol_table_alt.size() != 0) {
