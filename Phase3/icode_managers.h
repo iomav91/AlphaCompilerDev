@@ -34,6 +34,7 @@ void emit_div(iopcode, expression*, expression*, expression*);
 void emit_mod(iopcode, expression*, expression*, expression*);
 
 void emit_jump(iopcode, unsigned);
+void emit_return(iopcode, expression*);
 void emit_if_greater(iopcode, expression*, expression*, expression*, unsigned);
 void emit_if_less(iopcode, expression*, expression*, unsigned);
 void emit_if_greatereq(iopcode, expression*, expression*, unsigned);
@@ -159,5 +160,8 @@ expression* manage_funcdef(SymbolTableEntry*, unsigned);
 unsigned manage_ifprefix(unsigned, expression*);
 unsigned manage_elseprefix(unsigned);
 void patchlabel(unsigned, unsigned);
+unsigned newlist(unsigned);
+unsigned mergelist(unsigned, unsigned);
+void patchlist(unsigned, unsigned); 
 
 #endif

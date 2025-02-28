@@ -32,6 +32,16 @@
         int method;
         char* name;
     };
+
+    struct Forprefix {
+        unsigned test;
+        unsigned enter;
+    };
+
+    struct Stmt {
+        unsigned breaklist;
+        unsigned contlist;
+    };
 }
 
 %union {
@@ -42,6 +52,8 @@
     SymbolTableEntry* symbol;
     expression* expr;
     struct Call call_struct;
+    struct Forprefix forprefix_struct;
+    struct Stmt stmt_struct;
 }
 
 %token TOK_IF
@@ -111,7 +123,17 @@
 %type <expr> indexed
 %type <expr> indexedelem
 %type <unsignedVal> ifprefix
+%type <unsignedVal> if_statement
 %type <unsignedVal> elseprefix
+%type <unsignedVal> whilestart
+%type <unsignedVal> whilecond
+%type <unsignedVal> N 
+%type <unsignedVal> M 
+%type <forprefix_struct> forprefix
+%type <stmt_struct> break_statement
+%type <stmt_struct> continue_statement 
+%type <stmt_struct> statements
+%type <stmt_struct> statement
 
 %right TOK_ASSIGN
 %left TOK_OR
@@ -137,19 +159,50 @@ program: statements statement                                                   
 
 statement: expression TOK_SEMICOLON                                                                    {}
           | if_statement                                                                               {}
+          | ifelse_statement                                                                           {}
           | while_statement                                                                            {}
           | for_statement                                                                              {}
-          | return_statement                                                                           {handle_return_st();}
-          | TOK_CONTINUE TOK_SEMICOLON                                                                 {handle_continue_st();}
-          | TOK_BREAK TOK_SEMICOLON                                                                    {handle_break_st();}
+          | return_statement                                                                           {
+            handle_return_st();
+          }
+          | break_statement                                                                            {
+            handle_break_st();
+            //$$ = $1;
+          } 
+          | continue_statement                                                                         {
+            handle_continue_st();
+            //$$ = $1;
+          }
           | block                                                                                      {}
           | funcdef                                                                                    {}
           | TOK_SEMICOLON                                                                              {}
           | error TOK_SEMICOLON {yyerrok; yyclearin;}
 ;
 
-statements: statements statement                                                                       {}
-            | %empty                                                                                   {}
+break_statement: TOK_BREAK TOK_SEMICOLON {
+    $$.breaklist = 0;
+    $$.contlist = 0;
+    $$.breaklist = newlist(next_quad_label());
+    emit_jump(JUMP, 0);
+
+}
+;
+
+continue_statement: TOK_CONTINUE TOK_SEMICOLON {
+    $$.breaklist = 0;
+    $$.contlist = 0;
+    $$.contlist = newlist(next_quad_label());
+    emit_jump(JUMP, 0);
+}
+;
+
+statements: statements statement                                                                 {
+                //$$ = $1;
+    }
+    | %empty                                                                       {
+        //$$.breaklist = mergelist($1.breaklist, $2.breaklist);
+        //$$.contlist = mergelist($1.contlist, $2.contlist);
+}
 ;
 
 expression: assignexpr                                                                                 {}
@@ -490,29 +543,71 @@ ifprefix: TOK_IF TOK_L_PARENTH expression TOK_R_PARENTH {
 elseprefix: TOK_ELSE {
             $$ = next_quad_label(); 
             emit_jump(JUMP,0);
-
            }
-           | %empty {}
 ; 
 
-if_statement: ifprefix statement {patchlabel($1,next_quad_label());} elseprefix statement
+if_statement: ifprefix statement {patchlabel($1,next_quad_label()); $$ = $1;} 
+;
+ifelse_statement: if_statement elseprefix statement
                                                                            { 
-                                                                               patchlabel($1, $4+1);
-                                                                               patchlabel($4, next_quad_label());
+                                                                               patchlabel($1, $2+1);
+                                                                               patchlabel($2, next_quad_label());
                                                                            }
 ;
 
-while_statement: TOK_WHILE TOK_L_PARENTH expression TOK_R_PARENTH
-statement                                                                  {}
+whilestart: TOK_WHILE {
+    $$ = next_quad_label();
+}
 ;
 
-for_statement: TOK_FOR TOK_L_PARENTH elist TOK_SEMICOLON expression
-TOK_SEMICOLON elist TOK_R_PARENTH statement                                {}
+whilecond: TOK_L_PARENTH expression TOK_R_PARENTH {
+    emit_if_equal(IF_EQ, $2, make_constbool_expression(CONSTBOOL_EXPR, 1), next_quad_label()+2);
+    $$ = next_quad_label();
+    emit_jump(JUMP, 0);
+}
 ;
 
-return_statement: TOK_RETURN TOK_SEMICOLON                                 {}
+while_statement: whilestart whilecond statement                                                                  {
+    emit_jump(JUMP, $1);
+    patchlabel($2, next_quad_label());
+    //patchlist($3.breaklist, next_quad_label());
+    //patchlist($3.contlist, next_quad_label());
+}
+;
+
+N: {
+    $$ = next_quad_label();
+    emit_jump(JUMP, 0);
+}
+;
+
+M: {
+    $$ = next_quad_label();
+}
+;
+
+forprefix: TOK_FOR TOK_L_PARENTH elist TOK_SEMICOLON M expression TOK_SEMICOLON {
+    $$.test = $5;
+    $$.enter = next_quad_label();
+    emit_if_equal(IF_EQ, $6, make_constbool_expression(CONSTBOOL_EXPR, 1), 0);
+}
+;
+
+for_statement: forprefix N elist TOK_R_PARENTH N statement N               {
+    patchlabel($1.enter, $5+1);
+    patchlabel($2, next_quad_label());
+    patchlabel($5, $1.test);
+    patchlabel($7, $2+1);
+}
+;
+
+return_statement: TOK_RETURN TOK_SEMICOLON                                 {
+    emit_return(RET, NULL);
+}
                   | TOK_RETURN expression TOK_SEMICOLON
-                                                                           {}
+                                                                           {
+    emit_return(RET, $2);                                                                        
+                                                                           }
 ;
 %%
 

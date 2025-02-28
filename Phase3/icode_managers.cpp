@@ -805,6 +805,14 @@ void emit_jump(iopcode op, unsigned label) {
     return;
 }
 
+void emit_return(iopcode op, expression* expr) {
+    //std::cout << "Quad Label is " << op << std::endl;
+    quad_table.push_back(make_quad(op, expr, NULL, NULL, UINT_MAX, line_op_counter));
+    //quad_creation(op, NULL, NULL, NULL, label, line_op_counter);
+    line_op_counter++;
+    return;
+}
+
 void emit_table_get_item(iopcode op, expression* result, expression* arg1, expression* arg2) {
     quad_table.push_back(make_quad(op, result, arg1, arg2, UINT_MAX, line_op_counter));
     //quad_creation(op, result, arg1, arg2, UINT_MAX, line_op_counter);
@@ -853,7 +861,7 @@ void emit_param(iopcode op, expression* result) {
 }
 
 void emit_call(iopcode op, expression* result) {
-    //quad_table.push_back(make_quad(op, result, NULL, NULL, UINT_MAX, line_op_counter));
+    quad_table.push_back(make_quad(op, result, NULL, NULL, UINT_MAX, line_op_counter));
     //quad_creation(op, result, NULL, NULL, UINT_MAX, line_op_counter);
     line_op_counter++;
     return;
@@ -1222,7 +1230,25 @@ void quad_table_print() {
                 std::cout << quad.line << "\t\t" << "IF GREATER EQUAL" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.label << std::endl;
                 break;
             case 14:
-                std::cout << quad.line << "\t\t" << "IF LESS" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.label << std::endl;
+            if (quad.result->type == CONSTNUM_EXPR) {
+                if (quad.arg1->type == CONSTNUM_EXPR) { 
+                    std::cout << "\n" << quad.line << "\t" << "IF LESS" << "\t\t" << quad.result->num_const << "\t\t" << quad.arg1->num_const << "\t\t" << quad.label << std::endl; 
+                } else if (quad.arg1->type == CONSTSTRING_EXPR) {
+                    std::cout << "\n" << quad.line << "Error: the symbol" << "\t\t" << quad.arg1->str_const << " is a string";
+                } else {
+                    std::cout << "\n" << quad.line << "\t" << "IF LESS" << "\t\t" << quad.result->num_const << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.label << std::endl;
+                }
+            } else if (quad.result->type == CONSTSTRING_EXPR) {
+                std::cout << "\n" << quad.line << "Error: the symbol" << "\t\t" << quad.result->str_const << " is a string";
+            } else {
+                if (quad.arg1->type == CONSTNUM_EXPR) { 
+                    std::cout << "\n" << quad.line << "\t" << "IF LESS" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << quad.label << std::endl; 
+                } else if (quad.arg1->type == CONSTSTRING_EXPR) {
+                    std::cout << "\n" << quad.line << "Error: the symbol" << "\t\t" << quad.arg1->str_const << " is a string";
+                } else {
+                    std::cout << "\n" << quad.line << "\t" << "IF LESS" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.label << std::endl;
+                }
+            }
                 break;
             case 15:
                 std::cout << quad.line << "\t\t" << "IF GREATER" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.label << std::endl;
@@ -1243,7 +1269,7 @@ void quad_table_print() {
                 }
                 break;
             case 18:
-                std::cout << quad.line << "\t\t" << "RETURN" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.arg2->symbol->name << std::endl;
+                std::cout << quad.line << "\t\t" << "RETURN" << "\t\t" << quad.result->symbol->name << std::endl;
                 break;
             case 19:
                 std::cout << quad.line << "\t\t" << "GETRETVAL" << "\t\t" << quad.result->symbol->name << std::endl;
@@ -2140,7 +2166,36 @@ unsigned manage_ifprefix(unsigned elseprefix) {
 }
 
 void patchlabel(unsigned quad_num, unsigned label) {
-    std::cout << "Quad Label: " << quad_table.at(quad_num).op << std::endl;
+    //std::cout << "Quad Label: " << quad_table.at(quad_num).op << std::endl;
+    assert(quad_num < quad_table.size() && !quad_table.at(quad_num).label);
     quad_table.at(quad_num).label = label;
-    std::cout << "Quad Label: " << quad_table.at(quad_num).label << std::endl;
+    //std::cout << "Quad Label: " << quad_table.at(quad_num).label << std::endl;
+}
+
+unsigned newlist(unsigned quad_num) {
+    quad_table.at(quad_num).label = 0;
+    return quad_num;
+}
+
+unsigned mergelist(unsigned list1, unsigned list2) {
+    if (!list1) {
+        return list2;
+    }
+    if (!list2) {
+        return list2;
+    } else {
+        unsigned i = list1;
+        i = quad_table.at(i).label;
+        quad_table.at(i).label = list2;
+        return list1; 
+    }
+}
+
+void patchlist(unsigned list, unsigned label) {
+    while (list) {
+        std::cout << "List: " << list << std::endl;
+        unsigned next = quad_table.at(list).label;
+        quad_table.at(list).label = label;
+        list = next;
+    }
 }
