@@ -54,6 +54,7 @@
     struct Call call_struct;
     struct Forprefix forprefix_struct;
     struct Stmt stmt_struct;
+    indexed_elem* indexed;
 }
 
 %token TOK_IF
@@ -120,16 +121,20 @@
 %type <expr> funcdef
 %type <expr> objectdef
 %type <expr> term
-%type <expr> indexed
-%type <expr> indexedelem
+%type <indexed> indexed
+%type <indexed> indexedelem
 %type <unsignedVal> ifprefix
 %type <unsignedVal> if_statement
+%type <unsignedVal> ifelse_statement
 %type <unsignedVal> elseprefix
 %type <unsignedVal> whilestart
 %type <unsignedVal> whilecond
+%type <stmt_struct> whileblock
 %type <unsignedVal> N 
-%type <unsignedVal> M 
+%type <unsignedVal> M
+%type <unsignedVal> M1 
 %type <forprefix_struct> forprefix
+%type <stmt_struct> forblock
 %type <stmt_struct> break_statement
 %type <stmt_struct> continue_statement 
 %type <stmt_struct> statements
@@ -165,13 +170,15 @@ statement: expression TOK_SEMICOLON                                             
           | return_statement                                                                           {
             handle_return_st();
           }
-          | break_statement                                                                            {
+          | TOK_BREAK TOK_SEMICOLON                                                                           {
             handle_break_st();
-            //$$ = $1;
+            push_breaklist(next_quad_label(), 0);
+            emit_jump(JUMP, 0);
           } 
-          | continue_statement                                                                         {
+          | TOK_CONTINUE TOK_SEMICOLON                                                                         {
             handle_continue_st();
-            //$$ = $1;
+            push_contlist(next_quad_label(), 0);
+            emit_jump(JUMP, 0);
           }
           | block                                                                                      {}
           | funcdef                                                                                    {}
@@ -179,36 +186,27 @@ statement: expression TOK_SEMICOLON                                             
           | error TOK_SEMICOLON {yyerrok; yyclearin;}
 ;
 
-break_statement: TOK_BREAK TOK_SEMICOLON {
-    $$.breaklist = 0;
-    $$.contlist = 0;
-    $$.breaklist = newlist(next_quad_label());
-    emit_jump(JUMP, 0);
+statements: statements statement                                                                       {
+} | %empty {}
+;
 
+M: %empty {
+    $$ = next_quad_label();
+    std::cout << "Next Quad: " << $$ << std::endl;
 }
 ;
 
-continue_statement: TOK_CONTINUE TOK_SEMICOLON {
-    $$.breaklist = 0;
-    $$.contlist = 0;
-    $$.contlist = newlist(next_quad_label());
-    emit_jump(JUMP, 0);
-}
+assignexpr: lvalue TOK_ASSIGN expression                                                               {
+                                                                                                            
+                                                                                                            $$ = manage_assign_expr($$, $1, $3);
+                                                                                                       }
 ;
 
-statements: statements statement                                                                 {
-                //$$ = $1;
-    }
-    | %empty                                                                       {
-        //$$.breaklist = mergelist($1.breaklist, $2.breaklist);
-        //$$.contlist = mergelist($1.contlist, $2.contlist);
-}
-;
-
-expression: assignexpr                                                                                 {}
+expression: assignexpr                                                                                 {$$ = $1;}
             | expression TOK_PLUS expression                                                           {
-
+                                                                                                            //std::cout<<"EXPR PLUS EXPR symbol: " << $$->symbol->name << std::endl;
                                                                                                             $$ = manage_expr_plus_expr($$, $1, $3);
+                                                                                                            //std::cout<<"EXPR PLUS EXPR symbol: " << $$->symbol->name << std::endl;
                     
                                                                                                        }
             | expression TOK_MINUS expression                                                          {
@@ -263,11 +261,11 @@ expression: assignexpr                                                          
 
                     $$ = manage_expr_and_expr($$, $1, $3);
                 }
-            | expression TOK_OR expression {
-                    //printf("expression -> expression or expression\n");
+            | expression TOK_OR M expression {
+                    printf("expression -> expression or expression\n");
                     //handle_expression($1,$3, get_scope(), yylineno);
 
-                    $$ = manage_expr_or_expr($$, $1, $3);
+                    $$ = manage_expr_or_expr($$, $1, $3, $4);
                 }
             | term {
                 //printf("expression -> term\n");
@@ -305,16 +303,12 @@ term: TOK_L_PARENTH expression TOK_R_PARENTH {
       }
 ;
 
-assignexpr: lvalue TOK_ASSIGN expression                                                               {
-                                                                                                            $$ = manage_assign_expr($$, $1, $3);
-                                                                                                       }
-;
-
 primary: lvalue                                                                                        {
                                                                                                             $$ = emit_if_table_item($1);
                                                                                                        }
          | call                                                                                        {$$=$1;}
          | objectdef                                                                                   {
+
                                                                                                             $$ = $1;
                                                                                                        }
          | TOK_L_PARENTH funcdef TOK_R_PARENTH                                                         {
@@ -368,6 +362,7 @@ call: call normcall {
                                                                                                        }
       | TOK_L_PARENTH funcdef TOK_R_PARENTH normcall {
             //expression* func = make_func_expression(PROGRAMFUNC_EXPR, get_symbol($2->symbol->name, get_scope()));
+            std::cout << "MAKE CALL HERE" << std::endl;
             $$ = make_call($2, $4.elist);     
       }
 ;
@@ -404,46 +399,49 @@ methodcall: TOK_DBL_DOT TOK_ID normcall {
 elist: elist TOK_COMMA expression {
             printf("elist -> elist,\n");
             $3->next = $1;
-            $1->next = NULL;
             $$ = $3;
+            
         }
         | expression {
             printf("elist -> expression\n");
+            //std::cout << "$1 -> " << $1->symbol->name << std::endl;
             $1->next = NULL;
             $$ = $1;
         }
        
        |  %empty {
-            //$1 = NULL;
-            //$$ = $1;
+            $$ = NULL;
         }
-;
-
-indexed: indexedelem {
-            //printf("elist -> expression\n");
-            $$ = $1;
-        }
-       | indexed TOK_COMMA indexedelem {
-            //printf("elist -> elist,\n");
-            $$ = $1;
-        }
-;
-
-objectdef: TOK_L_BR elist TOK_R_BR {
-               $$ = manage_lbr_elist_rbr($$,$2);
-          }
-         | TOK_L_BR indexed TOK_R_BR {
-                $$ = manage_lbr_indexed_rbr($$,$2);
-         }
 ;
 
 indexedelem: TOK_L_CURLY_BR expression TOK_COLON expression 
 TOK_R_CURLY_BR {
     printf("indexedelem -> {expression:expression}\n");
     //std::cout << $2->str_const << $4->type << std::endl;
-    insert_indexed_map($2,$4);
-    $$ = $2;
+    //insert_indexed_map($2, $4);
+
+    $$ = make_indexed_elem($2,$4);
 }
+;
+
+indexed: indexedelem {
+            //printf("elist -> expression\n");
+            $1->next = NULL;
+            $$ = $1;
+        }
+        | indexed TOK_COMMA indexedelem {
+            //printf("elist -> elist,\n");
+            $3->next = $1;
+            $$ = $3;
+        }
+;
+
+objectdef: TOK_L_BR elist TOK_R_BR {
+            $$ = manage_lbr_elist_rbr($$,$2);
+          }
+         | TOK_L_BR indexed TOK_R_BR {
+            $$ = manage_lbr_indexed_rbr($$,$2);
+         }
 ;
 
 block: TOK_L_CURLY_BR {
@@ -454,7 +452,7 @@ block: TOK_L_CURLY_BR {
     set_prev_scope_space_counter(get_scope_space_counter());
     set_scope_space_counter(1);
 /*std::cout<<scope_counter<<std::endl;*/} statements TOK_R_CURLY_BR
-{/*printf("block -> {statements}\n");*/ is_in_block_mode--; handle_block_end(get_scope()); printf("Prev Scope Space Counter: %d\n", get_prev_scope_space_counter()); set_scope_space_counter(get_prev_scope_space_counter()); printf("Scope Space Counter: %d\n", get_scope_space_counter()); scope_counter--;
+{/*printf("block -> {statements}\n");*/ is_in_block_mode--;handle_block_end(get_scope()); printf("Prev Scope Space Counter: %d\n", get_prev_scope_space_counter()); set_scope_space_counter(get_prev_scope_space_counter()); printf("Scope Space Counter: %d\n", get_scope_space_counter()); scope_counter--;
 /*std::cout<< "Scope Counter is " << scope_counter<<std::endl;*/}
 ;
 
@@ -470,10 +468,12 @@ funcname: TOK_ID {
 
 funcprefix: TOK_FUNCTION funcname {
         is_in_function_mode++;
+        push_state_stack("not loop");
         $$ = manage_funcprefix($$, $2, yylineno);
         scope_counter++;
     } | TOK_FUNCTION {
         is_in_function_mode++;
+        push_state_stack("not loop");
         $$ = manage_funcprefix_anonym($$, yylineno);
         scope_counter++;
     }
@@ -500,6 +500,7 @@ funcdef: funcprefix funcargs funcbody {
         
         scope_counter--;
         is_in_function_mode--;
+        pop_state_stack();
     }
 ;
 
@@ -516,10 +517,10 @@ const: TOK_INT {
             $$ = make_nil_expression(NIL_EXPR);
         }
        | TOK_TRUE {
-            $$ = make_constbool_expression(CONSTBOOL_EXPR, $1);
+            $$ = make_constbool_expression(CONSTBOOL_EXPR, 1);
         }
        | TOK_FALSE {
-            $$ = make_constbool_expression(CONSTBOOL_EXPR, $1);
+            $$ = make_constbool_expression(CONSTBOOL_EXPR, 0);
         }
 ;
 
@@ -536,23 +537,29 @@ idlist: TOK_ID {
 ;
 
 ifprefix: TOK_IF TOK_L_PARENTH expression TOK_R_PARENTH {
-    $$ = manage_ifprefix($$, $3);
-    std::cout << "IFPREFIX: " << $$ << std::endl;
+    $$ = manage_ifprefix($$, $3); // Emit IF_EQ and JUMP quads
 }
+;
 
 elseprefix: TOK_ELSE {
-            $$ = next_quad_label(); 
-            emit_jump(JUMP,0);
-           }
-; 
-
-if_statement: ifprefix statement {patchlabel($1,next_quad_label()); $$ = $1;} 
+    $$ = next_quad_label(); // Record the label for the JUMP quad
+    emit_jump(JUMP, 0);     // Emit a JUMP quad with a placeholder label
+}
 ;
-ifelse_statement: if_statement elseprefix statement
-                                                                           { 
-                                                                               patchlabel($1, $2+1);
-                                                                               patchlabel($2, next_quad_label());
-                                                                           }
+
+if_statement: ifprefix statement {
+    
+    patchlabel($1, next_quad_label()); // Patch the JUMP quad from ifprefix
+    $$ = $1; // Return the label of the patched JUMP quad
+    
+}
+;
+
+ifelse_statement: ifprefix statement elseprefix statement {
+    patchlabel($1, $3+1); // Patch the jump from ifprefix to the start of the else block
+    patchlabel($3, next_quad_label()); // Patch the jump from elseprefix to the end of the else block
+    $$ = $1; // Return the label from ifprefix
+}
 ;
 
 whilestart: TOK_WHILE {
@@ -564,14 +571,23 @@ whilecond: TOK_L_PARENTH expression TOK_R_PARENTH {
     emit_if_equal(IF_EQ, $2, make_constbool_expression(CONSTBOOL_EXPR, 1), next_quad_label()+2);
     $$ = next_quad_label();
     emit_jump(JUMP, 0);
+    push_state_stack("loop");
 }
 ;
 
-while_statement: whilestart whilecond statement                                                                  {
+whileblock: TOK_L_CURLY_BR statements TOK_R_CURLY_BR {
+    $$ = $2;
+} 
+;
+
+while_statement: whilestart whilecond statement {
+    //std::cout << "Top of State Stack: " << state_stack_top() << std::endl; 
     emit_jump(JUMP, $1);
     patchlabel($2, next_quad_label());
-    //patchlist($3.breaklist, next_quad_label());
-    //patchlist($3.contlist, next_quad_label());
+    //std::cout<< "contlist Size: " << contlist_size() << std::endl;
+    patchlist_breaklist(next_quad_label());
+    patchlist_contlist($1);
+    pop_state_stack();
 }
 ;
 
@@ -581,23 +597,29 @@ N: {
 }
 ;
 
-M: {
+M1: {
     $$ = next_quad_label();
 }
 ;
 
-forprefix: TOK_FOR TOK_L_PARENTH elist TOK_SEMICOLON M expression TOK_SEMICOLON {
+forprefix: TOK_FOR TOK_L_PARENTH elist TOK_SEMICOLON M1 expression TOK_SEMICOLON {
     $$.test = $5;
     $$.enter = next_quad_label();
     emit_if_equal(IF_EQ, $6, make_constbool_expression(CONSTBOOL_EXPR, 1), 0);
+    push_state_stack("loop");
 }
 ;
+
+forblock: TOK_L_CURLY_BR statements TOK_R_CURLY_BR {
+    $$ = $2;
+}
 
 for_statement: forprefix N elist TOK_R_PARENTH N statement N               {
     patchlabel($1.enter, $5+1);
     patchlabel($2, next_quad_label());
     patchlabel($5, $1.test);
     patchlabel($7, $2+1);
+    pop_state_stack();
 }
 ;
 

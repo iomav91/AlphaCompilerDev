@@ -5,6 +5,7 @@
 #include <string>
 #include <list>
 #include "symbol_table.h"
+#include "icode_managers.h"
 
 void push_blocks_prec(int);
 void pop_blocks_prec();

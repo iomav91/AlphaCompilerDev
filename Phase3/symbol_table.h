@@ -5,6 +5,7 @@
 #include <string>
 #include <stack>
 #include <vector>
+#include <list>
 #include <map>
 #include <climits>
 #include <assert.h>
@@ -82,7 +83,15 @@ struct expression {
     double              num_const; 
     std::string         str_const;
     int                 bool_const;
+    std::list<unsigned>            truelist;
+    std::list<unsigned>            falselist;
     expression*         next;         
+};
+
+struct indexed_elem {
+    expression* index;
+    expression* value;
+    indexed_elem* next;
 };
 
 /*struct quad {

@@ -5,7 +5,6 @@
 #include <string>
 #include <list>
 #include "symbol_table.h"
-
 struct quad {
     enum iopcode        op;
     expression*         result;
@@ -13,6 +12,16 @@ struct quad {
     expression*         arg2;
     unsigned            label;
     unsigned            line;
+};
+
+struct break_stmt {
+    int pos;
+    unsigned label;
+};
+
+struct continue_stmt {
+    int pos;
+    unsigned label;
 };
 
 // Phase 3
@@ -120,7 +129,7 @@ void set_curr_quad_label(unsigned);
 
 unsigned next_quad_label();
 expression* manage_expr_and_expr(expression*, expression*, expression*);
-expression* manage_expr_or_expr(expression*, expression*, expression*);
+expression* manage_expr_or_expr(expression*, expression*, unsigned, expression*);
 expression* manage_expr_plus_expr(expression*, expression*, expression*);
 expression* manage_expr_minus_expr(expression*, expression*, expression*);
 expression* manage_expr_mul_expr(expression*, expression*, expression*);
@@ -152,16 +161,31 @@ expression* manage_lpar_funcdef_rpar_normcall(expression*);
 expression* manage_lpar_elist_rpar(expression*);
 expression* manage_db_dot_id_normcall(expression*);
 expression* manage_lbr_elist_rbr(expression*, expression*);
-expression* manage_lbr_indexed_rbr(expression*, expression*);
+expression* manage_lbr_indexed_rbr(expression*, indexed_elem*);
 expression* manage_lcbr_expr_rcbr_expr(expression*, expression*);
 SymbolTableEntry* manage_funcprefix(SymbolTableEntry*, std::string, int);
 SymbolTableEntry* manage_funcprefix_anonym(SymbolTableEntry*, int);
 expression* manage_funcdef(SymbolTableEntry*, unsigned);
 unsigned manage_ifprefix(unsigned, expression*);
 unsigned manage_elseprefix(unsigned);
+
+void push_breaklist(unsigned, unsigned);
+void push_contlist(unsigned, unsigned);
+unsigned breaklist_size();
+unsigned contlist_size();
 void patchlabel(unsigned, unsigned);
 unsigned newlist(unsigned);
 unsigned mergelist(unsigned, unsigned);
-void patchlist(unsigned, unsigned); 
+void patchlist_breaklist(unsigned);
+void patchlist_contlist(unsigned); 
+void push_state_stack(std::string);
+void pop_state_stack();
+std::string state_stack_top();
+int state_stack_size();
 
+void make_indexed_map_list();
+std::map<expression*, expression*> get_indexed_map();
+
+indexed_elem* make_indexed_elem(expression*, expression*);
+void backpatch(unsigned, unsigned);
 #endif

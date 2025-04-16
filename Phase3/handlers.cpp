@@ -10,6 +10,7 @@ std::vector<int> blocks_prec;
 
 int func_anonym_counter = 0;
 
+
 void push_blocks_prec(int n) {
     blocks_prec.push_back(n);
 }
@@ -27,16 +28,34 @@ void handle_return_st() {
 }
 
 void handle_break_st() {
-    //std::cout << "In loop: " << is_in_loop_mode << std::endl;
-    if (is_in_loop_mode == 0) {
+    
+    if (state_stack_size() == 0) {
         std::cout << "Error break statement while not in a loop" << std::endl;
+        return;
     }
+    if (state_stack_top() == "not loop") {
+        //std::cout << "Top of State Stack: " << state_stack_top() << std::endl; 
+        std::cout << "Error break statement while not in a loop" << std::endl;
+        return;
+    } 
+    /*if (is_in_loop_mode == 0) {
+        std::cout << "Error break statement while not in a loop" << std::endl;
+    }*/
 }
 
 void handle_continue_st() {
-    if (is_in_loop_mode == 0) {
-        std::cout << "Error continue statement while not in a loop" << std::endl;
+    if (state_stack_size() == 0) {
+        std::cout << "Error break statement while not in a loop" << std::endl;
+        return;
     }
+    if (state_stack_top() == "not loop") {
+        //std::cout << "Top of State Stack: " << state_stack_top() << std::endl; 
+        std::cout << "Error break statement while not in a loop" << std::endl;
+        return;
+    } 
+    /*if (is_in_loop_mode == 0) {
+        std::cout << "Error continue statement while not in a loop" << std::endl;
+    }*/
 }
 
 int handle_expr(std::string name, int type) {
