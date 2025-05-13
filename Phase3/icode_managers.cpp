@@ -52,7 +52,7 @@ void clear_expression_list() {
 void set_indexed_map(expression* table) {
     int i = 0;
     for (const auto& index : indexed_map) {
-        std::cout << "Index is " << index.first->str_const << std::endl;
+        //std::cout << "Index is " << index.first->str_const << std::endl;
         emit_table_set_item(TABLESETELEM, table, index.first, index.second);
     }
     return;
@@ -642,7 +642,7 @@ void quad_creation(int op, expression* result, expression* arg1, expression* arg
 }
 
 expression* make_call(expression* lvalue, expression* reversed_elist) {
-    std::cout << "MAKE CALL " << lvalue->symbol->name << std::endl;
+    //std::cout << "MAKE CALL " << lvalue->symbol->name << std::endl;
     
     expression* func = emit_if_table_item(lvalue);
     //std::cout << "MAKE CALL EMIT IF TABLE ITEM" << func->symbol->name << std::endl;
@@ -663,7 +663,7 @@ expression* make_call(expression* lvalue, expression* reversed_elist) {
 }
 
 expression* make_call_in(expression* lvalue, std::vector<expression*> callsuffix) {
-    std::cout << "MAKE CALL " << lvalue->symbol->name << std::endl;
+    //std::cout << "MAKE CALL " << lvalue->symbol->name << std::endl;
      
     expression* func = emit_if_table_item(lvalue);
     //std::cout << "MAKE CALL EMIT IF TABLE ITEM" << func->symbol->name << std::endl;
@@ -992,7 +992,7 @@ expression* member_item(expression* lvalue, std::string name) {
 }
 
 expression* make_func_expression(expr_value type, SymbolTableEntry* symbol) {
-    std::cout << "MAKE FUNC EXPRESSION" << std::endl;
+    //std::cout << "MAKE FUNC EXPRESSION" << std::endl;
     expression* new_expression = new expression;
 
     new_expression->type = type;
@@ -1296,6 +1296,8 @@ void quad_table_print() {
                         std::cout << quad.line << "Error: the symbol" << "\t\t" << quad.arg1->str_const << " is a string" << std::endl;
                     } else if (quad.arg1->type == CONSTBOOL_EXPR) {
                         std::cout << quad.line << "\t" << "IF EQUAL" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->bool_const << "\t\t" << quad.label << std::endl;
+                    } else {
+                        std::cout << quad.line << "\t" << "IF EQUAL" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.label << std::endl;
                     }
                 }
                 break;
@@ -1319,6 +1321,8 @@ void quad_table_print() {
                         std::cout << quad.line << "Error: the symbol" << "\t\t" << quad.arg1->str_const << " is a string" << std::endl;
                     } else if (quad.arg1->type == CONSTBOOL_EXPR) {
                         std::cout << quad.line << "\t" << "IF NOT EQUAL" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->bool_const << "\t\t" << quad.label << std::endl;
+                    } else {
+                        std::cout << quad.line << "\t" << "IF NOT EQUAL" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.label << std::endl;
                     }
                 }
                 break;
@@ -1342,6 +1346,8 @@ void quad_table_print() {
                         std::cout << quad.line << "Error: the symbol" << "\t\t" << quad.arg1->str_const << " is a string" << std::endl;
                     } else if (quad.arg1->type == CONSTBOOL_EXPR) {
                         std::cout << quad.line << "\t" << "IF LESS EQUAL" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->bool_const << "\t\t" << quad.label << std::endl;
+                    } else {
+                        std::cout << quad.line << "\t" << "IF LESS EQUAL" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.label << std::endl;
                     }
                 }
                 break;
@@ -1706,7 +1712,7 @@ expression* manage_expr_plus_expr(expression* result, expression* expr1, express
             type = LOCAL;
         }
         SymbolTableEntry* new_temp = new_temp_var(-1, type);
-        std::cout << new_temp->scope << std::endl;
+        //std::cout << new_temp->scope << std::endl;
         if (expr1->type == 8 && expr2->type == 8) {
             result = make_constnum_expression(CONSTNUM_EXPR, expr1->num_const+expr2->num_const);
             //std::cout << "$1->type " << expr1->type << std::endl;
@@ -1825,11 +1831,11 @@ expression* manage_expr_gr_expr(expression* result, expression* expr1, expressio
         result->falselist.push_front(next_quad_label() + 1);
         //emit_if_greater(IF_GR, expr1, expr2, next_quad_label()+3);
         //set_curr_quad_label((next_quad_label()+3));
-        emit_if_greater(IF_GR, expr1, expr2, 0);
+        emit_if_greater(IF_GR, expr1, expr2, UINT_MAX);
         //emit_assign(ASSIGN, result, make_constbool_expression(CONSTBOOL_EXPR, 0));
         //emit_jump(JUMP, (next_quad_label()+2));
         //set_curr_quad_label((next_quad_label()+2));
-        emit_jump(JUMP, 0);
+        emit_jump(JUMP, UINT_MAX);
         //emit_assign(ASSIGN, result, make_constbool_expression(CONSTBOOL_EXPR, 1));
     } else {
        std::cout << "We cannot do arithmetic actions to a no numerable expression" << std::endl;
@@ -1849,12 +1855,15 @@ expression* manage_expr_ls_expr(expression* result, expression* expr1, expressio
         SymbolTableEntry* new_temp = new_temp_var(-1, type);
         //std::cout << new_temp.scope << std::endl;
         result = make_bool_expression(BOOL_EXPR, get_symbol(new_temp->name, get_scope()));
-        emit_if_less(IF_L, expr1, expr2, next_quad_label()+3);
-        set_curr_quad_label((next_quad_label()+3));
-        emit_assign(ASSIGN, result, make_constbool_expression(CONSTBOOL_EXPR, 0));
-        emit_jump(JUMP, (next_quad_label()+2));
-        set_curr_quad_label((next_quad_label()+2));
-        emit_assign(ASSIGN, result, make_constbool_expression(CONSTBOOL_EXPR, 1));
+        result->truelist.push_front(next_quad_label());
+        result->falselist.push_front(next_quad_label() + 1);
+        //emit_if_less(IF_L, expr1, expr2, next_quad_label()+3);
+        emit_if_less(IF_L, expr1, expr2, UINT_MAX);
+        //set_curr_quad_label((next_quad_label()+3));
+        //emit_assign(ASSIGN, result, make_constbool_expression(CONSTBOOL_EXPR, 0));
+        emit_jump(JUMP, UINT_MAX);
+        //set_curr_quad_label((next_quad_label()+2));
+        //emit_assign(ASSIGN, result, make_constbool_expression(CONSTBOOL_EXPR, 1));
     } else {
         std::cout << "We cannot do arithmetic actions to a no numerable expression" << std::endl;
         exit(-1);
@@ -1863,78 +1872,106 @@ expression* manage_expr_ls_expr(expression* result, expression* expr1, expressio
 }
 
 expression* manage_expr_gr_eq_expr(expression* result, expression* expr1, expression* expr2) {
-	SymbolType type = GLOBAL;
-    if (get_scope() != 0) {
-        type = LOCAL;
+	if (check_if_is_arithm(expr1) == true && check_if_is_arithm(expr2) == true) {
+        SymbolType type = GLOBAL;
+        if (get_scope() != 0) {
+            type = LOCAL;
+        }
+        SymbolTableEntry* new_temp = new_temp_var(-1, type);
+        //std::cout << new_temp.scope << std::endl;
+        result = make_bool_expression(BOOL_EXPR, get_symbol(new_temp->name, get_scope()));
+        result->truelist.push_front(next_quad_label());
+        result->falselist.push_front(next_quad_label() + 1);
+        //emit_if_greatereq(IF_GR_EQ, expr1, expr2, next_quad_label()+3);
+        emit_if_greatereq(IF_GR_EQ, expr1, expr2, UINT_MAX);
+        //set_curr_quad_label((next_quad_label()+3));
+        //emit_assign(ASSIGN, result, make_constbool_expression(CONSTBOOL_EXPR, 0));
+        emit_jump(JUMP, UINT_MAX);
+        //set_curr_quad_label((next_quad_label()+2));
+        //emit_assign(ASSIGN, result, make_constbool_expression(CONSTBOOL_EXPR, 1));
+    } else {
+        std::cout << "We cannot do arithmetic actions to a no numerable expression" << std::endl;
+        exit(-1);
     }
-    SymbolTableEntry* new_temp = new_temp_var(-1, type);
-    //std::cout << new_temp.scope << std::endl;
-    result = make_bool_expression(BOOL_EXPR, get_symbol(new_temp->name, get_scope()));
-    emit_if_greatereq(IF_GR_EQ, expr1, expr2, next_quad_label()+3);
-    set_curr_quad_label((next_quad_label()+3));
-    emit_assign(ASSIGN, result, make_constbool_expression(CONSTBOOL_EXPR, 0));
-    emit_jump(JUMP, (next_quad_label()+2));
-    set_curr_quad_label((next_quad_label()+2));
-    emit_assign(ASSIGN, result, make_constbool_expression(CONSTBOOL_EXPR, 1));
-
     return result;
 }
 
 expression* manage_expr_ls_eq_expr(expression* result, expression* expr1, expression* expr2) {
-	SymbolType type = GLOBAL;
-    if (get_scope() != 0) {
-        type = LOCAL;
+	if (check_if_is_arithm(expr1) == true && check_if_is_arithm(expr2) == true) {
+        SymbolType type = GLOBAL;
+        if (get_scope() != 0) {
+            type = LOCAL;
+        }
+        SymbolTableEntry* new_temp = new_temp_var(-1, type);
+        //std::cout << new_temp.scope << std::endl;
+        result = make_bool_expression(BOOL_EXPR, get_symbol(new_temp->name, get_scope()));
+        result->truelist.push_front(next_quad_label());
+        result->falselist.push_front(next_quad_label() + 1);
+        //emit_if_lesseq(IF_L_EQ, expr1, expr2, next_quad_label()+3);
+        emit_if_lesseq(IF_L_EQ, expr1, expr2, UINT_MAX);
+        //set_curr_quad_label((next_quad_label()+3));
+        //emit_assign(ASSIGN, result, make_constbool_expression(CONSTBOOL_EXPR, 0));
+        emit_jump(JUMP, UINT_MAX);
+        //set_curr_quad_label((next_quad_label()+2));
+        //emit_assign(ASSIGN, result, make_constbool_expression(CONSTBOOL_EXPR, 1));
+    } else {
+        std::cout << "We cannot do arithmetic actions to a no numerable expression" << std::endl;
+        exit(-1);
     }
-    SymbolTableEntry* new_temp = new_temp_var(-1, type);
-    //std::cout << new_temp.scope << std::endl;
-    result = make_bool_expression(BOOL_EXPR, get_symbol(new_temp->name, get_scope()));
-    emit_if_lesseq(IF_L_EQ, expr1, expr2, next_quad_label()+3);
-    set_curr_quad_label((next_quad_label()+3));
-    emit_assign(ASSIGN, result, make_constbool_expression(CONSTBOOL_EXPR, 0));
-    emit_jump(JUMP, (next_quad_label()+2));
-    set_curr_quad_label((next_quad_label()+2));
-    emit_assign(ASSIGN, result, make_constbool_expression(CONSTBOOL_EXPR, 1));
-
     return result;
 }
 
 expression* manage_expr_eq_expr(expression* result, expression* expr1, expression* expr2) {
-	SymbolType type = GLOBAL;
-    if (get_scope() != 0) {
-        type = LOCAL;
+	if (check_if_is_arithm(expr1) == true && check_if_is_arithm(expr2) == true) {
+        SymbolType type = GLOBAL;
+        if (get_scope() != 0) {
+            type = LOCAL;
+        }
+        SymbolTableEntry* new_temp = new_temp_var(-1, type);
+        //std::cout << new_temp.scope << std::endl;
+        result = make_bool_expression(BOOL_EXPR, get_symbol(new_temp->name, get_scope()));
+        result->truelist.push_front(next_quad_label());
+        result->falselist.push_front(next_quad_label() + 1);
+        //emit_if_equal(IF_EQ, expr1, expr2, next_quad_label()+3);
+        emit_if_equal(IF_EQ, expr1, expr2, UINT_MAX);
+        //set_curr_quad_label((next_quad_label()+3));
+        //emit_assign(ASSIGN, result, make_constbool_expression(CONSTBOOL_EXPR, 0));
+        emit_jump(JUMP, UINT_MAX);
+        //set_curr_quad_label((next_quad_label()+2));
+        //emit_assign(ASSIGN, result, make_constbool_expression(CONSTBOOL_EXPR, 1));
+    } else {
+        std::cout << "We cannot do arithmetic actions to a no numerable expression" << std::endl;
+        exit(-1);
     }
-    SymbolTableEntry* new_temp = new_temp_var(-1, type);
-    //std::cout << new_temp.scope << std::endl;
-    result = make_bool_expression(BOOL_EXPR, get_symbol(new_temp->name, get_scope()));
-    emit_if_equal(IF_EQ, expr1, expr2, next_quad_label()+3);
-    set_curr_quad_label((next_quad_label()+3));
-    emit_assign(ASSIGN, result, make_constbool_expression(CONSTBOOL_EXPR, 0));
-    emit_jump(JUMP, (next_quad_label()+2));
-    set_curr_quad_label((next_quad_label()+2));
-    emit_assign(ASSIGN, result, make_constbool_expression(CONSTBOOL_EXPR, 1));
-
     return result;
 }
 
 expression* manage_expr_not_eq_expr(expression* result, expression* expr1, expression* expr2) {
-	SymbolType type = GLOBAL;
-    if (get_scope() != 0) {
-        type = LOCAL;
+	if (check_if_is_arithm(expr1) == true && check_if_is_arithm(expr2) == true) {
+        SymbolType type = GLOBAL;
+        if (get_scope() != 0) {
+            type = LOCAL;
+        }
+        SymbolTableEntry* new_temp = new_temp_var(-1, type);
+        //std::cout << new_temp.scope << std::endl;
+        result = make_bool_expression(BOOL_EXPR, get_symbol(new_temp->name, get_scope()));
+        result->truelist.push_front(next_quad_label());
+        result->falselist.push_front(next_quad_label() + 1);
+        //emit_if_not_equal(IF_N_EQ, expr1, expr2, next_quad_label()+3);
+        emit_if_not_equal(IF_N_EQ, expr1, expr2, UINT_MAX);
+        //set_curr_quad_label((next_quad_label()+3));
+        //emit_assign(ASSIGN, result, make_constbool_expression(CONSTBOOL_EXPR, 0));
+        emit_jump(JUMP, UINT_MAX);
+        //set_curr_quad_label((next_quad_label()+2));
+        //emit_assign(ASSIGN, result, make_constbool_expression(CONSTBOOL_EXPR, 1));
+    } else {
+        std::cout << "We cannot do arithmetic actions to a no numerable expression" << std::endl;
+        exit(-1);
     }
-    SymbolTableEntry* new_temp = new_temp_var(-1, type);
-    //std::cout << new_temp.scope << std::endl;
-    result = make_bool_expression(BOOL_EXPR, get_symbol(new_temp->name, get_scope()));
-    emit_if_not_equal(IF_N_EQ, expr1, expr2, next_quad_label()+3);
-    set_curr_quad_label((next_quad_label()+3));
-    emit_assign(ASSIGN, result, make_constbool_expression(CONSTBOOL_EXPR, 0));
-    emit_jump(JUMP, (next_quad_label()+2));
-    set_curr_quad_label((next_quad_label()+2));
-    emit_assign(ASSIGN, result, make_constbool_expression(CONSTBOOL_EXPR, 1));
-
     return result;
 }
 
-expression* manage_expr_and_expr(expression* result, expression* expr1, expression* expr2) {
+expression* manage_expr_and_expr(expression* result, expression* expr1, unsigned m_quad, expression* expr2) {
     SymbolType type = GLOBAL;
     if (get_scope() != 0) {
         type = LOCAL;
@@ -1942,11 +1979,24 @@ expression* manage_expr_and_expr(expression* result, expression* expr1, expressi
     SymbolTableEntry* new_temp = new_temp_var(-1, type);
     //std::cout << new_temp.scope << std::endl;
     result = make_bool_expression(BOOL_EXPR, get_symbol(new_temp->name, get_scope()));
-    emit_bool(AND, result, expr1, expr2);
+    
+    
+    for (auto& it : expr1->truelist) {
+        std::cout << "True list: " << it << std::endl;
+        backpatch(it, m_quad);
+    }
+    
+    result->truelist = expr2->truelist;
+    expr1->falselist.merge(expr2->falselist);
+    result->falselist = expr1->falselist;
+   
+    
+    //emit_bool(AND, result, expr1, expr2);
     return result;
 }
 
 expression* manage_expr_or_expr(expression* result, expression* expr1, unsigned m_quad, expression* expr2) {
+    
     SymbolType type = GLOBAL;
     if (get_scope() != 0) {
         type = LOCAL;
@@ -1954,12 +2004,18 @@ expression* manage_expr_or_expr(expression* result, expression* expr1, unsigned 
     SymbolTableEntry* new_temp = new_temp_var(-1, type);
     //std::cout << new_temp.scope << std::endl;
     result = make_bool_expression(BOOL_EXPR, get_symbol(new_temp->name, get_scope()));
-    backpatch(expr1->truelist.back(), next_quad_label());
-    backpatch(expr2->truelist.back(), next_quad_label());
-    backpatch(expr1->falselist.back(), m_quad);
-    //backpatch(expr2->falselist.back(), next_quad_label());
+    //std::cout << "M Quad is " << m_quad << std::endl;
+    for (auto& it : expr1->falselist) {
+        std::cout << "False list: " << it << std::endl;
+        backpatch(it, m_quad);
+    }
     expr1->truelist.merge(expr2->truelist);
+    
     result->truelist = expr1->truelist;
+    /*for (auto& it : expr2->falselist) {
+        std::cout << "False list: " << it << std::endl;
+        backpatch(it, m_quad+2);
+    }*/
     result->falselist = expr2->falselist;
     //emit_bool(OR, result, expr1, expr2);
     return result;
@@ -1985,7 +2041,12 @@ expression* manage_uminus_expr(expression* result, expression* expr1) {
 }
 
 expression* manage_not_expr(expression* result, expression* expr1) {
-    
+    if (expr1->truelist.empty()) {
+        expr1->truelist.push_back(next_quad_label());
+        expr1->falselist.push_back(next_quad_label()+1);
+        emit_if_equal(IF_EQ, expr1, make_constbool_expression(CONSTBOOL_EXPR, 1), UINT_MAX);
+        emit_jump(JUMP, UINT_MAX);
+    }
     SymbolType type = GLOBAL;
     if (get_scope() != 0) {
         type = LOCAL;
@@ -2016,7 +2077,7 @@ expression* manage_db_plus_lvalue(expression* result, expression* expr1) {
                         type = LOCAL;
                     }
                 SymbolTableEntry* new_temp = new_temp_var(-1, type);
-                std::cout << new_temp->scope << std::endl;
+                //std::cout << new_temp->scope << std::endl;
                 result = make_arithm_expression(ARITHM_EXPR, get_symbol(new_temp->name, get_scope()));
                 emit_assign(ASSIGN, result, expr1);
                 
@@ -2039,7 +2100,7 @@ expression* manage_lvalue_db_plus(expression* result, expression* expr1) {
                 type = LOCAL;
             }
             SymbolTableEntry* new_temp = new_temp_var(-1, type);
-            std::cout << new_temp->scope << std::endl;
+            //std::cout << new_temp->scope << std::endl;
             result = make_lvalue_expression(VAR_EXPR, get_symbol(new_temp->name, get_scope()));
             if (expr1->type == TABLEITEM_EXPR) {
                 expression* val = emit_if_table_item(expr1);
@@ -2076,7 +2137,7 @@ expression* manage_db_minus_lvalue(expression* result, expression* expr1) {
                     type = LOCAL;
                 }
                 SymbolTableEntry* new_temp = new_temp_var(-1, type);
-                std::cout << new_temp->scope << std::endl;
+                //td::cout << new_temp->scope << std::endl;
                 result = make_arithm_expression(ARITHM_EXPR, get_symbol(new_temp->name, get_scope()));
                 emit_assign(ASSIGN, result, expr1);
                 
@@ -2099,7 +2160,7 @@ expression* manage_lvalue_db_minus(expression* result, expression* expr1) {
                 type = LOCAL;
             }
             SymbolTableEntry* new_temp = new_temp_var(-1, type);
-            std::cout << new_temp->scope << std::endl;
+            //std::cout << new_temp->scope << std::endl;
             result = make_lvalue_expression(VAR_EXPR, get_symbol(new_temp->name, get_scope()));
             if (expr1->type == TABLEITEM_EXPR) {
                 expression* val = emit_if_table_item(expr1);
@@ -2124,39 +2185,108 @@ expression* manage_assign_expr(expression* result, expression* expr1, expression
     /*if (expr2->symbol) {
     std::cout<< "LVALUE = EXPR" << expr2->symbol->name << std::endl;
     }*/
-    if (handle_expr(expr1->symbol->name, expr1->type) == 0) {
+    if (expr2->truelist.empty()) {
+        if (handle_expr(expr1->symbol->name, expr1->type) == 0) {
         
-        if (expr1->type == TABLEITEM_EXPR) {
+            if (expr1->type == TABLEITEM_EXPR) {
             
-            emit_table_set_item(TABLESETELEM, expr1, expr1->index, expr2);
-            result = emit_if_table_item(expr1);
-            result->type = ASSIGN_EXPR;
+                emit_table_set_item(TABLESETELEM, expr1, expr1->index, expr2);
+                result = emit_if_table_item(expr1);
+                result->type = ASSIGN_EXPR;
             
-        } else {
-            
-            if (check_if_is_arithm_alt(expr1) == true && check_if_is_arithm_alt(expr2) == true) {
-                
-                emit_assign(ASSIGN, expr1, expr2);
-
-                SymbolType type = GLOBAL;
-                if (get_scope() != 0) {
-                    type = LOCAL;
-                }
-                SymbolTableEntry* new_temp = new_temp_var(-1, type);
-                std::cout << new_temp->name << std::endl;
-
-                if (get_symbol(new_temp->name, get_scope()) != NULL) {
-                    std::cout << "NEW TEMP NAME: " << new_temp->name << std::endl;
-                    result = make_assign_expression(ASSIGN_EXPR, get_symbol(new_temp->name, get_scope()));
-                    std::cout << "ASSIGN RESULT NAME: " << result->symbol->name << std::endl;
-                    emit_assign(ASSIGN, result, expr1);
-                } else {
-                    std::cout << new_temp->name << std::endl;
-                    result = make_assign_expression(ASSIGN_EXPR, get_symbol_inactive(new_temp->name, get_scope()));
-                    emit_assign(ASSIGN, result, expr1);
-                }
             } else {
-                std::cout << "Error r-value is not an arithmetic expression" << expr1->type << " OR " << expr2->type << std::endl;
+            
+                if (check_if_is_arithm_alt(expr1) == true && check_if_is_arithm_alt(expr2) == true) {
+                
+                    emit_assign(ASSIGN, expr1, expr2);
+
+                    SymbolType type = GLOBAL;
+                    if (get_scope() != 0) {
+                        type = LOCAL;
+                    }
+                    SymbolTableEntry* new_temp = new_temp_var(-1, type);
+                    //std::cout << new_temp->name << std::endl;
+
+                    if (get_symbol(new_temp->name, get_scope()) != NULL) {
+                        //std::cout << "NEW TEMP NAME: " << new_temp->name << std::endl;
+                        result = make_assign_expression(ASSIGN_EXPR, get_symbol(new_temp->name, get_scope()));
+                        //std::cout << "ASSIGN RESULT NAME: " << result->symbol->name << std::endl;
+                        
+                        emit_assign(ASSIGN, result, expr1);
+                    } else {
+                        //std::cout << new_temp->name << std::endl;
+                        result = make_assign_expression(ASSIGN_EXPR, get_symbol_inactive(new_temp->name, get_scope()));
+                        
+                        emit_assign(ASSIGN, result, expr1);
+                    }
+                } else {
+                    std::cout << "Error r-value is not an arithmetic expression" << expr1->type << " OR " << expr2->type << std::endl;
+                }
+            }
+        }
+    } else {
+        if (handle_expr(expr1->symbol->name, expr1->type) == 0) {
+        
+            if (expr1->type == TABLEITEM_EXPR) {
+            
+                emit_table_set_item(TABLESETELEM, expr1, expr1->index, expr2);
+                result = emit_if_table_item(expr1);
+                result->type = ASSIGN_EXPR;
+            
+            } else {
+            
+                if (check_if_is_arithm_alt(expr1) == true && check_if_is_arithm_alt(expr2) == true) {
+                
+                    //emit_assign(ASSIGN, expr1, expr2);
+
+                    SymbolType type = GLOBAL;
+                    if (get_scope() != 0) {
+                        type = LOCAL;
+                    }
+                    SymbolTableEntry* new_temp = new_temp_var(-1, type);
+                    //std::cout << new_temp->name << std::endl;
+
+                    if (get_symbol(new_temp->name, get_scope()) != NULL) {
+                        //std::cout << "NEW TEMP NAME: " << new_temp->name << std::endl;
+                        result = make_assign_expression(ASSIGN_EXPR, get_symbol(new_temp->name, get_scope()));
+                        //std::cout << "ASSIGN RESULT NAME: " << result->symbol->name << std::endl;
+                        
+                        for (auto& it : expr2->truelist) {
+                            std::cout << "TRUE LIST: " << it << std::endl;
+                            backpatch(it, next_quad_label());
+                        }
+                        for (auto& it : expr2->falselist) {
+                            std::cout << "FALSE LIST: " << it << std::endl;
+                            backpatch(it, next_quad_label()+2);
+                        }
+                       
+                        emit_assign(ASSIGN, result, make_constbool_expression(CONSTBOOL_EXPR, 1));
+                        emit_jump(JUMP, (next_quad_label()+2));
+                        set_curr_quad_label((next_quad_label()+2));
+                        emit_assign(ASSIGN, result, make_constbool_expression(CONSTBOOL_EXPR, 0));
+                        emit_assign(ASSIGN, expr1, result);
+                    } else {
+                        //std::cout << new_temp->name << std::endl;
+                        result = make_assign_expression(ASSIGN_EXPR, get_symbol_inactive(new_temp->name, get_scope()));
+                    
+                        for (auto& it : expr2->truelist) {
+                            std::cout << "TRUELIST: " << it << std::endl;
+                            backpatch(it, next_quad_label());
+                        }
+                        for (auto& it : expr2->falselist) {
+                            std::cout << "FALSE LIST: " << it << std::endl;
+                            backpatch(it, next_quad_label()+2);
+                        }
+                        //backpatch(expr2->truelist.back(), next_quad_label());
+                        emit_assign(ASSIGN, result, make_constbool_expression(CONSTBOOL_EXPR, 1));
+                        emit_jump(JUMP, (next_quad_label()+2));
+                        set_curr_quad_label((next_quad_label()+2));
+                        emit_assign(ASSIGN, result, make_constbool_expression(CONSTBOOL_EXPR, 0));
+                        emit_assign(ASSIGN, expr1, result);
+                    }
+                } else {
+                    std::cout << "Error r-value is not an arithmetic expression" << expr1->type << " OR " << expr2->type << std::endl;
+                }
             }
         }
     }
@@ -2165,9 +2295,9 @@ expression* manage_assign_expr(expression* result, expression* expr1, expression
 }
 
 expression* manage_lvalue_id(expression* result, std::string symbol, int line_num) {
-    std::cout << "MANAGE LVALUE ID" << std::endl;
+    //std::cout << "MANAGE LVALUE ID" << std::endl;
     int symbol_flag = handle_id(symbol, get_scope(), line_num, curr_scope_space(), curr_scope_offset());
-    std::cout << "MANAGE LVALUE ID AFTER HANDLE ID Symbol Flag: " << symbol_flag << std::endl;
+    //std::cout << "MANAGE LVALUE ID AFTER HANDLE ID Symbol Flag: " << symbol_flag << std::endl;
     if (symbol_flag == 1) {
         if (get_symbol(symbol, get_scope())->type == LIBFUNC) {
             //std::cout << "MANAGE LVALUE ID LIBFUNC" << std::endl;
@@ -2178,15 +2308,18 @@ expression* manage_lvalue_id(expression* result, std::string symbol, int line_nu
             result = make_lvalue_expression(PROGRAMFUNC_EXPR, get_symbol(symbol, get_scope()));
             //std::cout << "MANAGE LVALUE ID USERFUNC AFTER" << std::endl;
         } else {
-            std::cout << "MANAGE LVALUE ID OTHERWISE" << std::endl;
+            //std::cout << "MANAGE LVALUE ID OTHERWISE" << std::endl;
             /*std::cout << "GET SYMBOL: " << get_symbol(symbol, get_scope())->name << std::endl;
             result = make_lvalue_expression(VAR_EXPR, get_symbol(symbol, get_scope()));*/
             if (get_symbol(symbol, get_scope()) != NULL) {
-                std::cout << "MANAGE LVALUE ID OTHERWISE" << std::endl;
-                std::cout << "GET SYMBOL: " << get_symbol(symbol, get_scope())->name << std::endl;
-                std::cout << "GET SYMBOL SCOPE: " << get_scope() << std::endl;
+                //std::cout << "MANAGE LVALUE ID OTHERWISE" << std::endl;
+                //std::cout << "GET SYMBOL: " << get_symbol(symbol, get_scope())->name << std::endl;
+                //std::cout << "GET SYMBOL SCOPE: " << get_scope() << std::endl;
                 result = make_lvalue_expression(VAR_EXPR, get_symbol(symbol, get_scope()));
-                std::cout << "MANAGE LVALUE ID OTHERWISE AFTER MAKE LVALUE EXPR" << std::endl;
+                //emit_if_equal(IF_EQ, result, make_constbool_expression(CONSTBOOL_EXPR, 1), UINT_MAX);
+                //emit_jump(JUMP, UINT_MAX);
+                //std::cout << "MANAGE LVALUE ID OTHERWISE AFTER MAKE LVALUE EXPR" << std::endl;
+
             } else {
                 result = make_lvalue_expression(VAR_EXPR, get_symbol_inactive(symbol, get_scope()));
             }
@@ -2207,10 +2340,12 @@ expression* manage_lvalue_id(expression* result, std::string symbol, int line_nu
                     break;
                 } else {
                     if (get_symbol(symbol, i) != NULL) {
-                        std::cout << "MANAGE LVALUE ID OTHERWISE" << std::endl;
-                        std::cout << "GET SYMBOL: " << get_symbol(symbol, i)->name << std::endl;
+                        //std::cout << "MANAGE LVALUE ID OTHERWISE" << std::endl;
+                        //std::cout << "GET SYMBOL: " << get_symbol(symbol, i)->name << std::endl;
                         result = make_lvalue_expression(VAR_EXPR, get_symbol(symbol, i));
-                        std::cout << "MANAGE LVALUE ID OTHERWISE AFTER MAKE LVALUE EXPR" << std::endl;
+                        //emit_if_equal(IF_EQ, result, make_constbool_expression(CONSTBOOL_EXPR, 1), UINT_MAX);
+                        //emit_jump(JUMP, UINT_MAX);
+                        //std::cout << "MANAGE LVALUE ID OTHERWISE AFTER MAKE LVALUE EXPR" << std::endl;
                         break;
                     } else {
                         result = make_lvalue_expression(VAR_EXPR, get_symbol_inactive(symbol, i));
@@ -2235,6 +2370,8 @@ expression* manage_lvalue_local_id(expression* result, std::string symbol, int l
     } else {
         if (get_symbol(symbol, get_scope() != NULL)) {
             result = make_lvalue_expression(VAR_EXPR, get_symbol(symbol, get_scope()));
+            //emit_if_equal(IF_EQ, result, make_constbool_expression(CONSTBOOL_EXPR, 1), UINT_MAX);
+            //emit_jump(JUMP, UINT_MAX);
         } else {
             result = make_lvalue_expression(VAR_EXPR, get_symbol_inactive(symbol, get_scope()));
         }
@@ -2245,7 +2382,8 @@ expression* manage_lvalue_local_id(expression* result, std::string symbol, int l
 expression* manage_lvalue_global_id(expression* result, std::string symbol, int line_num) {
     handle_global_access_id(symbol);
     result = make_lvalue_expression(VAR_EXPR, get_symbol(symbol,0));
-
+    //emit_if_equal(IF_EQ, result, make_constbool_expression(CONSTBOOL_EXPR, 1), UINT_MAX);
+    //emit_jump(JUMP, UINT_MAX);
     return result;                               
 }
 
@@ -2275,7 +2413,7 @@ expression* manage_lvalue_callsuffix(expression* result, expression* lvalue, std
             
         } else {*/
             while (callsuffix) {
-                std::cout << "Callsuffix Elem: " << callsuffix->symbol->name << std::endl;
+                //std::cout << "Callsuffix Elem: " << callsuffix->symbol->name << std::endl;
                 callsuffix_stack.push_back(callsuffix);
                 callsuffix = callsuffix->next;
             }
@@ -2296,12 +2434,11 @@ expression* manage_lvalue_callsuffix(expression* result, expression* lvalue, std
 }
 
 SymbolTableEntry* manage_funcprefix(SymbolTableEntry* symbol, std::string name, int line_num) {
-    
     //std::cout << "Manage_funcprefix_w_name" << std::endl;
     handle_funcdef_w_name(name, get_scope(), line_num, curr_scope_space(), curr_scope_offset());
     symbol = get_symbol(name, get_scope());
     symbol->i_address = next_quad_label();
-
+    emit_jump(JUMP, UINT_MAX);
     emit_funcdef(FUNCSTART, make_func_expression(PROGRAMFUNC_EXPR, get_symbol(symbol->name, get_scope())));
     set_prev_scope_space_counter(get_scope_space_counter());
     set_scope_space_counter(3);
@@ -2314,7 +2451,7 @@ SymbolTableEntry* manage_funcprefix_anonym(SymbolTableEntry* symbol, int line_nu
     std::string name = handle_funcdef_anonym_name(get_scope(), line_num, curr_scope_space(), curr_scope_offset());
     symbol = get_symbol(name, get_scope());
     symbol->i_address = next_quad_label();
-
+    emit_jump(JUMP, UINT_MAX);
     emit_funcdef(FUNCSTART, make_func_expression(PROGRAMFUNC_EXPR, get_symbol(symbol->name, get_scope())));
     set_prev_scope_space_counter(get_scope_space_counter());
     set_scope_space_counter(3);
@@ -2325,14 +2462,14 @@ SymbolTableEntry* manage_funcprefix_anonym(SymbolTableEntry* symbol, int line_nu
 }
 
 expression* manage_funcdef(SymbolTableEntry* symbol, unsigned funcbody) {
-    std::cout << "MANAGE FUNCDEF" << std::endl;
+    //std::cout << "MANAGE FUNCDEF" << std::endl;
     symbol->total_locals = funcbody;
     expression* res = make_func_expression(PROGRAMFUNC_EXPR, symbol);
-    std::cout << "AFTER MAKE FUNC EXPRESSION" << std::endl;
+    //std::cout << "AFTER MAKE FUNC EXPRESSION" << std::endl;
     emit_funcdef(FUNCEND,res);
-    std::cout << "AFTER EMIT FUNCDEF" << std::endl;
+    //std::cout << "AFTER EMIT FUNCDEF" << std::endl;
     handle_funcdef_block_end(get_scope());
-    std::cout << "AFTER HANDLE FUNCDEF BLOCK END" << std::endl;
+    //std::cout << "AFTER HANDLE FUNCDEF BLOCK END" << std::endl;
     return res;
 }
 
@@ -2353,7 +2490,7 @@ expression* manage_lbr_elist_rbr(expression* objectdef, expression* elist) {
     }
     int i = 0;
     for (auto& e : e_list) {
-        std::cout << "E_LIST " << e->bool_const << std::endl;
+        //std::cout << "E_LIST " << e->bool_const << std::endl;
         emit_table_set_item(TABLESETELEM, table, make_constnum_expression(CONSTNUM_EXPR, i++), e);
         
     }
@@ -2369,7 +2506,7 @@ expression* manage_lbr_indexed_rbr(expression* objectdef, indexed_elem* indexed)
         type = LOCAL;
     }
     SymbolTableEntry* new_temp = new_temp_var(-1, type);
-    std::cout << new_temp->name << std::endl;
+    //std::cout << new_temp->name << std::endl;
     expression* table = make_new_table_expression(NEWTABLE_EXPR, get_symbol(new_temp->name, get_scope()));
     emit_table_create(TABLECREATE, table);
     //set_indexed_map(table);
@@ -2437,7 +2574,7 @@ unsigned contlist_size() {
 }
 
 void patchlabel(unsigned quad_num, unsigned label) {
-    std::cout << "Patching quad_num: " << quad_num << ", label: " << label << std::endl;
+    //std::cout << "Patching quad_num: " << quad_num << ", label: " << label << std::endl;
     if (quad_num >= quad_table.size()) {
         std::cerr << "Error: quad_num " << quad_num << " is out of bounds (quad_table size: " << quad_table.size() << ")" << std::endl;
         abort();
@@ -2487,7 +2624,7 @@ void make_indexed_map_list() {
 }
 
 std::map<expression*, expression*> get_indexed_map() {
-    std::cout<< "Indexed Map Size: " << indexed_map_list.size() << std::endl;
+    //std::cout<< "Indexed Map Size: " << indexed_map_list.size() << std::endl;
     return indexed_map_list.back();
 }
 
@@ -2500,7 +2637,7 @@ indexed_elem* make_indexed_elem(expression* index, expression* value) {
 }
 
 void backpatch(unsigned quad_num, unsigned m_quad) {
-    std::cout << "Patching quad_num: " << quad_num << ", label: " << m_quad << std::endl;
+    //std::cout << "Patching quad_num: " << quad_num << ", label: " << m_quad << std::endl;
     if (quad_num >= quad_table.size()) {
         std::cerr << "Error: quad_num " << quad_num << " is out of bounds (quad_table size: " << quad_table.size() << ")" << std::endl;
         abort();

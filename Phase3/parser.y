@@ -1,3 +1,4 @@
+
 %{
     #include "symbol_table.h"
     #include "handlers.h"
@@ -158,11 +159,40 @@
 
 %%
 
-program: statements statement                                                                          {}
+program: statements statement                                                                          {
+
+}
          | %empty                                                                                      {}
 ;
 
-statement: expression TOK_SEMICOLON                                                                    {}
+statement: expression TOK_SEMICOLON                                                                    {
+    if (!$1->truelist.empty() || !$1->falselist.empty()) {
+        SymbolType type = GLOBAL;
+    if (get_scope() != 0) {
+        type = LOCAL;
+    }
+    SymbolTableEntry* new_temp = new_temp_var(-1, type);
+    expression* result = make_assign_expression(ASSIGN_EXPR, get_symbol(new_temp->name, get_scope()));
+
+    
+    for (auto& it : $1->truelist) {
+        std::cout << "TRUELIST: " << it << std::endl;
+        backpatch(it, next_quad_label());
+    }
+
+    for (auto& it : $1->falselist) {
+        std::cout << "FALSE LIST: " << it << std::endl;
+        backpatch(it, next_quad_label() + 2);
+    }
+
+    emit_assign(ASSIGN, result, make_constbool_expression(CONSTBOOL_EXPR, 1));
+    emit_jump(JUMP, (next_quad_label() + 2));
+    set_curr_quad_label((next_quad_label() + 2));
+    emit_assign(ASSIGN, result, make_constbool_expression(CONSTBOOL_EXPR, 0));
+    }
+    
+}
+
           | if_statement                                                                               {}
           | ifelse_statement                                                                           {}
           | while_statement                                                                            {}
@@ -187,12 +217,13 @@ statement: expression TOK_SEMICOLON                                             
 ;
 
 statements: statements statement                                                                       {
+    
 } | %empty {}
 ;
 
 M: %empty {
     $$ = next_quad_label();
-    std::cout << "Next Quad: " << $$ << std::endl;
+    //std::cout << "Next Quad: " << $$ << std::endl;
 }
 ;
 
@@ -201,6 +232,8 @@ assignexpr: lvalue TOK_ASSIGN expression                                        
                                                                                                             $$ = manage_assign_expr($$, $1, $3);
                                                                                                        }
 ;
+
+
 
 expression: assignexpr                                                                                 {$$ = $1;}
             | expression TOK_PLUS expression                                                           {
@@ -255,17 +288,41 @@ expression: assignexpr                                                          
                                                                                                             $$ = manage_expr_not_eq_expr($$, $1, $3);
                                                                                                        
                                                                                                        }
-            | expression TOK_AND expression {
-                    //printf("expression -> expression and expression\n");
-                    //handle_expression($1,$3, get_scope(), yylineno);
-
-                    $$ = manage_expr_and_expr($$, $1, $3);
+            | expression TOK_AND  {
+                        if ($1->truelist.empty() && $1->falselist.empty()) {
+                            $1->truelist.push_back(next_quad_label());
+                            $1->falselist.push_back(next_quad_label()+1);
+                            emit_if_equal(IF_EQ, $1, make_constbool_expression(CONSTBOOL_EXPR, 1), UINT_MAX);
+                            emit_jump(JUMP, UINT_MAX);
+                        }   
+                    } M expression {
+                    if ($5->truelist.empty() && $5->falselist.empty()) {
+                        std::cout << "$5 symbol name is " << $5->symbol->name << std::endl;
+                        $5->truelist.push_back(next_quad_label());
+                        $5->falselist.push_back(next_quad_label()+1);
+                        emit_if_equal(IF_EQ, $5, make_constbool_expression(CONSTBOOL_EXPR, 1), UINT_MAX);
+                        emit_jump(JUMP, UINT_MAX);
+                    }
+                    $$ = manage_expr_and_expr($$, $1, $4, $5);
                 }
-            | expression TOK_OR M expression {
-                    printf("expression -> expression or expression\n");
-                    //handle_expression($1,$3, get_scope(), yylineno);
-
-                    $$ = manage_expr_or_expr($$, $1, $3, $4);
+            | expression TOK_OR {
+                        if ($1->truelist.empty() && $1->falselist.empty()) {
+                            $1->truelist.push_back(next_quad_label());
+                            $1->falselist.push_back(next_quad_label()+1);
+                            emit_if_equal(IF_EQ, $1, make_constbool_expression(CONSTBOOL_EXPR, 1), UINT_MAX);
+                            emit_jump(JUMP, UINT_MAX);
+                    
+                        }
+                    } M expression {
+                    
+                    if ($5->truelist.empty() && $5->falselist.empty()) {
+                        std::cout << "$5 symbol name is " << $5->symbol->name << std::endl;
+                        $5->truelist.push_back(next_quad_label());
+                        $5->falselist.push_back(next_quad_label()+1);
+                        emit_if_equal(IF_EQ, $5, make_constbool_expression(CONSTBOOL_EXPR, 1), UINT_MAX);
+                        emit_jump(JUMP, UINT_MAX);
+                    }
+                    $$ = manage_expr_or_expr($$, $1, $4, $5);
                 }
             | term {
                 //printf("expression -> term\n");
@@ -305,6 +362,7 @@ term: TOK_L_PARENTH expression TOK_R_PARENTH {
 
 primary: lvalue                                                                                        {
                                                                                                             $$ = emit_if_table_item($1);
+                                                                                                            std::cout<<"LVALUE HERE HERE" << std::endl;
                                                                                                        }
          | call                                                                                        {$$=$1;}
          | objectdef                                                                                   {
@@ -324,7 +382,7 @@ lvalue: TOK_ID                                                                  
                                                                                                             //std::cout << "LVALUE EXPR SYMBOL AFTER MANAGE LVALUE ID: "  << std::endl;
                                                                                                        }
         | TOK_LOCAL TOK_ID                                                                             {
-                                                                                                            std::cout << "LOCAL ID: " << $2 << std::endl;  
+                                                                                                            //std::cout << "LOCAL ID: " << $2 << std::endl;  
                                                                                                             $$ = manage_lvalue_local_id($$, $2, yylineno);
                                                                                                        }
         | TOK_DBL_COLON TOK_ID                                                                         {
@@ -362,7 +420,7 @@ call: call normcall {
                                                                                                        }
       | TOK_L_PARENTH funcdef TOK_R_PARENTH normcall {
             //expression* func = make_func_expression(PROGRAMFUNC_EXPR, get_symbol($2->symbol->name, get_scope()));
-            std::cout << "MAKE CALL HERE" << std::endl;
+            //std::cout << "MAKE CALL HERE" << std::endl;
             $$ = make_call($2, $4.elist);     
       }
 ;
@@ -378,7 +436,7 @@ callsuffix: normcall {
 ;
 
 normcall: TOK_L_PARENTH elist TOK_R_PARENTH {
-    std::cout << "(elist)" << std::endl;
+    //std::cout << "(elist)" << std::endl;
     $$.elist = $2;
     $$.method = 0;
     $$.name = NULL;
@@ -387,7 +445,7 @@ normcall: TOK_L_PARENTH elist TOK_R_PARENTH {
 ;
 
 methodcall: TOK_DBL_DOT TOK_ID normcall {
-    printf("methodcall -> ..id normcall\n");
+    //printf("methodcall -> ..id normcall\n");
     $$.elist = $3.elist;
     $$.method = 1;
     $$.name = $2;
@@ -397,13 +455,13 @@ methodcall: TOK_DBL_DOT TOK_ID normcall {
 ;
 
 elist: elist TOK_COMMA expression {
-            printf("elist -> elist,\n");
+            //printf("elist -> elist,\n");
             $3->next = $1;
             $$ = $3;
             
         }
         | expression {
-            printf("elist -> expression\n");
+            //printf("elist -> expression\n");
             //std::cout << "$1 -> " << $1->symbol->name << std::endl;
             $1->next = NULL;
             $$ = $1;
@@ -416,7 +474,7 @@ elist: elist TOK_COMMA expression {
 
 indexedelem: TOK_L_CURLY_BR expression TOK_COLON expression 
 TOK_R_CURLY_BR {
-    printf("indexedelem -> {expression:expression}\n");
+    //printf("indexedelem -> {expression:expression}\n");
     //std::cout << $2->str_const << $4->type << std::endl;
     //insert_indexed_map($2, $4);
 
@@ -497,7 +555,8 @@ funcbody: funcdef_block {
 funcdef: funcprefix funcargs funcbody {
         $$ = manage_funcdef($1, $3);
         //quad_table_print();
-        
+        std::cout << "SYMBOL LOCAL " << next_quad_label()-$1->total_locals << std::endl; 
+        //patchlabel(next_quad_label() - $1->total_locals, next_quad_label());
         scope_counter--;
         is_in_function_mode--;
         pop_state_stack();
@@ -537,7 +596,36 @@ idlist: TOK_ID {
 ;
 
 ifprefix: TOK_IF TOK_L_PARENTH expression TOK_R_PARENTH {
-    $$ = manage_ifprefix($$, $3); // Emit IF_EQ and JUMP quads
+    if (!$3->truelist.empty() || !$3->falselist.empty()) {
+        SymbolType type = GLOBAL;
+        if (get_scope() != 0) {
+            type = LOCAL;
+        }
+        SymbolTableEntry* new_temp = new_temp_var(-1, type);
+        expression* result = make_assign_expression(ASSIGN_EXPR, get_symbol(new_temp->name, get_scope()));
+
+    
+        for (auto& it : $3->truelist) {
+            std::cout << "TRUELIST: " << it << std::endl;
+            backpatch(it, next_quad_label());
+        }
+    
+        
+        for (auto& it : $3->falselist) {
+            std::cout << "FALSE LIST: " << it << std::endl;
+            backpatch(it, next_quad_label() + 2);
+        }
+    
+
+        emit_assign(ASSIGN, result, make_constbool_expression(CONSTBOOL_EXPR, 1));
+        emit_jump(JUMP, (next_quad_label() + 2));
+        set_curr_quad_label((next_quad_label() + 2));
+        emit_assign(ASSIGN, result, make_constbool_expression(CONSTBOOL_EXPR, 0));
+        $3 = result;
+        $$ = manage_ifprefix($$, $3); // Emit IF_EQ and JUMP quads
+    } else {
+        $$ = manage_ifprefix($$, $3); // Emit IF_EQ and JUMP quads
+    }
 }
 ;
 
@@ -568,10 +656,41 @@ whilestart: TOK_WHILE {
 ;
 
 whilecond: TOK_L_PARENTH expression TOK_R_PARENTH {
-    emit_if_equal(IF_EQ, $2, make_constbool_expression(CONSTBOOL_EXPR, 1), next_quad_label()+2);
-    $$ = next_quad_label();
-    emit_jump(JUMP, 0);
-    push_state_stack("loop");
+    if (!$2->truelist.empty() || !$2->falselist.empty()) {
+        SymbolType type = GLOBAL;
+        if (get_scope() != 0) {
+            type = LOCAL;
+        }
+        SymbolTableEntry* new_temp = new_temp_var(-1, type);
+        expression* result = make_assign_expression(ASSIGN_EXPR, get_symbol(new_temp->name, get_scope()));
+
+    
+        for (auto& it : $2->truelist) {
+            std::cout << "TRUELIST: " << it << std::endl;
+            backpatch(it, next_quad_label());
+        }
+    
+        
+        for (auto& it : $2->falselist) {
+            std::cout << "FALSE LIST: " << it << std::endl;
+            backpatch(it, next_quad_label() + 2);
+        }
+    
+        emit_assign(ASSIGN, result, make_constbool_expression(CONSTBOOL_EXPR, 1));
+        emit_jump(JUMP, (next_quad_label() + 2));
+        set_curr_quad_label((next_quad_label() + 2));
+        emit_assign(ASSIGN, result, make_constbool_expression(CONSTBOOL_EXPR, 0));
+        $2 = result;
+        emit_if_equal(IF_EQ, $2, make_constbool_expression(CONSTBOOL_EXPR, 1), next_quad_label()+2);
+        $$ = next_quad_label();
+        emit_jump(JUMP, 0);
+        push_state_stack("loop");
+    } else {
+        emit_if_equal(IF_EQ, $2, make_constbool_expression(CONSTBOOL_EXPR, 1), next_quad_label()+2);
+        $$ = next_quad_label();
+        emit_jump(JUMP, 0);
+        push_state_stack("loop");
+    }
 }
 ;
 
@@ -625,11 +744,12 @@ for_statement: forprefix N elist TOK_R_PARENTH N statement N               {
 
 return_statement: TOK_RETURN TOK_SEMICOLON                                 {
     emit_return(RET, NULL);
+    emit_jump(JUMP, next_quad_label()+2);
 }
                   | TOK_RETURN expression TOK_SEMICOLON
                                                                            {
     emit_return(RET, $2);                                                                        
-                                                                           }
+    emit_jump(JUMP, next_quad_label()+2);                                                                      }
 ;
 %%
 

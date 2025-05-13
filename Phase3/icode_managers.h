@@ -128,7 +128,7 @@ bool check_if_is_arithm_alt(expression*);
 void set_curr_quad_label(unsigned);
 
 unsigned next_quad_label();
-expression* manage_expr_and_expr(expression*, expression*, expression*);
+expression* manage_expr_and_expr(expression*, expression*, unsigned, expression*);
 expression* manage_expr_or_expr(expression*, expression*, unsigned, expression*);
 expression* manage_expr_plus_expr(expression*, expression*, expression*);
 expression* manage_expr_minus_expr(expression*, expression*, expression*);

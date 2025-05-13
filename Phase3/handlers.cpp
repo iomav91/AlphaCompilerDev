@@ -1,3 +1,4 @@
+
 #include "handlers.h"
 
 extern int is_in_function_mode;
@@ -284,6 +285,3 @@ int is_a_lib_func(std::string name) {
 std::string func_name_generator() {
    return ("__func" + std::to_string(func_anonym_counter));
 }
-
-
-

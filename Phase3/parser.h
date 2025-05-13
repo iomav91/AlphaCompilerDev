@@ -45,7 +45,7 @@
 extern int yydebug;
 #endif
 /* "%code requires" blocks.  */
-#line 26 "parser.y"
+#line 30 "parser.y"
 
     struct Call {
         expression* elist;
@@ -53,7 +53,17 @@ extern int yydebug;
         char* name;
     };
 
-#line 57 "parser.h"
+    struct Forprefix {
+        unsigned test;
+        unsigned enter;
+    };
+
+    struct Stmt {
+        unsigned breaklist;
+        unsigned contlist;
+    };
+
+#line 67 "parser.h"
 
 /* Token kinds.  */
 #ifndef YYTOKENTYPE
@@ -118,7 +128,7 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 34 "parser.y"
+#line 48 "parser.y"
 
     unsigned unsignedVal;
     int intVal;
@@ -127,8 +137,11 @@ union YYSTYPE
     SymbolTableEntry* symbol;
     expression* expr;
     struct Call call_struct;
+    struct Forprefix forprefix_struct;
+    struct Stmt stmt_struct;
+    indexed_elem* indexed;
 
-#line 132 "parser.h"
+#line 145 "parser.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

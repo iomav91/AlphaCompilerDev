@@ -1,3 +1,4 @@
+
 #ifndef _SYMBOL_TABLE_H
 #define _SYMBOL_TABLE_H
 
@@ -85,6 +86,7 @@ struct expression {
     int                 bool_const;
     std::list<unsigned>            truelist;
     std::list<unsigned>            falselist;
+    unsigned            m_quad;
     expression*         next;         
 };
 

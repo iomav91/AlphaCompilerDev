@@ -1,3 +1,4 @@
+
 #ifndef _HELP_FUNCTIONS_H
 #define _HELP_FUNCTIONS_H
 
