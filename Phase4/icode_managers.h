@@ -25,8 +25,13 @@ struct continue_stmt {
     unsigned label;
 };
 
-// Phase 3
+struct return_stmt {
+    int pos;
+    unsigned label;
+};
 
+// Phase 3
+void clear_quads_file();
 quad make_quad(iopcode, expression*, expression*, 
                expression*, unsigned, int);
 expression* make_call(expression*, expression*);
@@ -170,8 +175,15 @@ expression* manage_funcdef(SymbolTableEntry*, unsigned);
 unsigned manage_ifprefix(unsigned, expression*);
 unsigned manage_elseprefix(unsigned);
 
-void push_breaklist(unsigned, unsigned);
-void push_contlist(unsigned, unsigned);
+void push_breaklist();
+void add_breakelem(unsigned, unsigned);
+void pop_breaklist();
+void push_contlist();
+void add_contelem(unsigned, unsigned);
+void pop_contlist();
+void push_returnlist();
+void add_returnelem(unsigned, unsigned);
+void pop_returnlist();
 unsigned breaklist_size();
 unsigned contlist_size();
 void patchlabel(unsigned, unsigned);
@@ -183,6 +195,12 @@ void push_state_stack(std::string);
 void pop_state_stack();
 std::string state_stack_top();
 int state_stack_size();
+
+void patchlist_returnlist(unsigned);
+void push_func_stack(SymbolTableEntry*);
+void pop_func_stack();
+SymbolTableEntry* func_stack_top();
+int func_stack_size();
 
 void make_indexed_map_list();
 std::map<expression*, expression*> get_indexed_map();

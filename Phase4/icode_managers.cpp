@@ -3,6 +3,9 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <sstream>
+#include <fstream>
+
 
 unsigned line_op_counter = 0;
 unsigned prev_scope_space_counter = 1;
@@ -11,6 +14,16 @@ unsigned function_local_offset = 0;
 unsigned formal_arg_offset = 0;
 unsigned scope_space_counter = 1;
 unsigned curr_quad_label = 0;
+
+void clear_quads_file() {
+    // Open the file in truncate mode to clear its contents
+    std::ofstream outfile("quads.txt", std::ios_base::trunc);
+    if (!outfile.is_open()) {
+        std::cerr << "Error: Could not open quads.txt for clearing." << std::endl;
+        return;
+    }
+    outfile.close(); // Close the file after clearing
+}
 
 std::vector<quad> quad_table;
 
@@ -33,6 +46,7 @@ std::vector<expression*> reversed_expression_list;
 std::map<expression*, expression*> indexed_map;
 std::vector<std::map<expression*, expression*>> indexed_map_list;
 std::vector<std::string> state_stack;
+std::vector<SymbolTableEntry*> func_stack;
 
 void set_elist_expression(expression* table) {
     int i = 0;
@@ -125,7 +139,7 @@ void print_reversed_expression_list() {
 
 void quad_creation(int op, expression* result, expression* arg1, expression* arg2, unsigned label, unsigned line) {
     //std::cout << "HERE After PUSHBACK" << std::endl;
-    std::string filename = "outfile1.asc";
+    /*std::string filename = "outfile1.asc";
     std::ofstream outfile;
 
     // Open the file in append mode
@@ -638,7 +652,7 @@ void quad_creation(int op, expression* result, expression* arg1, expression* arg
     }
 
     // Close the file
-    outfile.close();
+    outfile.close();*/
 }
 
 expression* make_call(expression* lvalue, expression* reversed_elist) {
@@ -1017,548 +1031,899 @@ expression* make_new_table_expression(expr_value type, SymbolTableEntry* symbol)
 }
 
 void quad_table_print() {
-    std::cout << "INSTR. LINE" << "\t\t" << "OPERATION" << "\t\t" << "RESULT" << "\t\t" << "Arg 1" << "\t\t" << "Arg 2" << std::endl;
+    clear_quads_file();
+    // Open or create the file in append mode
+    std::ofstream outfile("quads.txt", std::ios_base::app);
+    if (!outfile.is_open()) {
+        std::cerr << "Error: Could not open quads.txt for writing." << std::endl;
+        return;
+    }
+
+    // Print header
+    outfile << "INSTR. LINE\t\tOPERATION\t\tRESULT\t\tARG 1\t\tARG 2\t\tLABEL" << std::endl;
+    
     for (auto& quad : quad_table) {
+        std::ostringstream line;
         switch (quad.op) {
             case 0:
                 if (quad.arg1->type == CONSTNUM_EXPR) {
-                    std::cout << quad.line << "\t\t" << "ASSIGN" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << std::endl;
+                    line << quad.line << "\t\t\t\t" << "ASSIGN" << "\t\t\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const;
                 } else if (quad.arg1->type == CONSTSTRING_EXPR) {
-                    std::cout << quad.line << "\t\t" << "ASSIGN" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->str_const << std::endl;
+                    line << quad.line << "\t\t\t\t" << "ASSIGN" << "\t\t\t\t" << quad.result->symbol->name << "\t\t" << "\"" << quad.arg1->str_const << "\"";
                 } else if (quad.arg1->type == CONSTBOOL_EXPR) {
-                    std::cout << quad.line << "\t\t" << "ASSIGN" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->bool_const << std::endl;
+                    if (quad.arg1->bool_const == 1) {
+                        line << quad.line << "\t\t\t\t" << "ASSIGN" << "\t\t\t\t" << quad.result->symbol->name << "\t\t" << "'true'";
+                    } else {
+                        line << quad.line << "\t\t\t\t" << "ASSIGN" << "\t\t\t\t" << quad.result->symbol->name << "\t\t" << "'false'";
+                    }
                 } else {
-                    std::cout << quad.line << "\t\t" << "ASSIGN" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << std::endl;
+                    line << quad.line << "\t\t\t\t" << "ASSIGN" << "\t\t\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name;
                 }
                 break;
             case 1:
                 if (quad.arg1->type == CONSTNUM_EXPR) {
                     if (quad.arg2->type == CONSTNUM_EXPR) {
-                        std::cout << quad.line << "\t\t" << "ADD" << "\t\t" << quad.result->num_const << "\t\t" << quad.arg1->num_const << "\t\t" << quad.arg2->num_const << std::endl;
+                        line << quad.line << "\t\t\t\t" << "ADD" << "\t\t\t" << quad.result->num_const << "\t\t" << quad.arg1->num_const << "\t\t" << quad.arg2->num_const;
                     } else if (quad.arg2->type == CONSTSTRING_EXPR) {
-                        std::cout << quad.line << "\t\t" << "ADD" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << quad.arg2->str_const << std::endl;
+                        std::cout << quad.line << "Error: the symbol" << "\t\t" << quad.arg2->str_const << " is a string" << std::endl; 
                     } else if (quad.arg2->type == CONSTBOOL_EXPR) {
-                        std::cout << quad.line << "\t\t" << "ADD" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << quad.arg2->bool_const << std::endl;
+                        std::cout << quad.line << "Error: the symbol" << "\t\t" << quad.arg2->bool_const << " is a boolean" << std::endl; 
+                        /*if (quad.arg2->bool_const == 1) {
+                            line << quad.line << "\t\t\t\t" << "ADD" << "\t\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << "'true'";
+                        } else {
+                            line << quad.line << "\t\t\t\t" << "ADD" << "\t\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << "'false'";
+                        }*/
                     } else {
-                        std::cout << quad.line << "\t\t" << "ADD" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << quad.arg2->symbol->name << std::endl;
+                        line << quad.line << "\t\t\t\t" << "ADD" << "\t\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << quad.arg2->symbol->name;
                     }
                 } else if (quad.arg2-> type == CONSTNUM_EXPR) {
                     if (quad.arg1->type == CONSTNUM_EXPR) {
-                        std::cout << quad.line << "\t\t" << "ADD" << "\t\t" << quad.result->num_const << "\t\t" << quad.arg1->num_const << "\t\t" << quad.arg2->num_const << std::endl;
+                        std::cout << quad.line << "\t\t\t\t" << "ADD" << "\t\t" << quad.result->num_const << "\t\t" << quad.arg1->num_const << "\t\t" << quad.arg2->num_const;
                     } else if (quad.arg1->type == CONSTSTRING_EXPR) {
-                        std::cout << quad.line << "\t\t" << "ADD" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->str_const << "\t\t" << quad.arg2->num_const << std::endl;
+                        std::cout << quad.line << "Error: the symbol" << "\t\t" << quad.arg1->str_const << " is a string" << std::endl;
                     } else if (quad.arg1->type == CONSTBOOL_EXPR) {
-                        std::cout << quad.line << "\t\t" << "ADD" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->bool_const << "\t\t" << quad.arg2->num_const << std::endl;
+                        std::cout << quad.line << "Error: the symbol" << "\t\t" << quad.arg1->bool_const << " is a boolean" << std::endl; 
                     } else {
-                        std::cout << quad.line << "\t\t" << "ADD" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.arg2->num_const << std::endl;
+                        line << quad.line << "\t\t\t\t" << "ADD" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.arg2->num_const;
                     }
                 } else if (quad.arg1->type == CONSTBOOL_EXPR) {
-                    if (quad.arg2->type == CONSTNUM_EXPR) {
-                        std::cout << quad.line << "\t\t" << "ADD" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->bool_const << "\t\t" << quad.arg2->num_const << std::endl;
-                    } else if (quad.arg2->type == CONSTSTRING_EXPR) {
-                        std::cout << quad.line << "\t\t" << "ADD" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->bool_const << "\t\t" << quad.arg2->str_const << std::endl;
-                    } else if (quad.arg2->type == CONSTBOOL_EXPR) {
-                        std::cout << quad.line << "\t\t" << "ADD" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->bool_const << "\t\t" << quad.arg2->bool_const << std::endl;
-                    } else {
-                        std::cout << quad.line << "\t\t" << "ADD" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->bool_const << "\t\t" << quad.arg2->symbol->name << std::endl;
-                    }
+                    std::cout << quad.line << "Error: the symbol" << "\t\t" << quad.arg1->bool_const << " is a boolean" << std::endl; 
                 } else if (quad.arg2->type == CONSTBOOL_EXPR) {
-                    if (quad.arg1->type == CONSTNUM_EXPR) {
-                        std::cout << quad.line << "\t\t" << "ADD" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << quad.arg2->bool_const << std::endl;
-                    } else if (quad.arg1->type == CONSTSTRING_EXPR) {
-                        std::cout << quad.line << "\t\t" << "ADD" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->str_const << "\t\t" << quad.arg2->bool_const << std::endl;
-                    } else if (quad.arg1->type == CONSTBOOL_EXPR) {
-                        std::cout << quad.line << "\t\t" << "ADD" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->bool_const << "\t\t" << quad.arg2->bool_const << std::endl;
-                    } else {
-                        std::cout << quad.line << "\t\t" << "ADD" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.arg2->bool_const << std::endl;
-                    }
+                    std::cout << quad.line << "Error: the symbol" << "\t\t" << quad.arg2->bool_const << " is a boolean" << std::endl; 
                 } else {
-                    std::cout << quad.line << "\t\t" << "ADD" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.arg2->symbol->name << std::endl;
+                    line << quad.line << "\t\t\t\t" << "ADD" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.arg2->symbol->name;
                 }
                 break;
             case 2:
+                
                 if (quad.arg1->type == CONSTNUM_EXPR) {
                     if (quad.arg2->type == CONSTNUM_EXPR) {
-                        std::cout << quad.line << "\t\t" << "SUB" << "\t\t" << quad.result->num_const << "\t\t" << quad.arg1->num_const << "\t\t" << quad.arg2->num_const << std::endl;
+                        line << quad.line << "\t\t\t\t" << "SUB" << "\t\t\t" << quad.result->num_const << "\t\t" << quad.arg1->num_const << "\t\t" << quad.arg2->num_const;
                     } else if (quad.arg2->type == CONSTSTRING_EXPR) {
-                        std::cout << quad.line << "\t\t" << "SUB" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << quad.arg2->str_const << std::endl;
+                        std::cout << quad.line << "Error: the symbol" << "\t\t" << quad.arg2->str_const << " is a string" << std::endl; 
                     } else if (quad.arg2->type == CONSTBOOL_EXPR) {
-                        std::cout << quad.line << "\t\t" << "SUB" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << quad.arg2->bool_const << std::endl;
+                        std::cout << quad.line << "Error: the symbol" << "\t\t" << quad.arg2->bool_const << " is a boolean" << std::endl; 
                     } else {
-                        std::cout << quad.line << "\t\t" << "SUB" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << quad.arg2->symbol->name << std::endl;
+                        line << quad.line << "\t\t\t\t" << "SUB" << "\t\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << quad.arg2->symbol->name;
                     }
                 } else if (quad.arg2-> type == CONSTNUM_EXPR) {
                     if (quad.arg1->type == CONSTNUM_EXPR) {
-                        std::cout << quad.line << "\t\t" << "SUB" << "\t\t" << quad.result->num_const << "\t\t" << quad.arg1->num_const << "\t\t" << quad.arg2->num_const << std::endl;
+                        line << quad.line << "\t\t\t\t" << "SUB" << "\t\t\t" << quad.result->num_const << "\t\t" << quad.arg1->num_const << "\t\t" << quad.arg2->num_const;
                     } else if (quad.arg1->type == CONSTSTRING_EXPR) {
-                        std::cout << quad.line << "\t\t" << "SUB" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->str_const << "\t\t" << quad.arg2->num_const << std::endl;
+                        std::cout << quad.line << "Error: the symbol" << "\t\t" << quad.arg1->str_const << " is a string" << std::endl;
                     } else if (quad.arg1->type == CONSTBOOL_EXPR) {
-                        std::cout << quad.line << "\t\t" << "SUB" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->bool_const << "\t\t" << quad.arg2->num_const << std::endl;
+                        std::cout << quad.line << "Error: the symbol" << "\t\t" << quad.arg1->bool_const << " is a boolean" << std::endl; 
                     } else {
-                        std::cout << quad.line << "\t\t" << "SUB" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.arg2->num_const << std::endl;
+                        line << quad.line << "\t\t\t\t" << "SUB" << "\t\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.arg2->num_const;
                     }
                 } else if (quad.arg1->type == CONSTBOOL_EXPR) {
-                    if (quad.arg2->type == CONSTNUM_EXPR) {
-                        std::cout << quad.line << "\t\t" << "SUB" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->bool_const << "\t\t" << quad.arg2->num_const << std::endl;
-                    } else if (quad.arg2->type == CONSTSTRING_EXPR) {
-                        std::cout << quad.line << "\t\t" << "SUB" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->bool_const << "\t\t" << quad.arg2->str_const << std::endl;
-                    } else if (quad.arg2->type == CONSTBOOL_EXPR) {
-                        std::cout << quad.line << "\t\t" << "SUB" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->bool_const << "\t\t" << quad.arg2->bool_const << std::endl;
-                    } else {
-                        std::cout << quad.line << "\t\t" << "SUB" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->bool_const << "\t\t" << quad.arg2->symbol->name << std::endl;
-                    }
+                    std::cout << quad.line << "Error: the symbol" << "\t\t" << quad.arg1->bool_const << " is a boolean" << std::endl; 
                 } else if (quad.arg2->type == CONSTBOOL_EXPR) {
-                    if (quad.arg1->type == CONSTNUM_EXPR) {
-                        std::cout << quad.line << "\t\t" << "SUB" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << quad.arg2->bool_const << std::endl;
-                    } else if (quad.arg1->type == CONSTSTRING_EXPR) {
-                        std::cout << quad.line << "\t\t" << "SUB" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->str_const << "\t\t" << quad.arg2->bool_const << std::endl;
-                    } else if (quad.arg1->type == CONSTBOOL_EXPR) {
-                        std::cout << quad.line << "\t\t" << "SUB" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->bool_const << "\t\t" << quad.arg2->bool_const << std::endl;
-                    } else {
-                        std::cout << quad.line << "\t\t" << "SUB" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.arg2->bool_const << std::endl;
-                    }
+                    std::cout << quad.line << "Error: the symbol" << "\t\t" << quad.arg2->bool_const << " is a boolean" << std::endl; 
                 } else {
-                    std::cout << quad.line << "\t\t" << "SUB" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.arg2->symbol->name << std::endl;
+                    line << quad.line << "\t\t\t\t" << "SUB" << "\t\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.arg2->symbol->name;
                 }
                 break;
             case 3:
                 if (quad.arg1->type == CONSTNUM_EXPR) {
                     if (quad.arg2->type == CONSTNUM_EXPR) {
-                        std::cout << quad.line << "\t\t" << "MUL" << "\t\t" << quad.result->num_const << "\t\t" << quad.arg1->num_const << "\t\t" << quad.arg2->num_const << std::endl; 
+                        line << quad.line << "\t\t\t\t" << "MUL" << "\t\t\t" << quad.result->num_const << "\t\t" << quad.arg1->num_const << "\t\t" << quad.arg2->num_const;
                     } else if (quad.arg2->type == CONSTSTRING_EXPR) {
-                        std::cout << quad.line << "\t\t" << "MUL" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << quad.arg2->str_const << std::endl;
+                        std::cout << quad.line << "Error: the symbol" << "\t\t" << quad.arg2->str_const << " is a string" << std::endl; 
                     } else if (quad.arg2->type == CONSTBOOL_EXPR) {
-                        std::cout << quad.line << "\t\t" << "MUL" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << quad.arg2->bool_const << std::endl;
+                        std::cout << quad.line << "Error: the symbol" << "\t\t" << quad.arg2->bool_const << " is a boolean" << std::endl; 
                     } else {
-                        std::cout << quad.line << "\t\t" << "MUL" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << quad.arg2->symbol->name << std::endl;
+                        line << quad.line << "\t\t\t\t" << "MUL" << "\t\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << quad.arg2->symbol->name;
                     }
                 } else if (quad.arg2-> type == CONSTNUM_EXPR) {
                     if (quad.arg1->type == CONSTNUM_EXPR) {
-                        std::cout << quad.line << "\t\t" << "MUL" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << quad.arg2->num_const << std::endl;
+                        line << quad.line << "\t\t\t\t" << "MUL" << "\t\t\t" << quad.result->num_const << "\t\t" << quad.arg1->num_const << "\t\t" << quad.arg2->num_const;
                     } else if (quad.arg1->type == CONSTSTRING_EXPR) {
-                        std::cout << quad.line << "\t\t" << "MUL" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->str_const << "\t\t" << quad.arg2->num_const << std::endl;
+                        std::cout << quad.line << "Error: the symbol" << "\t\t" << quad.arg1->str_const << " is a string" << std::endl;
                     } else if (quad.arg1->type == CONSTBOOL_EXPR) {
-                        std::cout << quad.line << "\t\t" << "MUL" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->bool_const << "\t\t" << quad.arg2->num_const << std::endl;
+                        std::cout << quad.line << "Error: the symbol" << "\t\t" << quad.arg1->bool_const << " is a boolean" << std::endl; 
                     } else {
-                        std::cout << quad.line << "\t\t" << "MUL" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.arg2->num_const << std::endl;
+                        line << quad.line << "\t\t\t\t" << "MUL" << "\t\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.arg2->num_const;
                     }
                 } else if (quad.arg1->type == CONSTBOOL_EXPR) {
-                    if (quad.arg2->type == CONSTNUM_EXPR) {
-                        std::cout << quad.line << "\t\t" << "MUL" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->bool_const << "\t\t" << quad.arg2->num_const << std::endl;
-                    } else if (quad.arg2->type == CONSTSTRING_EXPR) {
-                        std::cout << quad.line << "\t\t" << "MUL" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->bool_const << "\t\t" << quad.arg2->str_const << std::endl;
-                    } else if (quad.arg2->type == CONSTBOOL_EXPR) {
-                        std::cout << quad.line << "\t\t" << "MUL" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->bool_const << "\t\t" << quad.arg2->bool_const << std::endl;
-                    } else {
-                        std::cout << quad.line << "\t\t" << "MUL" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->bool_const << "\t\t" << quad.arg2->symbol->name << std::endl;
-                    }
+                    std::cout << quad.line << "Error: the symbol" << "\t\t" << quad.arg1->bool_const << " is a boolean" << std::endl; 
                 } else if (quad.arg2->type == CONSTBOOL_EXPR) {
-                    if (quad.arg1->type == CONSTNUM_EXPR) {
-                        std::cout << quad.line << "\t\t" << "MUL" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << quad.arg2->bool_const << std::endl;
-                    } else if (quad.arg1->type == CONSTSTRING_EXPR) {
-                        std::cout << quad.line << "\t\t" << "MUL" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->str_const << "\t\t" << quad.arg2->bool_const << std::endl;
-                    } else if (quad.arg1->type == CONSTBOOL_EXPR) {
-                        std::cout << quad.line << "\t\t" << "MUL" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->bool_const << "\t\t" << quad.arg2->bool_const << std::endl;
-                    } else {
-                        std::cout << quad.line << "\t\t" << "MUL" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.arg2->bool_const << std::endl;
-                    }
+                    std::cout << quad.line << "Error: the symbol" << "\t\t" << quad.arg2->bool_const << " is a boolean" << std::endl; 
                 } else {
-                    std::cout << quad.line << "\t\t" << "MUL" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.arg2->symbol->name << std::endl;
+                    line << quad.line << "\t\t\t\t" << "MUL" << "\t\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.arg2->symbol->name;
                 }
                 break;
             case 4:
                 if (quad.arg1->type == CONSTNUM_EXPR) {
                     if (quad.arg2->type == CONSTNUM_EXPR) {
-                        std::cout << quad.line << "\t\t" << "DIV" << "\t\t" << quad.result->num_const << "\t\t" << quad.arg1->num_const << "\t\t" << quad.arg2->num_const << std::endl; 
+                        line << quad.line << "\t\t\t\t" << "DIV" << "\t\t\t" << quad.result->num_const << "\t\t" << quad.arg1->num_const << "\t\t" << quad.arg2->num_const;
                     } else if (quad.arg2->type == CONSTSTRING_EXPR) {
-                        std::cout << quad.line << "\t\t" << "DIV" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << quad.arg2->str_const << std::endl;
+                        std::cout << quad.line << "Error: the symbol" << "\t\t" << quad.arg2->str_const << " is a string" << std::endl; 
                     } else if (quad.arg2->type == CONSTBOOL_EXPR) {
-                        std::cout << quad.line << "\t\t" << "DIV" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << quad.arg2->bool_const << std::endl;
+                        std::cout << quad.line << "Error: the symbol" << "\t\t" << quad.arg2->bool_const << " is a boolean" << std::endl; 
                     } else {
-                        std::cout << quad.line << "\t\t" << "DIV" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << quad.arg2->symbol->name << std::endl;
+                        line << quad.line << "\t\t\t\t" << "DIV" << "\t\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << quad.arg2->symbol->name;
                     }
                 } else if (quad.arg2-> type == CONSTNUM_EXPR) {
                     if (quad.arg1->type == CONSTNUM_EXPR) {
-                        std::cout << quad.line << "\t\t" << "DIV" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << quad.arg2->num_const << std::endl;
+                        line << quad.line << "\t\t\t\t" << "DIV" << "\t\t\t" << quad.result->num_const << "\t\t" << quad.arg1->num_const << "\t\t" << quad.arg2->num_const;
                     } else if (quad.arg1->type == CONSTSTRING_EXPR) {
-                        std::cout << quad.line << "\t\t" << "DIV" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->str_const << "\t\t" << quad.arg2->num_const << std::endl;
+                        std::cout << quad.line << "Error: the symbol" << "\t\t" << quad.arg1->str_const << " is a string" << std::endl;
                     } else if (quad.arg1->type == CONSTBOOL_EXPR) {
-                        std::cout << quad.line << "\t\t" << "DIV" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->bool_const << "\t\t" << quad.arg2->num_const << std::endl;
+                        std::cout << quad.line << "Error: the symbol" << "\t\t" << quad.arg1->bool_const << " is a boolean" << std::endl; 
                     } else {
-                        std::cout << quad.line << "\t\t" << "DIV" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.arg2->num_const << std::endl;
+                        line << quad.line << "\t\t\t\t" << "DIV" << "\t\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.arg2->num_const;
                     }
                 } else if (quad.arg1->type == CONSTBOOL_EXPR) {
-                    if (quad.arg2->type == CONSTNUM_EXPR) {
-                        std::cout << quad.line << "\t\t" << "DIV" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->bool_const << "\t\t" << quad.arg2->num_const << std::endl;
-                    } else if (quad.arg2->type == CONSTSTRING_EXPR) {
-                        std::cout << quad.line << "\t\t" << "DIV" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->bool_const << "\t\t" << quad.arg2->str_const << std::endl;
-                    } else if (quad.arg2->type == CONSTBOOL_EXPR) {
-                        std::cout << quad.line << "\t\t" << "DIV" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->bool_const << "\t\t" << quad.arg2->bool_const << std::endl;
-                    } else {
-                        std::cout << quad.line << "\t\t" << "DIV" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->bool_const << "\t\t" << quad.arg2->symbol->name << std::endl;
-                    }
+                    std::cout << quad.line << "Error: the symbol" << "\t\t" << quad.arg1->bool_const << " is a boolean" << std::endl; 
                 } else if (quad.arg2->type == CONSTBOOL_EXPR) {
-                    if (quad.arg1->type == CONSTNUM_EXPR) {
-                        std::cout << quad.line << "\t\t" << "DIV" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << quad.arg2->bool_const << std::endl;
-                    } else if (quad.arg1->type == CONSTSTRING_EXPR) {
-                        std::cout << quad.line << "\t\t" << "DIV" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->str_const << "\t\t" << quad.arg2->bool_const << std::endl;
-                    } else if (quad.arg1->type == CONSTBOOL_EXPR) {
-                        std::cout << quad.line << "\t\t" << "DIV" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->bool_const << "\t\t" << quad.arg2->bool_const << std::endl;
-                    } else {
-                        std::cout << quad.line << "\t\t" << "DIV" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.arg2->bool_const << std::endl;
-                    }
+                    std::cout << quad.line << "Error: the symbol" << "\t\t" << quad.arg2->bool_const << " is a boolean" << std::endl; 
                 } else {
-                    std::cout << quad.line << "\t\t" << "DIV" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.arg2->symbol->name << std::endl;
+                    line << quad.line << "\t\t\t\t" << "DIV" << "\t\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.arg2->symbol->name;
                 }
                 break;
             case 5:
                 if (quad.arg1->type == CONSTNUM_EXPR) {
                     if (quad.arg2->type == CONSTNUM_EXPR) {
-                        std::cout << quad.line << "\t\t" << "MOD" << "\t\t" << quad.result->num_const << "\t\t" << quad.arg1->num_const << "\t\t" << quad.arg2->num_const << std::endl; 
+                        line << quad.line << "\t\t\t\t" << "MOD" << "\t\t\t" << quad.result->num_const << "\t\t" << quad.arg1->num_const << "\t\t" << quad.arg2->num_const;
                     } else if (quad.arg2->type == CONSTSTRING_EXPR) {
-                        std::cout << quad.line << "\t\t" << "MOD" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << quad.arg2->str_const << std::endl;
+                        std::cout << quad.line << "Error: the symbol" << "\t\t" << quad.arg2->str_const << " is a string" << std::endl; 
                     } else if (quad.arg2->type == CONSTBOOL_EXPR) {
-                        std::cout << quad.line << "\t\t" << "MOD" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << quad.arg2->bool_const << std::endl;
+                        std::cout << quad.line << "Error: the symbol" << "\t\t" << quad.arg2->bool_const << " is a boolean" << std::endl; 
                     } else {
-                        std::cout << quad.line << "\t\t" << "MOD" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << quad.arg2->symbol->name << std::endl;
+                        line << quad.line << "\t\t\t\t" << "MOD" << "\t\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << quad.arg2->symbol->name;
                     }
                 } else if (quad.arg2-> type == CONSTNUM_EXPR) {
                     if (quad.arg1->type == CONSTNUM_EXPR) {
-                        std::cout << quad.line << "\t\t" << "MOD" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << quad.arg2->num_const << std::endl;
+                        line << quad.line << "\t\t\t\t" << "MOD" << "\t\t\t" << quad.result->num_const << "\t\t" << quad.arg1->num_const << "\t\t" << quad.arg2->num_const;
                     } else if (quad.arg1->type == CONSTSTRING_EXPR) {
-                        std::cout << quad.line << "\t\t" << "MOD" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->str_const << "\t\t" << quad.arg2->num_const << std::endl;
+                        std::cout << quad.line << "Error: the symbol" << "\t\t" << quad.arg1->str_const << " is a string" << std::endl;
                     } else if (quad.arg1->type == CONSTBOOL_EXPR) {
-                        std::cout << quad.line << "\t\t" << "MOD" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->bool_const << "\t\t" << quad.arg2->num_const << std::endl;
+                        std::cout << quad.line << "Error: the symbol" << "\t\t" << quad.arg1->bool_const << " is a boolean" << std::endl; 
                     } else {
-                        std::cout << quad.line << "\t\t" << "MOD" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.arg2->num_const << std::endl;
+                        line << quad.line << "\t\t\t\t" << "MOD" << "\t\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.arg2->num_const;
                     }
                 } else if (quad.arg1->type == CONSTBOOL_EXPR) {
-                    if (quad.arg2->type == CONSTNUM_EXPR) {
-                        std::cout << quad.line << "\t\t" << "MOD" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->bool_const << "\t\t" << quad.arg2->num_const << std::endl;
-                    } else if (quad.arg2->type == CONSTSTRING_EXPR) {
-                        std::cout << quad.line << "\t\t" << "MOD" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->bool_const << "\t\t" << quad.arg2->str_const << std::endl;
-                    } else if (quad.arg2->type == CONSTBOOL_EXPR) {
-                        std::cout << quad.line << "\t\t" << "MOD" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->bool_const << "\t\t" << quad.arg2->bool_const << std::endl;
-                    } else {
-                        std::cout << quad.line << "\t\t" << "MOD" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->bool_const << "\t\t" << quad.arg2->symbol->name << std::endl;
-                    }
+                    std::cout << quad.line << "Error: the symbol" << "\t\t" << quad.arg1->bool_const << " is a boolean" << std::endl; 
                 } else if (quad.arg2->type == CONSTBOOL_EXPR) {
-                    if (quad.arg1->type == CONSTNUM_EXPR) {
-                        std::cout << quad.line << "\t\t" << "MOD" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << quad.arg2->bool_const << std::endl;
-                    } else if (quad.arg1->type == CONSTSTRING_EXPR) {
-                        std::cout << quad.line << "\t\t" << "MOD" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->str_const << "\t\t" << quad.arg2->bool_const << std::endl;
-                    } else if (quad.arg1->type == CONSTBOOL_EXPR) {
-                        std::cout << quad.line << "\t\t" << "MOD" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->bool_const << "\t\t" << quad.arg2->bool_const << std::endl;
-                    } else {
-                        std::cout << quad.line << "\t\t" << "MOD" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.arg2->bool_const << std::endl;
-                    }
+                    std::cout << quad.line << "Error: the symbol" << "\t\t" << quad.arg2->bool_const << " is a boolean" << std::endl; 
                 } else {
-                    std::cout << quad.line << "\t\t" << "MOD" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.arg2->symbol->name << std::endl;
+                    line << quad.line << "\t\t\t\t" << "MOD" << "\t\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.arg2->symbol->name;
                 }
                 break;
             case 6:
                 if (quad.arg1->type == CONSTNUM_EXPR){
                     std::cout << quad.line << "\t\t" << "UMINUS" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << std::endl;
+                } else if (quad.arg1->type == CONSTSTRING_EXPR) {
+                    std::cout << quad.line << "Error: the symbol" << "\t\t" << quad.arg1->str_const << " is a string" << std::endl;
+                } else if (quad.arg1->type == CONSTBOOL_EXPR) {
+                    std::cout << quad.line << "Error: the symbol" << "\t\t" << quad.arg1->bool_const << " is a boolean" << std::endl;
                 } else {
-                    std::cout << quad.line << "\t\t" << "UMINUS" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << std::endl;
+                    line << quad.line << "\t\t\t\t" << "UMINUS" << "\t\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name;
                 }
                 break;
             case 7:
-                std::cout << quad.line << "\t\t" << "AND" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.arg2->symbol->name << std::endl;
+                if (quad.arg1->type == CONSTNUM_EXPR) {
+                    if (quad.arg2->type == CONSTNUM_EXPR) {
+                        line << quad.line << "\t\t\t\t" << "AND" << "\t\t\t" << quad.result->num_const << "\t\t" << quad.arg1->num_const << "\t\t" << quad.arg2->num_const;
+                    } else if (quad.arg2->type == CONSTSTRING_EXPR) {
+                        line << quad.line << "\t\t\t\t" << "AND" << "\t\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << "\"" << quad.arg2->str_const << "\"";
+                    } else if (quad.arg2->type == CONSTBOOL_EXPR) {
+                        if (quad.arg2->bool_const == 1) {
+                            line << quad.line << "\t\t\t\t" << "AND" << "\t\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << "'true'";
+                        } else {
+                            line << quad.line << "\t\t\t\t" << "AND" << "\t\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << "'false'";
+                        }
+                    } else {
+                        line << quad.line << "\t\t\t\t" << "AND" << "\t\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << quad.arg2->symbol->name;
+                    }
+                } else if (quad.arg2-> type == CONSTNUM_EXPR) {
+                    if (quad.arg1->type == CONSTNUM_EXPR) {
+                        line << quad.line << "\t\t\t\t" << "AND" << "\t\t\t" << quad.result->num_const << "\t\t" << quad.arg1->num_const << "\t\t" << quad.arg2->num_const;
+                    } else if (quad.arg1->type == CONSTSTRING_EXPR) {
+                        line << quad.line << "\t\t\t\t" << "AND" << "\t\t\t" << quad.result->symbol->name << "\t\t" << "\"" << quad.arg1->str_const << "\"" << "\t\t" << quad.arg2->num_const;
+                    } else if (quad.arg1->type == CONSTBOOL_EXPR) {
+                        if (quad.arg1->bool_const == 1) {
+                            line << quad.line << "\t\t\t\t" << "AND" << "\t\t\t" << quad.result->symbol->name << "\t\t" << "'true'" << "\t\t" << quad.arg2->num_const;
+                        } else {
+                            line << quad.line << "\t\t\t\t" << "AND" << "\t\t\t" << quad.result->symbol->name << "\t\t" << "'false'" << "\t\t" << quad.arg2->num_const;
+                        }
+                    } else {
+                        line << quad.line << "\t\t\t\t" << "AND" << "\t\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.arg2->num_const;
+                    }
+                } else if (quad.arg1->type == CONSTBOOL_EXPR) {
+                    if (quad.arg2->type == CONSTNUM_EXPR) {
+                        line << quad.line << "\t\t\t\t" << "AND" << "\t\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->bool_const << "\t\t" << quad.arg2->num_const;
+                    } else if (quad.arg2->type == CONSTSTRING_EXPR) {
+                        line << quad.line << "\t\t\t\t" << "AND" << "\t\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->bool_const << "\t\t" << quad.arg2->str_const;
+                    } else if (quad.arg2->type == CONSTBOOL_EXPR) {
+                        line << quad.line << "\t\t\t\t" << "AND" << "\t\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->bool_const << "\t\t" << quad.arg2->bool_const;
+                    } else {
+                        line << quad.line << "\t\t\t\t" << "AND" << "\t\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->bool_const << "\t\t" << quad.arg2->symbol->name;
+                    }
+                } else if (quad.arg2->type == CONSTBOOL_EXPR) {
+                    if (quad.arg1->type == CONSTNUM_EXPR) {
+                        if (quad.arg2->bool_const == 1) {
+                            line << quad.line << "\t\t\t\t" << "AND" << "\t\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << "'true'";
+                        } else {
+                            line << quad.line << "\t\t\t\t" << "AND" << "\t\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << "'false'";
+                        }
+                    } else if (quad.arg1->type == CONSTSTRING_EXPR) {
+                        if (quad.arg2->bool_const == 1) {
+                            line << quad.line << "\t\t\t\t" << "AND" << "\t\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->str_const << "\t\t" << "'true'";
+                        } else {
+                            line << quad.line << "\t\t\t\t" << "AND" << "\t\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->str_const << "\t\t" << "'false'";
+                        }
+                    } else if (quad.arg1->type == CONSTBOOL_EXPR) {
+                        if (quad.arg2->bool_const == 1) {
+                            if (quad.arg1->bool_const == 1) {
+                                line << quad.line << "\t\t\t\t" << "AND" << "\t\t\t" << quad.result->symbol->name << "\t\t" << "'true'" << "\t\t" << "'true'";
+                            } else {
+                                line << quad.line << "\t\t\t\t" << "AND" << "\t\t\t" << quad.result->symbol->name << "\t\t" << "'false'" << "\t\t" << "'true'";
+                            }
+                        } else {
+                            if (quad.arg1->bool_const == 1) {
+                                line << quad.line << "\t\t\t\t" << "AND" << "\t\t\t" << quad.result->symbol->name << "\t\t" << "'true'" << "\t\t" << "'false'";
+                            } else {
+                                line << quad.line << "\t\t\t\t" << "AND" << "\t\t\t" << quad.result->symbol->name << "\t\t" << "'false'" << "\t\t" << "'false'";
+                            }
+                        }  
+                    } else if (quad.arg1->type == CONSTSTRING_EXPR) {
+                        if (quad.arg2->type == CONSTNUM_EXPR) {
+                            line << quad.line << "\t\t\t\t" << "AND" << "\t\t\t" << quad.result->num_const << "\t\t" << "\"" << quad.arg1->str_const << "\"" << "\t\t" << quad.arg2->num_const;
+                        } else if (quad.arg2->type == CONSTSTRING_EXPR) {
+                            line << quad.line << "\t\t\t\t" << "AND" << "\t\t\t" << quad.result->symbol->name << "\t\t" << "\"" << quad.arg1->str_const << "\"" << "\t\t" << "\"" << quad.arg2->str_const << "\"";
+                        } else if (quad.arg2->type == CONSTBOOL_EXPR) {
+                            if (quad.arg2->bool_const == 1) {
+                                line << quad.line << "\t\t\t\t" << "AND" << "\t\t\t" << quad.result->symbol->name << "\t\t" << "\"" << quad.arg1->str_const << "\"" << "\t\t" << "'true'";
+                            } else {
+                                line << quad.line << "\t\t\t\t" << "AND" << "\t\t\t" << quad.result->symbol->name << "\t\t" << "\"" << quad.arg1->str_const << "\"" << "\t\t" << "'false'";
+                            }
+                        } else {
+                            line << quad.line << "\t\t\t\t" << "AND" << "\t\t\t" << quad.result->symbol->name << "\t\t" << "\"" << quad.arg1->str_const << "\"" << "\t\t" << quad.arg2->symbol->name;
+                        }
+                    } else if (quad.arg2->type == CONSTSTRING_EXPR) {
+                        if (quad.arg1->type == CONSTNUM_EXPR) {
+                            line << quad.line << "\t\t\t\t" << "AND" << "\t\t\t" << quad.result->num_const << "\t\t" << quad.arg1->num_const << "\t\t" << "\"" << quad.arg1->str_const << "\"";
+                        } else if (quad.arg1->type == CONSTSTRING_EXPR) {
+                            line << quad.line << "\t\t\t\t" << "AND" << "\t\t\t" << quad.result->symbol->name << "\t\t" << "\"" << quad.arg1->str_const << "\"" << "\t\t" << "\"" << quad.arg2->str_const << "\"";
+                        } else if (quad.arg1->type == CONSTBOOL_EXPR) {
+                            if (quad.arg1->bool_const == 1) {
+                                line << quad.line << "\t\t\t\t" << "AND" << "\t\t\t" << quad.result->symbol->name << "\t\t" << "'true'" << "\t\t" << "\"" << quad.arg2->str_const << "\"";
+                            } else {
+                                line << quad.line << "\t\t\t\t" << "AND" << "\t\t\t" << quad.result->symbol->name << "\t\t" << "'false'" << "\t\t" << "\"" << quad.arg2->str_const << "\"";
+                            }
+                        } else {
+                            line << quad.line << "\t\t\t\t" << "AND" << "\t\t\t" << quad.result->symbol->name << "\t\t" << "\"" << quad.arg1->str_const << "\"" << "\t\t" << quad.arg2->symbol->name;
+                        }
+                    }
+                }
                 break;
             case 8:
-                std::cout << quad.line << "\t\t" << "OR" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.arg2->symbol->name << std::endl;
+                if (quad.arg1->type == CONSTNUM_EXPR) {
+                    if (quad.arg2->type == CONSTNUM_EXPR) {
+                        line << quad.line << "\t\t\t\t" << "OR" << "\t\t\t" << quad.result->num_const << "\t\t" << quad.arg1->num_const << "\t\t" << quad.arg2->num_const;
+                    } else if (quad.arg2->type == CONSTSTRING_EXPR) {
+                        line << quad.line << "\t\t\t\t" << "OR" << "\t\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << "\"" << quad.arg2->str_const << "\"";
+                    } else if (quad.arg2->type == CONSTBOOL_EXPR) {
+                        if (quad.arg2->bool_const == 1) {
+                            line << quad.line << "\t\t\t\t" << "OR" << "\t\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << "'true'";
+                        } else {
+                            line << quad.line << "\t\t\t\t" << "OR" << "\t\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << "'false'";
+                        }
+                    } else {
+                        line << quad.line << "\t\t\t\t" << "OR" << "\t\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << quad.arg2->symbol->name;
+                    }
+                } else if (quad.arg2-> type == CONSTNUM_EXPR) {
+                    if (quad.arg1->type == CONSTNUM_EXPR) {
+                        line << quad.line << "\t\t\t\t" << "OR" << "\t\t\t" << quad.result->num_const << "\t\t" << quad.arg1->num_const << "\t\t" << quad.arg2->num_const;
+                    } else if (quad.arg1->type == CONSTSTRING_EXPR) {
+                        line << quad.line << "\t\t\t\t" << "OR" << "\t\t\t" << quad.result->symbol->name << "\t\t" << "\"" << quad.arg1->str_const << "\"" << "\t\t" << quad.arg2->num_const;
+                    } else if (quad.arg1->type == CONSTBOOL_EXPR) {
+                        if (quad.arg1->bool_const == 1) {
+                            line << quad.line << "\t\t\t\t" << "OR" << "\t\t\t" << quad.result->symbol->name << "\t\t" << "'true'" << "\t\t" << quad.arg2->num_const;
+                        } else {
+                            line << quad.line << "\t\t\t\t" << "OR" << "\t\t\t" << quad.result->symbol->name << "\t\t" << "'false'" << "\t\t" << quad.arg2->num_const;
+                        }
+                    } else {
+                        line << quad.line << "\t\t\t\t" << "OR" << "\t\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.arg2->num_const;
+                    }
+                } else if (quad.arg1->type == CONSTBOOL_EXPR) {
+                    if (quad.arg2->type == CONSTNUM_EXPR) {
+                        line << quad.line << "\t\t\t\t" << "OR" << "\t\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->bool_const << "\t\t" << quad.arg2->num_const;
+                    } else if (quad.arg2->type == CONSTSTRING_EXPR) {
+                        line << quad.line << "\t\t\t\t" << "OR" << "\t\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->bool_const << "\t\t" << quad.arg2->str_const;
+                    } else if (quad.arg2->type == CONSTBOOL_EXPR) {
+                        line << quad.line << "\t\t\t\t" << "OR" << "\t\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->bool_const << "\t\t" << quad.arg2->bool_const;
+                    } else {
+                        line << quad.line << "\t\t\t\t" << "OR" << "\t\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->bool_const << "\t\t" << quad.arg2->symbol->name;
+                    }
+                } else if (quad.arg2->type == CONSTBOOL_EXPR) {
+                    if (quad.arg1->type == CONSTNUM_EXPR) {
+                        if (quad.arg2->bool_const == 1) {
+                            line << quad.line << "\t\t\t\t" << "OR" << "\t\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << "'true'";
+                        } else {
+                            line << quad.line << "\t\t\t\t" << "OR" << "\t\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << "'false'";
+                        }
+                    } else if (quad.arg1->type == CONSTSTRING_EXPR) {
+                        if (quad.arg2->bool_const == 1) {
+                            line << quad.line << "\t\t\t\t" << "OR" << "\t\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->str_const << "\t\t" << "'true'";
+                        } else {
+                            line << quad.line << "\t\t\t\t" << "OR" << "\t\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->str_const << "\t\t" << "'false'";
+                        }
+                    } else if (quad.arg1->type == CONSTBOOL_EXPR) {
+                        if (quad.arg2->bool_const == 1) {
+                            if (quad.arg1->bool_const == 1) {
+                                line << quad.line << "\t\t\t\t" << "OR" << "\t\t\t" << quad.result->symbol->name << "\t\t" << "'true'" << "\t\t" << "'true'";
+                            } else {
+                                line << quad.line << "\t\t\t\t" << "OR" << "\t\t\t" << quad.result->symbol->name << "\t\t" << "'false'" << "\t\t" << "'true'";
+                            }
+                        } else {
+                            if (quad.arg1->bool_const == 1) {
+                                line << quad.line << "\t\t\t\t" << "OR" << "\t\t\t" << quad.result->symbol->name << "\t\t" << "'true'" << "\t\t" << "'false'";
+                            } else {
+                                line << quad.line << "\t\t\t\t" << "OR" << "\t\t\t" << quad.result->symbol->name << "\t\t" << "'false'" << "\t\t" << "'false'";
+                            }
+                        }  
+                    } else if (quad.arg1->type == CONSTSTRING_EXPR) {
+                        if (quad.arg2->type == CONSTNUM_EXPR) {
+                            line << quad.line << "\t\t\t\t" << "OR" << "\t\t\t" << quad.result->num_const << "\t\t" << "\"" << quad.arg1->str_const << "\"" << "\t\t" << quad.arg2->num_const;
+                        } else if (quad.arg2->type == CONSTSTRING_EXPR) {
+                            line << quad.line << "\t\t\t\t" << "OR" << "\t\t\t" << quad.result->symbol->name << "\t\t" << "\"" << quad.arg1->str_const << "\"" << "\t\t" << "\"" << quad.arg2->str_const << "\"";
+                        } else if (quad.arg2->type == CONSTBOOL_EXPR) {
+                            if (quad.arg2->bool_const == 1) {
+                                line << quad.line << "\t\t\t\t" << "OR" << "\t\t\t" << quad.result->symbol->name << "\t\t" << "\"" << quad.arg1->str_const << "\"" << "\t\t" << "'true'";
+                            } else {
+                                line << quad.line << "\t\t\t\t" << "OR" << "\t\t\t" << quad.result->symbol->name << "\t\t" << "\"" << quad.arg1->str_const << "\"" << "\t\t" << "'false'";
+                            }
+                        } else {
+                            line << quad.line << "\t\t\t\t" << "OR" << "\t\t\t" << quad.result->symbol->name << "\t\t" << "\"" << quad.arg1->str_const << "\"" << "\t\t" << quad.arg2->symbol->name;
+                        }
+                    } else if (quad.arg2->type == CONSTSTRING_EXPR) {
+                        if (quad.arg1->type == CONSTNUM_EXPR) {
+                            line << quad.line << "\t\t\t\t" << "OR" << "\t\t\t" << quad.result->num_const << "\t\t" << quad.arg1->num_const << "\t\t" << "\"" << quad.arg1->str_const << "\"";
+                        } else if (quad.arg1->type == CONSTSTRING_EXPR) {
+                            line << quad.line << "\t\t\t\t" << "OR" << "\t\t\t" << quad.result->symbol->name << "\t\t" << "\"" << quad.arg1->str_const << "\"" << "\t\t" << "\"" << quad.arg2->str_const << "\"";
+                        } else if (quad.arg1->type == CONSTBOOL_EXPR) {
+                            if (quad.arg1->bool_const == 1) {
+                                line << quad.line << "\t\t\t\t" << "OR" << "\t\t\t" << quad.result->symbol->name << "\t\t" << "'true'" << "\t\t" << "\"" << quad.arg2->str_const << "\"";
+                            } else {
+                                line << quad.line << "\t\t\t\t" << "OR" << "\t\t\t" << quad.result->symbol->name << "\t\t" << "'false'" << "\t\t" << "\"" << quad.arg2->str_const << "\"";
+                            }
+                        } else {
+                            line << quad.line << "\t\t\t\t" << "OR" << "\t\t\t" << quad.result->symbol->name << "\t\t" << "\"" << quad.arg1->str_const << "\"" << "\t\t" << quad.arg2->symbol->name;
+                        }
+                    }
+                }
                 break;
             case 9:
                 if (quad.arg1->type == CONSTNUM_EXPR) {
-                    std::cout << quad.line << "\t\t" << "NOT" << "\t\t" << quad.result->bool_const << "\t\t" << quad.arg1->num_const << std::endl;
+                    if (quad.result->bool_const == 1) {
+                        line << quad.line << "\t\t\t\t" << "NOT" << "\t\t\t" << "'true'" << "\t\t" << quad.arg1->num_const;
+                    } else {
+                        line << quad.line << "\t\t\t\t" << "NOT" << "\t\t\t" << "'false'" << "\t\t" << quad.arg1->num_const;
+                    }
                 } else if (quad.arg1->type == CONSTBOOL_EXPR) {
-                    std::cout << quad.line << "\t\t" << "NOT" << "\t\t" << quad.result->bool_const << "\t\t" << quad.arg1->bool_const << std::endl;
+                    if (quad.result->bool_const == 1) {
+                        line << quad.line << "\t\t\t\t" << "NOT" << "\t\t\t" << "'true'" << "\t\t" << quad.arg1->num_const;
+                    } else {
+                        line << quad.line << "\t\t\t\t" << "NOT" << "\t\t\t" << "'false'" << "\t\t" << quad.arg1->num_const;
+                    }
+                } else if (quad.arg1->type == CONSTSTRING_EXPR) {
+                    if (quad.result->bool_const == 1) {
+                        line << quad.line << "\t\t\t\t" << "NOT" << "\t\t\t" << "'true'" << "\t\t" << quad.arg1->str_const;
+                    } else {
+                        line << quad.line << "\t\t\t\t" << "NOT" << "\t\t\t" << "'false'" << "\t\t" << quad.arg1->str_const;
+                    }
                 } else {
-                    std::cout << quad.line << "\t\t" << "NOT" << "\t\t" << quad.result->bool_const << "\t\t" << quad.arg1->symbol->name << std::endl;
+                    if (quad.result->bool_const == 1) {
+                        line << quad.line << "\t\t\t\t" << "NOT" << "\t\t\t" << "'true'" << "\t\t" << quad.arg1->symbol->name;
+                    } else {
+                        line << quad.line << "\t\t\t\t" << "NOT" << "\t\t\t" << "'false'" << "\t\t" << quad.arg1->symbol->name;
+                    }
                 }
                 break;
             case 10:
                 if (quad.result->type == CONSTNUM_EXPR) {
                     if (quad.arg1->type == CONSTNUM_EXPR) { 
-                        std::cout << quad.line << "\t" << "IF EQUAL" << "\t\t" << quad.result->num_const << "\t\t" << quad.arg1->num_const << "\t\t" << quad.label << std::endl; 
+                        line << quad.line << "\t\t\t\t" << "IF EQUAL" << "\t\t" << quad.result->num_const << "\t\t" << quad.arg1->num_const << "\t\t" << quad.label; 
                     } else if (quad.arg1->type == CONSTSTRING_EXPR) {
-                        std::cout << quad.line << "Error: the symbol" << "\t\t" << quad.arg1->str_const << " is a string" << std::endl;
+                        line << quad.line << "\t\t\t\t" << "IF EQUAL" << "\t\t" << quad.result->num_const << "\t\t" << "\"" << quad.arg1->str_const << "\"" << "\t\t" << quad.label;
+                    } else if (quad.arg1->type == CONSTBOOL_EXPR) {
+                        if (quad.arg1->bool_const == 1) {
+                            line << quad.line << "\t\t\t\t" << "IF EQUAL" << "\t\t" << quad.result->num_const << "\t\t" << "'true'" << "\t\t" << quad.label;
+                        } else {
+                            line << quad.line << "\t\t\t\t" << "IF EQUAL" << "\t\t" << quad.result->num_const << "\t\t" << "'false'" << "\t\t" << quad.label;
+                        }
                     } else {
-                        std::cout << quad.line << "\t" << "IF EQUAL" << "\t\t" << quad.result->num_const << "\t\t" << quad.arg1->bool_const << "\t\t" << quad.label << std::endl;
+                        line << quad.line << "\t\t\t\t" << "IF EQUAL" << "\t\t" << quad.result->num_const << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.label;
                     }
                 } else if (quad.result->type == CONSTSTRING_EXPR) {
-                    std::cout << quad.line << "Error: the symbol" << "\t\t" << quad.result->str_const << " is a string" << std::endl;
+                    if (quad.arg1->type == CONSTSTRING_EXPR) {
+                        line << quad.line << "\t\t\t\t" << "IF EQUAL" << "\t\t" << "\"" << quad.result->str_const << "\"" << "\t\t" << "\"" << quad.arg1->str_const << "\"" << "\t\t" << quad.label;
+                    } else if (quad.arg1->type == CONSTNUM_EXPR) {
+                        line << quad.line << "\t\t\t\t" << "IF EQUAL" << "\t\t" << "\"" << quad.result->str_const << "\"" << "\t\t" << quad.arg1->num_const << "\t\t" << quad.label;
+                    } else if (quad.arg1->type == CONSTBOOL_EXPR) {
+                        if (quad.arg1->bool_const == 1) {
+                            line << quad.line << "\t\t\t\t" << "IF EQUAL" << "\t\t" << "\"" << quad.result->str_const << "\"" << "\t\t" << "'true'" << "\t\t" << quad.label;
+                        } else {
+                            line << quad.line << "\t\t\t\t" << "IF EQUAL" << "\t\t" << "\"" << quad.result->str_const << "\"" << "\t\t" << "'false'" << "\t\t" << quad.label;
+                        }
+                    } else {
+                        line << quad.line << "\t\t\t\t" << "IF EQUAL" << "\t\t" << "\"" << quad.result->str_const << "\"" << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.label;
+                    }
                 } else if (quad.result->type == CONSTBOOL_EXPR) {
-                    std::cout << quad.line << "\t" << "IF EQUAL" << "\t\t" << quad.result->bool_const << "\t\t" << quad.arg1->bool_const << "\t\t" << quad.label << std::endl;
+                    if (quad.arg1->type == CONSTNUM_EXPR) {
+                        if (quad.result->bool_const == 1) {
+                            line << quad.line << "\t\t\t\t" << "IF EQUAL" << "\t\t" << "'true'" << "\t\t" << quad.arg1->num_const << "\t\t" << quad.label;
+                        } else {
+                            line << quad.line << "\t\t\t\t" << "IF EQUAL" << "\t\t" << "'false'" << "\t\t" << quad.arg1->num_const << "\t\t" << quad.label;
+                        }
+                    } else if (quad.arg1->type == CONSTSTRING_EXPR) {
+                        if (quad.result->bool_const == 1) {
+                            line << quad.line << "\t\t\t\t" << "IF EQUAL" << "\t\t" << "'true'" << "\t\t" << "\"" << quad.arg1->str_const << "\"" << "\t\t" << quad.label;
+                        } else {
+                            line << quad.line << "\t\t\t\t" << "IF EQUAL" << "\t\t" << "'false'" << "\t\t" << "\"" << quad.arg1->str_const << "\"" << "\t\t" << quad.label;
+                        }
+                    } else if (quad.arg1->type == CONSTBOOL_EXPR) {
+                        if (quad.result->bool_const == 1) {
+                            if (quad.arg1->bool_const == 1) {
+                                line << quad.line << "\t\t\t\t" << "IF EQUAL" << "\t\t" << "'true'" << "\t\t" << "'true'" << "\t\t" << quad.label;
+                            } else {
+                                line << quad.line << "\t\t\t\t" << "IF EQUAL" << "\t\t" << "'false'" << "\t\t" << "'true'" << "\t\t" << quad.label;
+                            }
+                        } else {
+                            if (quad.arg1->bool_const == 1) {
+                                line << quad.line << "\t\t\t\t" << "IF EQUAL" << "\t\t" << "'true'" << "\t\t" << "'false'" <<  "\t\t" <<  quad.label;
+                            } else {
+                                line << quad.line << "\t\t\t\t" << "IF EQUAL" << "\t\t" << "'false'" << "\t\t" <<  "'false'" << "\t\t" << quad.label;
+                            }
+                        }
+                    } else {
+                        if (quad.result->bool_const == 1) {
+                            line << quad.line << "\t\t\t\t" << "IF EQUAL" << "\t\t" << "'true'" << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.label;
+                        } else {
+                            line << quad.line << "\t\t\t\t" << "IF EQUAL" << "\t\t" << "'false'" << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.label;
+                        }
+                    }
                 } else {
                     if (quad.arg1->type == CONSTNUM_EXPR) { 
-                        std::cout << quad.line << "\t" << "IF EQUAL" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << quad.label << std::endl; 
+                        line << quad.line << "\t\t\t\t" << "IF EQUAL" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << quad.label; 
                     } else if (quad.arg1->type == CONSTSTRING_EXPR) {
-                        std::cout << quad.line << "Error: the symbol" << "\t\t" << quad.arg1->str_const << " is a string" << std::endl;
+                        line << quad.line << "\t\t\t\t" << "IF EQUAL" << "\t\t" << quad.result->symbol->name << "\t\t" << "\"" << quad.arg1->str_const << "\"" << "\t\t" << quad.label;
                     } else if (quad.arg1->type == CONSTBOOL_EXPR) {
-                        std::cout << quad.line << "\t" << "IF EQUAL" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->bool_const << "\t\t" << quad.label << std::endl;
+                        if (quad.arg1->bool_const == 1) {
+                            line << quad.line << "\t\t\t\t" << "IF EQUAL" << "\t\t" << quad.result->symbol->name << "\t\t" << "'true'" << "\t\t" << quad.label;
+                        } else {
+                            line << quad.line << "\t\t\t\t" << "IF EQUAL" << "\t\t" << quad.result->symbol->name << "\t\t" << "'false'" << "\t\t" << quad.label;
+                        }
                     } else {
-                        std::cout << quad.line << "\t" << "IF EQUAL" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.label << std::endl;
+                        line << quad.line << "\t\t\t\t" << "IF EQUAL" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.label;
                     }
                 }
                 break;
             case 11:
                 if (quad.result->type == CONSTNUM_EXPR) {
                     if (quad.arg1->type == CONSTNUM_EXPR) { 
-                        std::cout << quad.line << "\t" << "IF NOT EQUAL" << "\t\t" << quad.result->num_const << "\t\t" << quad.arg1->num_const << "\t\t" << quad.label << std::endl; 
+                        line << quad.line << "\t\t\t\t" << "IF NOT EQUAL" << "\t\t" << quad.result->num_const << "\t\t" << quad.arg1->num_const << "\t\t" << quad.label; 
                     } else if (quad.arg1->type == CONSTSTRING_EXPR) {
-                        std::cout << quad.line << "Error: the symbol" << "\t\t" << quad.arg1->str_const << " is a string" << std::endl;
+                        line << quad.line << "\t\t\t\t" << "IF NOT EQUAL" << "\t\t" << quad.result->num_const << "\t\t" << "\"" << quad.arg1->str_const << "\"" << "\t\t" << quad.label;
+                    } else if (quad.arg1->type == CONSTBOOL_EXPR) {
+                        if (quad.arg1->bool_const == 1) {
+                            line << quad.line << "\t\t\t\t" << "IF NOT EQUAL" << "\t\t" << quad.result->num_const << "\t\t" << "'true'" << "\t\t" << quad.label;
+                        } else {
+                            line << quad.line << "\t\t\t\t" << "IF NOT EQUAL" << "\t\t" << quad.result->num_const << "\t\t" << "'false'" << "\t\t" << quad.label;
+                        }
                     } else {
-                        std::cout << quad.line << "\t" << "IF NOT EQUAL" << "\t\t" << quad.result->num_const << "\t\t" << quad.arg1->bool_const << "\t\t" << quad.label << std::endl;
+                        line << quad.line << "\t\t\t\t" << "IF NOT EQUAL" << "\t\t" << quad.result->num_const << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.label;
                     }
                 } else if (quad.result->type == CONSTSTRING_EXPR) {
-                    std::cout << quad.line << "Error: the symbol" << "\t\t" << quad.result->str_const << " is a string" << std::endl;
+                    if (quad.arg1->type == CONSTSTRING_EXPR) {
+                        line << quad.line << "\t\t\t\t" << "IF NOT EQUAL" << "\t\t" << "\"" << quad.result->str_const << "\"" << "\t\t" << "\"" << quad.arg1->str_const << "\"" << "\t\t" << quad.label;
+                    } else if (quad.arg1->type == CONSTNUM_EXPR) {
+                        line << quad.line << "\t\t\t\t" << "IF NOT EQUAL" << "\t\t" << "\"" << quad.result->str_const << "\"" << "\t\t" << quad.arg1->num_const << "\t\t" << quad.label;
+                    } else if (quad.arg1->type == CONSTBOOL_EXPR) {
+                        if (quad.arg1->bool_const == 1) {
+                            line << quad.line << "\t\t\t\t" << "IF NOT EQUAL" << "\t\t" << "\"" << quad.result->str_const << "\"" << "\t\t" << "'true'" << "\t\t" << quad.label;
+                        } else {
+                            line << quad.line << "\t\t\t\t" << "IF NOT EQUAL" << "\t\t" << "\"" << quad.result->str_const << "\"" << "\t\t" << "'false'" << "\t\t" << quad.label;
+                        }
+                    } else {
+                        line << quad.line << "\t\t\t\t" << "IF NOT EQUAL" << "\t\t" << "\"" << quad.result->str_const << "\"" << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.label;
+                    }
                 } else if (quad.result->type == CONSTBOOL_EXPR) {
-                    std::cout << quad.line << "\t" << "IF NOT EQUAL" << "\t\t" << quad.result->bool_const << "\t\t" << quad.arg1->bool_const << "\t\t" << quad.label << std::endl;
+                    if (quad.arg1->type == CONSTNUM_EXPR) {
+                        if (quad.result->bool_const == 1) {
+                            line << quad.line << "\t\t\t\t" << "IF NOT EQUAL" << "\t\t" << "'true'" << "\t\t" << quad.arg1->num_const << "\t\t" << quad.label;
+                        } else {
+                            line << quad.line << "\t\t\t\t" << "IF NOT EQUAL" << "\t\t" << "'false'" << "\t\t" << quad.arg1->num_const << "\t\t" << quad.label;
+                        }
+                    } else if (quad.arg1->type == CONSTSTRING_EXPR) {
+                        if (quad.result->bool_const == 1) {
+                            line << quad.line << "\t\t\t\t" << "IF NOT EQUAL" << "\t\t" << "'true'" << "\t\t" << "\"" << quad.arg1->str_const << "\"" << "\t\t" << quad.label;
+                        } else {
+                            line << quad.line << "\t\t\t\t" << "IF NOT EQUAL" << "\t\t" << "'false'" << "\t\t" << "\"" << quad.arg1->str_const << "\"" << "\t\t" << quad.label;
+                        }
+                    } else if (quad.arg1->type == CONSTBOOL_EXPR) {
+                        if (quad.result->bool_const == 1) {
+                            if (quad.arg1->bool_const == 1) {
+                                line << quad.line << "\t\t\t\t" << "IF NOT EQUAL" << "\t\t" << "'true'" << "\t\t" << "'true'" << "\t\t" << quad.label;
+                            } else {
+                                line << quad.line << "\t\t\t\t" << "IF NOT EQUAL" << "\t\t" << "'false'" << "\t\t" << "'true'" << "\t\t" << quad.label;
+                            }
+                        } else {
+                            if (quad.arg1->bool_const == 1) {
+                                line << quad.line << "\t\t\t\t" << "IF NOT EQUAL" << "\t\t" << "'true'" << "\t\t" << "'false'" <<  "\t\t" <<  quad.label;
+                            } else {
+                                line << quad.line << "\t\t\t\t" << "IF NOT EQUAL" << "\t\t" << "'false'" << "\t\t" <<  "'false'" << "\t\t" << quad.label;
+                            }
+                        }
+                    } else {
+                        if (quad.result->bool_const == 1) {
+                            line << quad.line << "\t\t\t\t" << "IF NOT EQUAL" << "\t\t" << "'true'" << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.label;
+                        } else {
+                            line << quad.line << "\t\t\t\t" << "IF NOT EQUAL" << "\t\t" << "'false'" << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.label;
+                        }
+                    }
                 } else {
                     if (quad.arg1->type == CONSTNUM_EXPR) { 
-                        std::cout << quad.line << "\t" << "IF NOT EQUAL" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << quad.label << std::endl; 
+                        line << quad.line << "\t\t\t\t" << "IF NOT EQUAL" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << quad.label; 
                     } else if (quad.arg1->type == CONSTSTRING_EXPR) {
-                        std::cout << quad.line << "Error: the symbol" << "\t\t" << quad.arg1->str_const << " is a string" << std::endl;
+                        line << quad.line << "\t\t\t\t" << "IF NOT EQUAL" << "\t\t" << quad.result->symbol->name << "\t\t" << "\"" << quad.arg1->str_const << "\"" << "\t\t" << quad.label;
                     } else if (quad.arg1->type == CONSTBOOL_EXPR) {
-                        std::cout << quad.line << "\t" << "IF NOT EQUAL" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->bool_const << "\t\t" << quad.label << std::endl;
+                        if (quad.arg1->bool_const == 1) {
+                            line << quad.line << "\t\t\t\t" << "IF NOT EQUAL" << "\t\t" << quad.result->symbol->name << "\t\t" << "'true'" << "\t\t" << quad.label;
+                        } else {
+                            line << quad.line << "\t\t\t\t" << "IF NOT EQUAL" << "\t\t" << quad.result->symbol->name << "\t\t" << "'false'" << "\t\t" << quad.label;
+                        }
                     } else {
-                        std::cout << quad.line << "\t" << "IF NOT EQUAL" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.label << std::endl;
+                        line << quad.line << "\t\t\t\t" << "IF NOT EQUAL" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.label;
                     }
                 }
                 break;
             case 12:
                 if (quad.result->type == CONSTNUM_EXPR) {
                     if (quad.arg1->type == CONSTNUM_EXPR) { 
-                        std::cout << quad.line << "\t" << "IF LESS EQUAL" << "\t\t" << quad.result->num_const << "\t\t" << quad.arg1->num_const << "\t\t" << quad.label << std::endl; 
+                        line << quad.line << "\t\t\t\t" << "IF LESS EQUAL" << "\t\t" << quad.result->num_const << "\t\t" << quad.arg1->num_const << "\t\t" << quad.label; 
                     } else if (quad.arg1->type == CONSTSTRING_EXPR) {
                         std::cout << quad.line << "Error: the symbol" << "\t\t" << quad.arg1->str_const << " is a string" << std::endl;
+                    } else if (quad.arg1->type == CONSTBOOL_EXPR) {
+                        std::cout << quad.line << "Error: the symbol" << "\t\t" << quad.arg1->str_const << " is a boolean" << std::endl;
                     } else {
-                        std::cout << quad.line << "\t" << "IF LESS EQUAL" << "\t\t" << quad.result->num_const << "\t\t" << quad.arg1->bool_const << "\t\t" << quad.label << std::endl;
+                        line << quad.line << "\t\t\t\t" << "IF LESS EQUAL" << "\t\t" << quad.result->num_const << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.label;
                     }
                 } else if (quad.result->type == CONSTSTRING_EXPR) {
                     std::cout << quad.line << "Error: the symbol" << "\t\t" << quad.result->str_const << " is a string" << std::endl;
                 } else if (quad.result->type == CONSTBOOL_EXPR) {
-                    std::cout << quad.line << "\t" << "IF LESS EQUAL" << "\t\t" << quad.result->bool_const << "\t\t" << quad.arg1->bool_const << "\t\t" << quad.label << std::endl;
+                    std::cout << quad.line << "Error: the symbol" << "\t\t" << quad.result->str_const << " is a boolean" << std::endl;
                 } else {
                     if (quad.arg1->type == CONSTNUM_EXPR) { 
-                        std::cout << quad.line << "\t" << "IF LESS EQUAL" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << quad.label << std::endl; 
+                        line << quad.line << "\t\t\t\t" << "IF LESS EQUAL" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << quad.label; 
                     } else if (quad.arg1->type == CONSTSTRING_EXPR) {
                         std::cout << quad.line << "Error: the symbol" << "\t\t" << quad.arg1->str_const << " is a string" << std::endl;
                     } else if (quad.arg1->type == CONSTBOOL_EXPR) {
-                        std::cout << quad.line << "\t" << "IF LESS EQUAL" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->bool_const << "\t\t" << quad.label << std::endl;
+                        std::cout << quad.line << "Error: the symbol arg1  is a boolean" << std::endl;
                     } else {
-                        std::cout << quad.line << "\t" << "IF LESS EQUAL" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.label << std::endl;
+                        line << quad.line << "\t\t\t\t" << "IF LESS EQUAL" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.label;
                     }
                 }
                 break;
             case 13:
                 if (quad.result->type == CONSTNUM_EXPR) {
                     if (quad.arg1->type == CONSTNUM_EXPR) { 
-                        std::cout << quad.line << "\t" << "IF GREATER EQUAL" << "\t\t" << quad.result->num_const << "\t\t" << quad.arg1->num_const << "\t\t" << quad.label << std::endl; 
+                        line << quad.line << "\t\t\t\t" << "IF GREATER EQUAL" << "\t\t" << quad.result->num_const << "\t\t" << quad.arg1->num_const << "\t\t" << quad.label; 
                     } else if (quad.arg1->type == CONSTSTRING_EXPR) {
                         std::cout << quad.line << "Error: the symbol" << "\t\t" << quad.arg1->str_const << " is a string" << std::endl;
+                    } else if (quad.arg1->type == CONSTBOOL_EXPR) {
+                        std::cout << quad.line << "Error: the symbol" << "\t\t" << quad.arg1->str_const << " is a boolean" << std::endl;
                     } else {
-                        std::cout << quad.line << "\t" << "IF GREATER EQUAL" << "\t\t" << quad.result->num_const << "\t\t" << quad.arg1->bool_const << "\t\t" << quad.label << std::endl;
+                        line << quad.line << "\t\t\t\t" << "IF GREATER EQUAL" << "\t\t" << quad.result->num_const << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.label;
                     }
                 } else if (quad.result->type == CONSTSTRING_EXPR) {
                     std::cout << quad.line << "Error: the symbol" << "\t\t" << quad.result->str_const << " is a string" << std::endl;
                 } else if (quad.result->type == CONSTBOOL_EXPR) {
-                    std::cout << quad.line << "\t" << "IF GREATER EQUAL" << "\t\t" << quad.result->bool_const << "\t\t" << quad.arg1->bool_const << "\t\t" << quad.label << std::endl;
+                    std::cout << quad.line << "Error: the symbol" << "\t\t" << quad.result->str_const << " is a boolean" << std::endl;
                 } else {
                     if (quad.arg1->type == CONSTNUM_EXPR) { 
-                        std::cout << quad.line << "\t" << "IF GREATER EQUAL" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << quad.label << std::endl; 
+                        line << quad.line << "\t\t\t\t" << "IF GREATER EQUAL" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << quad.label; 
                     } else if (quad.arg1->type == CONSTSTRING_EXPR) {
                         std::cout << quad.line << "Error: the symbol" << "\t\t" << quad.arg1->str_const << " is a string" << std::endl;
                     } else if (quad.arg1->type == CONSTBOOL_EXPR) {
-                        std::cout << quad.line << "\t" << "IF GREATER EQUAL" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->bool_const << "\t\t" << quad.label << std::endl;
+                        std::cout << quad.line << "Error: the symbol arg1  is a boolean" << std::endl;
                     } else {
-                        std::cout << quad.line << "\t" << "IF GREATER EQUAL" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.label << std::endl;
+                        line << quad.line << "\t\t\t\t" << "IF GEATER EQUAL" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.label;
                     }
                 }
                 break;
             case 14:
                 if (quad.result->type == CONSTNUM_EXPR) {
                     if (quad.arg1->type == CONSTNUM_EXPR) { 
-                        std::cout << "\n" << quad.line << "\t" << "IF LESS" << "\t\t" << quad.result->num_const << "\t\t" << quad.arg1->num_const << "\t\t" << quad.label << std::endl; 
+                        line << quad.line << "\t\t\t\t" << "IF LESS" << "\t\t" << quad.result->num_const << "\t\t" << quad.arg1->num_const << "\t\t" << quad.label; 
                     } else if (quad.arg1->type == CONSTSTRING_EXPR) {
-                        std::cout << "\n" << quad.line << "Error: the symbol" << "\t\t" << quad.arg1->str_const << " is a string";
+                        std::cout << quad.line << "Error: the symbol" << "\t\t" << quad.arg1->str_const << " is a string" << std::endl;
+                    } else if (quad.arg1->type == CONSTBOOL_EXPR) {
+                        std::cout << quad.line << "Error: the symbol" << "\t\t" << quad.arg1->str_const << " is a boolean" << std::endl;
                     } else {
-                        std::cout << "\n" << quad.line << "\t" << "IF LESS" << "\t\t" << quad.result->num_const << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.label << std::endl;
+                        line << quad.line << "\t\t\t\t" << "IF LESS" << "\t\t" << quad.result->num_const << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.label;
                     }
                 } else if (quad.result->type == CONSTSTRING_EXPR) {
-                    std::cout << "\n" << quad.line << "Error: the symbol" << "\t\t" << quad.result->str_const << " is a string";
+                    std::cout << quad.line << "Error: the symbol" << "\t\t" << quad.result->str_const << " is a string" << std::endl;
+                } else if (quad.result->type == CONSTBOOL_EXPR) {
+                    std::cout << quad.line << "Error: the symbol" << "\t\t" << quad.result->str_const << " is a boolean" << std::endl;
                 } else {
                     if (quad.arg1->type == CONSTNUM_EXPR) { 
-                        std::cout << "\n" << quad.line << "\t" << "IF LESS" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << quad.label << std::endl; 
+                        line << quad.line << "\t\t\t\t" << "IF LESS" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << quad.label; 
                     } else if (quad.arg1->type == CONSTSTRING_EXPR) {
-                        std::cout << "\n" << quad.line << "Error: the symbol" << "\t\t" << quad.arg1->str_const << " is a string";
+                        std::cout << quad.line << "Error: the symbol" << "\t\t" << quad.arg1->str_const << " is a string" << std::endl;
+                    } else if (quad.arg1->type == CONSTBOOL_EXPR) {
+                        std::cout << quad.line << "Error: the symbol arg1  is a boolean" << std::endl;
                     } else {
-                        std::cout << "\n" << quad.line << "\t" << "IF LESS" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.label << std::endl;
+                        line << quad.line << "\t\t\t\t" << "IF LESS" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.label;
                     }
                 }
                 break;
             case 15:
                 if (quad.result->type == CONSTNUM_EXPR) {
                     if (quad.arg1->type == CONSTNUM_EXPR) { 
-                        std::cout << quad.line << "\t" << "IF GREATER" << "\t\t" << quad.result->num_const << "\t\t" << quad.arg1->num_const << "\t\t" << quad.label << std::endl; 
+                        line << quad.line << "\t\t\t\t" << "IF GREATER" << "\t\t" << quad.result->num_const << "\t\t" << quad.arg1->num_const << "\t\t" << quad.label; 
                     } else if (quad.arg1->type == CONSTSTRING_EXPR) {
                         std::cout << quad.line << "Error: the symbol" << "\t\t" << quad.arg1->str_const << " is a string" << std::endl;
+                    } else if (quad.arg1->type == CONSTBOOL_EXPR) {
+                        std::cout << quad.line << "Error: the symbol" << "\t\t" << quad.arg1->str_const << " is a boolean" << std::endl;
                     } else {
-                        std::cout << quad.line << "\t" << "IF GREATER" << "\t\t" << quad.result->num_const << "\t\t" << quad.arg1->bool_const << "\t\t" << quad.label << std::endl;
+                        line << quad.line << "\t\t\t\t" << "IF GREATER" << "\t\t" << quad.result->num_const << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.label;
                     }
                 } else if (quad.result->type == CONSTSTRING_EXPR) {
                     std::cout << quad.line << "Error: the symbol" << "\t\t" << quad.result->str_const << " is a string" << std::endl;
                 } else if (quad.result->type == CONSTBOOL_EXPR) {
-                    std::cout << quad.line << "\t" << "IF GREATER" << "\t\t" << quad.result->bool_const << "\t\t" << quad.arg1->bool_const << "\t\t" << quad.label << std::endl;
+                    std::cout << quad.line << "Error: the symbol" << "\t\t" << quad.result->str_const << " is a boolean" << std::endl;
                 } else {
                     if (quad.arg1->type == CONSTNUM_EXPR) { 
-                        std::cout << quad.line << "\t" << "IF GREATER" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << quad.label << std::endl; 
+                        line << quad.line << "\t\t\t\t" << "IF GREATER" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << quad.label; 
                     } else if (quad.arg1->type == CONSTSTRING_EXPR) {
                         std::cout << quad.line << "Error: the symbol" << "\t\t" << quad.arg1->str_const << " is a string" << std::endl;
                     } else if (quad.arg1->type == CONSTBOOL_EXPR) {
-                        std::cout << quad.line << "\t" << "IF GREATER" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->bool_const << "\t\t" << quad.label << std::endl;
+                        std::cout << quad.line << "Error: the symbol arg1  is a boolean" << std::endl;
                     } else {
-                        std::cout << quad.line << "\t" << "IF GREATER" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.label << std::endl;
+                        line << quad.line << "\t\t\t\t" << "IF GREATER" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.label;
                     }
                 }
                 break;
             case 16:
-                std::cout << quad.line << "\t\t" << "CALL" << "\t\t" << quad.result->symbol->name << std::endl;
+                line << quad.line << "\t\t\t\t" << "CALL" << "\t\t\t" << quad.result->symbol->name;
                 break;
             case 17:
                 if (quad.result->type == CONSTNUM_EXPR) {
-                    std::cout << quad.line << "\t\t" << "PARAM" << "\t\t" << quad.result->num_const << std::endl;
+                    line << quad.line << "\t\t\t\t" << "PARAM" << "\t\t\t" << quad.result->num_const;
                 } else if (quad.result->type == CONSTSTRING_EXPR) {
-                    std::cout << quad.line << "\t\t" << "PARAM" << "\t\t" << quad.result->str_const << std::endl;
-                    
+                    line << quad.line << "\t\t\t\t" << "PARAM" << "\t\t" << "\"" << quad.result->str_const << "\"";
                 } else if (quad.result->type == CONSTBOOL_EXPR) {
-                    std::cout << quad.line << "\t\t" << "PARAM" << "\t\t" << quad.result->bool_const << std::endl;
+                    if (quad.result->bool_const == 1) {
+                        line << quad.line << "\t\t\t\t" << "PARAM" << "\t\t" << "'true'";
+                    } else {
+                        line << quad.line << "\t\t\t\t" << "PARAM" << "\t\t" << "'false'";
+                    }
                 } else {
-                    std::cout << quad.line << "\t\t" << "PARAM" << "\t\t" << quad.result->symbol->name << std::endl;
+                    line << quad.line << "\t\t\t\t" << "PARAM" << "\t\t" << quad.result->symbol->name;
                 }
                 break;
             case 18:
                 if (quad.result != NULL) {
                     if (quad.result->type == CONSTNUM_EXPR) {
-                        std::cout << quad.line << "\t\t" << "RETURN" << "\t\t" << quad.result->num_const << std::endl;
+                        line << quad.line << "\t\t\t\t" << "RETURN" << "\t\t" << quad.result->num_const;
                     } else if (quad.result->type == CONSTBOOL_EXPR) {
-                        std::cout << quad.line << "\t\t" << "RETURN" << "\t\t" << quad.result->bool_const << std::endl;
+                        if (quad.result->bool_const == 1) {
+                            line << quad.line << "\t\t\t\t" << "RETURN" << "\t\t" << "'true'";
+                        } else {
+                            line << quad.line << "\t\t\t\t" << "RETURN" << "\t\t" << "'false'";
+                        }
                     } else if (quad.result->type == CONSTSTRING_EXPR) {
-                        std::cout << quad.line << "\t\t" << "RETURN" << "\t\t" << quad.result->str_const << std::endl;
+                        line << quad.line << "\t\t\t\t" << "RETURN" << "\t\t" << "\"" << quad.result->str_const << "\"";
                     } else {
-                        std::cout << quad.line << "\t\t" << "RETURN" << "\t\t" << quad.result->symbol->name << std::endl;
+                        line << quad.line << "\t\t\t\t" << "RETURN" << "\t\t" << quad.result->symbol->name;
                     }
-                } 
+                }
                 break;
             case 19:
-                std::cout << quad.line << "\t\t" << "GETRETVAL" << "\t\t" << quad.result->symbol->name << std::endl;
+                line << quad.line << "\t\t\t\t" << "GETRETVAL" << "\t\t" << quad.result->symbol->name;
                 break;
             case 20:
-                std::cout << quad.line << "\t\t\t\t" << "FUNCSTART " << "\t\t" << quad.result->symbol->name << std::endl;
+                line << quad.line << "\t\t\t\t" << "FUNCSTART " << "\t\t" << quad.result->symbol->name;
                 break;
             case 21:
-                std::cout << quad.line << "\t\t\t\t" << "FUNCEND   " << "\t\t" << quad.result->symbol->name << std::endl;
+                line << quad.line << "\t\t\t\t" << "FUNCEND   " << "\t\t" << quad.result->symbol->name;
                 break;
             case 22:
-                std::cout << quad.line << "\t\t" << "TABLECREATE  " << "\t\t" << quad.result->symbol->name << std::endl;
+                line << quad.line << "\t\t" << "TABLECREATE  " << "\t\t" << quad.result->symbol->name;
                 break;
             case 23:
                 if (quad.arg2->type == CONSTNUM_EXPR) {
                     if (quad.arg1->type == CONSTNUM_EXPR) {
-                        std::cout << quad.line << "\t" << "TABLEGETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << quad.arg2->num_const << std::endl;
+                        line << quad.line << "\t\t" << "TABLEGETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << quad.arg2->num_const;
                     } else if (quad.arg1->type == CONSTSTRING_EXPR) {
-                        std::cout << quad.line << "\t" << "TABLEGETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->str_const << "\t\t" << quad.arg2->num_const << std::endl;
+                        line << quad.line << "\t\t" << "TABLEGETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << "\"" << quad.arg1->str_const << "\"" << "\t\t" << quad.arg2->num_const;
                     } else if (quad.arg1->type == CONSTBOOL_EXPR) {
-                        std::cout << quad.line << "\t" << "TABLEGETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->bool_const << "\t\t" << quad.arg2->num_const << std::endl;
+                        if (quad.arg1->bool_const == 1) {
+                            line << quad.line << "\t\t" << "TABLEGETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << "'true'" << "\t\t" << quad.arg2->num_const;
+                        } else {
+                            line << quad.line << "\t\t" << "TABLEGETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << "'false'" << "\t\t" << quad.arg2->num_const;
+                        }
                     } else {
-                        std::cout << quad.line << "\t" << "TABLEGETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.arg2->num_const << std::endl;
+                        line << quad.line << "\t\t" << "TABLEGETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.arg2->num_const;
                     }
                 } else if (quad.arg2->type == CONSTSTRING_EXPR) {
                     if (quad.arg1->type == CONSTNUM_EXPR) {
-                        std::cout << quad.line << "\t" << "TABLEGETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << quad.arg2->str_const << std::endl;
+                        line << quad.line << "\t\t" << "TABLEGETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << quad.arg2->str_const;
                     } else if (quad.arg1->type == CONSTSTRING_EXPR) {
-                        std::cout << quad.line << "\t" << "TABLEGETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->str_const << "\t\t" << quad.arg2->str_const << std::endl;
+                        line << quad.line << "\t\t" << "TABLEGETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << "\"" << quad.arg1->str_const << "\"" << "\t\t" << "\"" << quad.arg2->str_const << "\"";
                     } else if (quad.arg1->type == CONSTBOOL_EXPR) {
-                        std::cout << quad.line << "\t" << "TABLEGETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->bool_const << "\t\t" << quad.arg2->str_const << std::endl;
+                        if (quad.arg1->bool_const == 1) {
+                            line << quad.line << "\t\t" << "TABLEGETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << "'true'" << "\t\t" << "\"" << quad.arg2->str_const << "\"";
+                        } else {
+                            line << quad.line << "\t\t" << "TABLEGETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << "'false'" << "\t\t" << "\"" << quad.arg2->str_const << "\"";
+                        }
                     } else {
-                        std::cout << quad.line << "\t" << "TABLEGETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.arg2->str_const << std::endl;
+                        line << quad.line << "\t\t" << "TABLEGETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << "\"" << quad.arg2->str_const << "\"";
                     }
                 } else if (quad.arg2->type == CONSTBOOL_EXPR) {
                     if (quad.arg1->type == CONSTNUM_EXPR) {
-                        std::cout << quad.line << "\t" << "TABLEGETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << quad.arg2->bool_const << std::endl;
+                        if (quad.arg2->bool_const == 1) {
+                            line << quad.line << "\t\t" << "TABLEGETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << "'true'";
+                        } else {
+                            line << quad.line << "\t\t" << "TABLEGETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << "'false'";
+                        }
                     } else if (quad.arg1->type == CONSTSTRING_EXPR) {
-                        std::cout << quad.line << "\t" << "TABLEGETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->str_const << "\t\t" << quad.arg2->bool_const << std::endl;
+                        if (quad.arg2->bool_const == 1) {
+                            line << quad.line << "\t\t" << "TABLEGETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << "\"" << quad.arg1->str_const << "\"" << "\t\t" << "'true'";
+                        } else {
+                            line << quad.line << "\t\t" << "TABLEGETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << "\"" << quad.arg1->str_const << "\"" << "\t\t" << "'false'";
+                        }
                     } else if (quad.arg1->type == CONSTBOOL_EXPR) {
-                        std::cout << quad.line << "\t" << "TABLEGETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->bool_const << "\t\t" << quad.arg2->bool_const << std::endl;
+                        if (quad.arg2->bool_const == 1) {
+                            if (quad.arg1->bool_const == 1) {
+                                line << quad.line << "\t\t" << "TABLEGETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << "'true'" << "\t\t" << "'true'";
+                            } else {
+                                line << quad.line << "\t\t" << "TABLEGETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << "'false'" << "\t\t" << "'true'";
+                            }
+                        } else {
+                            if (quad.arg1->bool_const == 1) {
+                                line << quad.line << "\t\t" << "TABLEGETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << "'true'" << "\t\t" << "'false'";
+                            } else {
+                                line << quad.line << "\t\t" << "TABLEGETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << "'false'" << "\t\t" << "'false'";
+                            }
+                        }
                     } else {
-                        std::cout << quad.line << "\t" << "TABLEGETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.arg2->bool_const << std::endl;
+                        if (quad.arg2->bool_const == 1) {
+                            line << quad.line << "\t\t" << "TABLEGETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << "'true'";
+                        } else {
+                            line << quad.line << "\t\t" << "TABLEGETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << "'false'";
+                        }
                     }
                 } else {
                     if (quad.arg1->type == CONSTNUM_EXPR) {
-                        std::cout << quad.line << "\t" << "TABLEGETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << quad.arg2->symbol->name << std::endl;
+                        line << quad.line << "\t\t" << "TABLEGETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << quad.arg2->symbol->name;
                     } else if (quad.arg1->type == CONSTSTRING_EXPR) {
-                        std::cout << quad.line << "\t" << "TABLEGETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->str_const << "\t\t" << quad.arg2->symbol->name << std::endl;
+                        line << quad.line << "\t\t" << "TABLEGETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << "\"" << quad.arg1->str_const << "\"" << "\t\t" << quad.arg2->symbol->name;
                     } else if (quad.arg1->type == CONSTBOOL_EXPR) {
-                        std::cout << quad.line << "\t" << "TABLEGETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->bool_const << "\t\t" << quad.arg2->symbol->name << std::endl;
+                        if (quad.arg1->bool_const == 1) {
+                            line << quad.line << "\t\t" << "TABLEGETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << "'true'" << "\t\t" << quad.arg2->symbol->name;
+                        } else {
+                            line << quad.line << "\t\t" << "TABLEGETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << "'false'" << "\t\t" << quad.arg2->symbol->name;
+                        }
                     } else {
-                        std::cout << quad.line << "\t" << "TABLEGETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.arg2->symbol->name << std::endl;
+                        line << quad.line << "\t\t" << "TABLEGETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.arg2->symbol->name;
                     }
                 } 
                 break;
             case 24:
                 if (quad.arg2->type == CONSTNUM_EXPR) {
                     if (quad.arg1->type == CONSTNUM_EXPR) {
-                        std::cout << quad.line << "\t" << "TABLESETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << quad.arg2->num_const << std::endl;
+                        line << quad.line << "\t\t" << "TABLESETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << quad.arg2->num_const;
                     } else if (quad.arg1->type == CONSTSTRING_EXPR) {
-                        std::cout << quad.line << "\t" << "TABLESETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->str_const << "\t\t" << quad.arg2->num_const << std::endl;
+                        line << quad.line << "\t\t" << "TABLESETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << "\"" << quad.arg1->str_const << "\"" << "\t\t" << quad.arg2->num_const;
                     } else if (quad.arg1->type == CONSTBOOL_EXPR) {
-                        std::cout << quad.line << "\t" << "TABLESETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->bool_const << "\t\t" << quad.arg2->num_const << std::endl;
+                        if (quad.arg1->bool_const == 1) {
+                            line << quad.line << "\t\t" << "TABLESETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << "'true'" << "\t\t" << quad.arg2->num_const;
+                        } else {
+                            line << quad.line << "\t\t" << "TABLESETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << "'false'" << "\t\t" << quad.arg2->num_const;
+                        }
                     } else {
-                        std::cout << quad.line << "\t" << "TABLESETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.arg2->num_const << std::endl;
+                        line << quad.line << "\t\t" << "TABLESETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.arg2->num_const;
                     }
                 } else if (quad.arg2->type == CONSTSTRING_EXPR) {
                     if (quad.arg1->type == CONSTNUM_EXPR) {
-                        std::cout << quad.line << "\t" << "TABLESETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << quad.arg2->str_const << std::endl;
+                        line << quad.line << "\t\t" << "TABLESETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << "\"" << quad.arg2->str_const << "\"";
                     } else if (quad.arg1->type == CONSTSTRING_EXPR) {
-                        std::cout << quad.line << "\t" << "TABLESETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->str_const << "\t\t" << quad.arg2->str_const << std::endl;
+                        line << quad.line << "\t\t" << "TABLESETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << "\"" << quad.arg1->str_const << "\"" << "\t\t" << "\"" << quad.arg2->str_const << "\"";
                     } else if (quad.arg1->type == CONSTBOOL_EXPR) {
-                        std::cout << quad.line << "\t" << "TABLESETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->bool_const << "\t\t" << quad.arg2->str_const << std::endl;
+                        if (quad.arg1->bool_const == 1) {
+                            line << quad.line << "\t\t" << "TABLESETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << "'true'" << "\t\t" << "\"" << quad.arg2->str_const << "\"";
+                        } else {
+                            line << quad.line << "\t\t" << "TABLESETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << "'false'" << "\t\t" << "\"" << quad.arg2->str_const << "\"";
+                        }
                     } else {
-                        std::cout << quad.line << "\t" << "TABLESETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.arg2->str_const << std::endl;
+                        line << quad.line << "\t\t" << "TABLESETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << "\"" << quad.arg2->str_const << "\"";
                     }
                 } else if (quad.arg2->type == CONSTBOOL_EXPR) {
                     if (quad.arg1->type == CONSTNUM_EXPR) {
-                        std::cout << quad.line << "\t" << "TABLESETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << quad.arg2->bool_const << std::endl;
+                        if (quad.arg2->bool_const == 1) {
+                            line << quad.line << "\t\t" << "TABLESETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << "'true'";
+                        } else {
+                            line << quad.line << "\t\t" << "TABLESETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << "'false'";
+                        }
                     } else if (quad.arg1->type == CONSTSTRING_EXPR) {
-                        std::cout << quad.line << "\t" << "TABLESETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->str_const << "\t\t" << quad.arg2->bool_const << std::endl;
+                        if (quad.arg2->bool_const == 1) {
+                            line << quad.line << "\t\t" << "TABLESETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << "\"" << quad.arg1->str_const << "\"" << "\t\t" << "'true'";
+                        } else {
+                            line << quad.line << "\t\t" << "TABLESETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << "\"" << quad.arg1->str_const << "\"" << "\t\t" << "'false'";
+                        }
                     } else if (quad.arg1->type == CONSTBOOL_EXPR) {
-                        std::cout << quad.line << "\t" << "TABLESETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->bool_const << "\t\t" << quad.arg2->bool_const << std::endl;
+                        if (quad.arg2->bool_const == 1) {
+                            if (quad.arg1->bool_const == 1) {
+                                line << quad.line << "\t\t" << "TABLESETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << "'true'" << "\t\t" << "'true'";
+                            } else {
+                                line << quad.line << "\t\t" << "TABLESETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << "'false'" << "\t\t" << "'true'";
+                            }
+                        } else {
+                            if (quad.arg1->bool_const == 1) {
+                                line << quad.line << "\t\t" << "TABLESETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << "'true'" << "\t\t" << "'false'";
+                            } else {
+                                line << quad.line << "\t\t" << "TABLESETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << "'false'" << "\t\t" << "'false'";
+                            }
+                        }
                     } else {
-                        std::cout << quad.line << "\t" << "TABLESETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.arg2->bool_const << std::endl;
+                        if (quad.arg2->bool_const == 1) {
+                            line << quad.line << "\t\t" << "TABLESETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << "'true'";
+                        } else {
+                            line << quad.line << "\t\t" << "TABLESETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << "'false'";
+                        }
                     }
                 } else {
                     if (quad.arg1->type == CONSTNUM_EXPR) {
-                        std::cout << quad.line << "\t" << "TABLESETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << quad.arg2->symbol->name << std::endl;
+                        line << quad.line << "\t\t" << "TABLESETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->num_const << "\t\t" << quad.arg2->symbol->name;
                     } else if (quad.arg1->type == CONSTSTRING_EXPR) {
-                        std::cout << quad.line << "\t" << "TABLESETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->str_const << "\t\t" << quad.arg2->symbol->name << std::endl;
+                        line << quad.line << "\t\t" << "TABLESETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << "\"" << quad.arg1->str_const << "\"" << "\t\t" << quad.arg2->symbol->name;
                     } else if (quad.arg1->type == CONSTBOOL_EXPR) {
-                        std::cout << quad.line << "\t" << "TABLESETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->bool_const << "\t\t" << quad.arg2->symbol->name << std::endl;
+                        if (quad.arg1->bool_const == 1) {
+                            line << quad.line << "\t\t" << "TABLESETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << "'true'" << "\t\t" << quad.arg2->symbol->name;
+                        } else {
+                            line << quad.line << "\t\t" << "TABLESETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << "'false'" << "\t\t" << quad.arg2->symbol->name;
+                        }
                     } else {
-                        std::cout << quad.line << "\t" << "TABLESETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.arg2->symbol->name << std::endl;
+                        line << quad.line << "\t\t" << "TABLESETELEM" << "\t\t" << quad.result->symbol->name << "\t\t" << quad.arg1->symbol->name << "\t\t" << quad.arg2->symbol->name;
                     }
                 }
                 break;
             case 25:
-                std::cout << quad.line << "\t\t" << "JUMP  " << "\t\t" << quad.label << std::endl;
+                line << quad.line << "\t\t" << "JUMP  " << "\t\t" << "\t\t\t\t" << "\t\t\t\t" << quad.label;
                 break;
             default:
                 break;
         }
-        
+        // Write to file
+        outfile << line.str() << std::endl;
     }
-    return;
+    outfile.close();
 }
 
 std::string new_temp_name(int temp_counter) {
@@ -1685,8 +2050,8 @@ void reset_formal_arg_offset() {
 }
 
 bool check_if_is_arithm(expression* expr) {
-    if (expr->type == CONSTSTRING_EXPR || expr->type == NIL_EXPR || expr->type == CONSTBOOL_EXPR || 
-        expr->type == NEWTABLE_EXPR || expr->type == PROGRAMFUNC_EXPR || expr->type == LIBFUNC_EXPR || expr->type == BOOL_EXPR) {
+    if (expr->type == CONSTSTRING_EXPR || expr->type == NIL_EXPR || /*expr->type == CONSTBOOL_EXPR ||*/ 
+        expr->type == NEWTABLE_EXPR || expr->type == PROGRAMFUNC_EXPR || expr->type == LIBFUNC_EXPR /*|| expr->type == BOOL_EXPR*/) {
         return false;
     }
     return true;
@@ -1726,6 +2091,7 @@ expression* manage_expr_plus_expr(expression* result, expression* expr1, express
         }
    } else {
        std::cout << "We cannot do arithmetic actions to a no numerable expression" << std::endl;
+       exit(-1);
    }
    return result;
 }
@@ -1748,6 +2114,7 @@ expression* manage_expr_minus_expr(expression* result, expression* expr1, expres
         }
     } else {
        std::cout << "We cannot do arithmetic actions to a no numerable expression" << std::endl;
+       exit(-1);
     }
     return result;
 }
@@ -1771,6 +2138,7 @@ expression* manage_expr_mul_expr(expression* result, expression* expr1, expressi
                     
     } else {
         std::cout << "We cannot do arithmetic actions to a no numerable expression" << std::endl;
+        exit(-1);
     }
     return result;
 }
@@ -1783,8 +2151,15 @@ expression* manage_expr_div_expr(expression* result, expression* expr1, expressi
         }
         SymbolTableEntry* new_temp = new_temp_var(-1, type);
         if (expr1->type == 8 && expr2->type == 8) {
-            result = make_constnum_expression(CONSTNUM_EXPR, expr1->num_const/expr2->num_const);
-            //std::cout << "$1->type " << expr1->type << std::endl;
+            if (expr2->num_const == 0) {
+                std::cout << "Error: division by zero" << std::endl;
+                exit(-1);
+            } 
+            if (expr1->num_const == 0) {
+                result = make_constnum_expression(CONSTNUM_EXPR, 0);
+            } else {
+                result = make_constnum_expression(CONSTNUM_EXPR, expr1->num_const/expr2->num_const);
+            } 
             emit_div(DIV, result, expr1, expr2);
         } else {  
             result = make_arithm_expression(ARITHM_EXPR, get_symbol(new_temp->name, get_scope()));
@@ -1793,6 +2168,7 @@ expression* manage_expr_div_expr(expression* result, expression* expr1, expressi
         }
     } else {
        std::cout << "We cannot do arithmetic actions to a no numerable expression" << std::endl;
+       exit(-1);
     }
     return result;
 }
@@ -1815,6 +2191,7 @@ expression* manage_expr_mod_expr(expression* result, expression* expr1, expressi
         }
     } else {
        std::cout << "We cannot do arithmetic actions to a no numerable expression" << std::endl;
+       exit(-1);
     }
     return result;
 }
@@ -1930,20 +2307,27 @@ expression* manage_expr_eq_expr(expression* result, expression* expr1, expressio
             type = LOCAL;
         }
         SymbolTableEntry* new_temp = new_temp_var(-1, type);
-        //std::cout << new_temp.scope << std::endl;
         result = make_bool_expression(BOOL_EXPR, get_symbol(new_temp->name, get_scope()));
         result->truelist.push_front(next_quad_label());
         result->falselist.push_front(next_quad_label() + 1);
-        //emit_if_equal(IF_EQ, expr1, expr2, next_quad_label()+3);
         emit_if_equal(IF_EQ, expr1, expr2, UINT_MAX);
-        //set_curr_quad_label((next_quad_label()+3));
-        //emit_assign(ASSIGN, result, make_constbool_expression(CONSTBOOL_EXPR, 0));
         emit_jump(JUMP, UINT_MAX);
-        //set_curr_quad_label((next_quad_label()+2));
-        //emit_assign(ASSIGN, result, make_constbool_expression(CONSTBOOL_EXPR, 1));
     } else {
-        std::cout << "We cannot do arithmetic actions to a no numerable expression" << std::endl;
-        exit(-1);
+        if (expr1->type == CONSTSTRING_EXPR || expr2->type == CONSTSTRING_EXPR) {
+            SymbolType type = GLOBAL;
+            if (get_scope() != 0) {
+                type = LOCAL;
+           }
+           SymbolTableEntry* new_temp = new_temp_var(-1, type);
+           result = make_bool_expression(BOOL_EXPR, get_symbol(new_temp->name, get_scope()));
+           result->truelist.push_front(next_quad_label());
+           result->falselist.push_front(next_quad_label() + 1);
+           emit_if_equal(IF_EQ, expr1, expr2, UINT_MAX);
+           emit_jump(JUMP, UINT_MAX);
+        } else {
+            std::cout << "We cannot do arithmetic actions to a no numerable expression" << std::endl;
+            exit(-1);
+        }
     }
     return result;
 }
@@ -1967,8 +2351,21 @@ expression* manage_expr_not_eq_expr(expression* result, expression* expr1, expre
         //set_curr_quad_label((next_quad_label()+2));
         //emit_assign(ASSIGN, result, make_constbool_expression(CONSTBOOL_EXPR, 1));
     } else {
-        std::cout << "We cannot do arithmetic actions to a no numerable expression" << std::endl;
-        exit(-1);
+        if (expr1->type == CONSTSTRING_EXPR || expr2->type == CONSTSTRING_EXPR) {
+            SymbolType type = GLOBAL;
+            if (get_scope() != 0) {
+                type = LOCAL;
+           }
+           SymbolTableEntry* new_temp = new_temp_var(-1, type);
+           result = make_bool_expression(BOOL_EXPR, get_symbol(new_temp->name, get_scope()));
+           result->truelist.push_front(next_quad_label());
+           result->falselist.push_front(next_quad_label() + 1);
+           emit_if_not_equal(IF_N_EQ, expr1, expr2, UINT_MAX);
+           emit_jump(JUMP, UINT_MAX);
+        } else {
+            std::cout << "We cannot do arithmetic actions to a no numerable expression" << std::endl;
+            exit(-1);
+        }
     }
     return result;
 }
@@ -2576,31 +2973,80 @@ unsigned manage_elseprefix(unsigned elseprefix) {
     return elseprefix;
 }
 
-std::vector<break_stmt> breaklist;
-std::vector<continue_stmt> contlist;
+std::vector<std::vector<break_stmt>> breaklist;
+std::vector<std::vector<continue_stmt>> contlist;
+std::vector<std::vector<return_stmt>> returnlist;
 
-void push_breaklist(unsigned pos, unsigned label) {
-    break_stmt new_break_stmt;
-    new_break_stmt.pos = pos;
-    new_break_stmt.label = label;
-
+void push_breaklist() {
+    std::vector<break_stmt> new_break_stmt;
+    //break_stmt new_break_stmt_elem;
+    //new_break_stmt_elem.pos = pos;
+    //new_break_stmt_elem.label = label;
+    //new_break_stmt.push_back(new_break_stmt_elem);
     breaklist.push_back(new_break_stmt);
 }
 
-unsigned breaklist_size() {
-    return breaklist.back().pos;
+void add_breakelem(unsigned pos, unsigned label) {
+    break_stmt new_break_stmt_elem;
+    new_break_stmt_elem.pos = pos;
+    new_break_stmt_elem.label = label;
+    breaklist.back().push_back(new_break_stmt_elem);
 }
 
-void push_contlist(unsigned pos, unsigned label) {
-    continue_stmt new_cont_stmt;
-    new_cont_stmt.pos = pos;
-    new_cont_stmt.label = label;
+unsigned breaklist_size() {
+    return breaklist.back().size();
+}
 
-    contlist.push_back(new_cont_stmt);
+void pop_breaklist() {
+    breaklist.pop_back();
+}
+
+void push_contlist() {
+    std::vector<continue_stmt> new_continue_stmt;
+    //continue_stmt new_continue_stmt_elem;
+    //new_continue_stmt_elem.pos = pos;
+    //new_continue_stmt_elem.label = label;
+    //new_continue_stmt.push_back(new_continue_stmt_elem);
+    contlist.push_back(new_continue_stmt);
+}
+
+void add_contelem(unsigned pos, unsigned label) {
+    continue_stmt new_continue_stmt_elem;
+    new_continue_stmt_elem.pos = pos;
+    new_continue_stmt_elem.label = label;
+    contlist.back().push_back(new_continue_stmt_elem);
 }
 
 unsigned contlist_size() {
-    return contlist.back().pos;
+    return contlist.back().size();
+}
+
+void pop_contlist() {
+    contlist.pop_back();
+}
+
+void push_returnlist() {
+    std::vector<return_stmt> new_return_stmt;
+    //return_stmt new_return_stmt_elem;
+    //new_return_stmt_elem.pos = pos;
+    //new_return_stmt_elem.label = label;
+    //new_return_stmt.push_back(new_return_stmt_elem);
+    returnlist.push_back(new_return_stmt);
+}
+
+void add_returnelem(unsigned pos, unsigned label) {
+    return_stmt new_return_stmt_elem;
+    new_return_stmt_elem.pos = pos;
+    new_return_stmt_elem.label = label;
+    returnlist.back().push_back(new_return_stmt_elem);
+}
+
+unsigned returnlist_size() {
+    return returnlist.back().size();
+}
+
+void pop_returnlist() {
+    returnlist.pop_back();
 }
 
 void patchlabel(unsigned quad_num, unsigned label) {
@@ -2618,19 +3064,35 @@ void patchlabel(unsigned quad_num, unsigned label) {
 }
 
 void patchlist_breaklist(unsigned label) {
+    /*if (breaklist.empty()) {
+        return;
+    }
+    //for (auto& break_stmt : breaklist) {
+      //  quad_table.at(break_stmt.pos).label = label;
+    //}
+    quad_table.at(breaklist.back().pos).label = label;*/
+
     if (breaklist.empty()) {
         return;
     }
-    for (auto& break_stmt : breaklist) {
+    for (auto& break_stmt : breaklist.back()) {
         quad_table.at(break_stmt.pos).label = label;
     }
+    //std::cout << "Breaklist Size: " << breaklist.size() << std::endl;
 }
 
 void patchlist_contlist(unsigned label) {
-    if (contlist.empty()) {
+    /*if (contlist.empty()) {
         return;
     }
     for (auto& cont_stmt : contlist) {
+        quad_table.at(cont_stmt.pos).label = label;
+    }*/
+    
+    if (contlist.empty()) {
+        return;
+    }
+    for (auto& cont_stmt : contlist.back()) {
         quad_table.at(cont_stmt.pos).label = label;
     }
 }
@@ -2679,3 +3141,31 @@ void backpatch(unsigned quad_num, unsigned m_quad) {
     quad_table.at(quad_num).label = m_quad;
 }
 
+void patchlist_returnlist(unsigned label) {
+    /*if (returnlist.empty()) {
+        return;
+    }
+    for (auto& return_stmt : returnlist) {
+        quad_table.at(return_stmt.pos).label = label;
+    }*/
+    if (returnlist.empty()) {
+        return;
+    }
+    for (auto& return_stmt : returnlist.back()) {
+        quad_table.at(return_stmt.pos).label = label;
+    }
+}
+
+void push_func_stack(SymbolTableEntry* func) {
+    func_stack.push_back(func);
+}
+void pop_func_stack() {
+    func_stack.pop_back();    
+}
+SymbolTableEntry* func_stack_top() {
+    return func_stack.back();
+}
+
+int func_stack_size() {
+    return func_stack.size();
+}

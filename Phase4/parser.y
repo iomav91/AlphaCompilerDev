@@ -43,6 +43,7 @@
     struct Stmt {
         unsigned breaklist;
         unsigned contlist;
+        unsigned returnlist;
     };
 }
 
@@ -139,6 +140,7 @@
 %type <stmt_struct> forblock
 %type <stmt_struct> break_statement
 %type <stmt_struct> continue_statement 
+%type <stmt_struct> return_statement
 %type <stmt_struct> statements
 %type <stmt_struct> statement
 
@@ -178,6 +180,7 @@ statement: expression TOK_SEMICOLON                                             
     
     for (auto& it : $1->truelist) {
         std::cout << "TRUELIST: " << it << std::endl;
+        std::cout << "NEXT QUAD LABEL: " << next_quad_label() << std::endl;
         backpatch(it, next_quad_label());
     }
 
@@ -200,15 +203,16 @@ statement: expression TOK_SEMICOLON                                             
           | for_statement                                                                              {}
           | return_statement                                                                           {
             handle_return_st();
+            
           }
           | TOK_BREAK TOK_SEMICOLON                                                                           {
             handle_break_st();
-            push_breaklist(next_quad_label(), 0);
+            add_breakelem(next_quad_label(), 0);
             emit_jump(JUMP, 0);
           } 
           | TOK_CONTINUE TOK_SEMICOLON                                                                         {
             handle_continue_st();
-            push_contlist(next_quad_label(), 0);
+            add_contelem(next_quad_label(), 0);
             emit_jump(JUMP, 0);
           }
           | block                                                                                      {}
@@ -343,6 +347,34 @@ term: TOK_L_PARENTH expression TOK_R_PARENTH {
                                                                                                        }
       | TOK_NOT expression                                                                             {
                                                                                                             $$ = manage_not_expr($$, $2);
+                                                                                                            std::cout << "$2 " << $2->symbol->name << std::endl;
+
+                                                                                                            if (!$2->truelist.empty() || !$2->falselist.empty()) {
+                                                                                                                
+                                                                                                                SymbolType type = GLOBAL;
+                                                                                                                if (get_scope() != 0) {
+                                                                                                                    type = LOCAL;
+                                                                                                                }
+                                                                                                                SymbolTableEntry* new_temp = new_temp_var(-1, type);
+                                                                                                                expression* result = make_assign_expression(ASSIGN_EXPR, get_symbol(new_temp->name, get_scope()));
+
+                                                                                                                for (auto& it : $2->truelist) {
+                                                                                                                    std::cout << "TRUELIST: " << it << std::endl;
+                                                                                                                    std::cout << "NEXT QUAD LABEL: " << next_quad_label() << std::endl;
+                                                                                                                    backpatch(it, next_quad_label()+2);
+                                                                                                                }
+                                                                                                                
+                                                                                                                for (auto& it : $2->falselist) {
+                                                                                                                    std::cout << "FALSE LIST: " << it << std::endl;
+                                                                                                                    backpatch(it, next_quad_label());
+                                                                                                                }
+
+                                                                                                                emit_assign(ASSIGN, result, make_constbool_expression(CONSTBOOL_EXPR, 1));
+                                                                                                                emit_jump(JUMP, (next_quad_label() + 2));
+                                                                                                                set_curr_quad_label((next_quad_label() + 2));
+                                                                                                                emit_assign(ASSIGN, result, make_constbool_expression(CONSTBOOL_EXPR, 0));
+                                                                                                            }
+
                                                                                                        }
       | TOK_DBL_PLUS lvalue                                                                            {
                                                                                                             $$ = manage_db_plus_lvalue($$, $2);
@@ -529,11 +561,13 @@ funcprefix: TOK_FUNCTION funcname {
         is_in_function_mode++;
         push_state_stack("not loop");
         $$ = manage_funcprefix($$, $2, yylineno);
+        push_returnlist();
         scope_counter++;
     } | TOK_FUNCTION {
         is_in_function_mode++;
         push_state_stack("not loop");
         $$ = manage_funcprefix_anonym($$, yylineno);
+        push_returnlist();
         scope_counter++;
     }
 ;
@@ -554,11 +588,15 @@ funcbody: funcdef_block {
 ;
 
 funcdef: funcprefix funcargs funcbody {
+        patchlist_returnlist(next_quad_label());
         $$ = manage_funcdef($1, $3);
         
         scope_counter--;
         is_in_function_mode--;
+        
+        pop_returnlist();
         pop_state_stack();
+        
     }
 ;
 
@@ -651,6 +689,8 @@ ifelse_statement: ifprefix statement elseprefix statement {
 
 whilestart: TOK_WHILE {
     $$ = next_quad_label();
+    push_breaklist();
+    push_contlist();
 }
 ;
 
@@ -705,6 +745,8 @@ while_statement: whilestart whilecond statement {
     //std::cout<< "contlist Size: " << contlist_size() << std::endl;
     patchlist_breaklist(next_quad_label());
     patchlist_contlist($1);
+    pop_breaklist();
+    pop_contlist();
     pop_state_stack();
 }
 ;
@@ -721,9 +763,37 @@ M1: {
 ;
 
 forprefix: TOK_FOR TOK_L_PARENTH elist TOK_SEMICOLON M1 expression TOK_SEMICOLON {
+    if (!$6->truelist.empty() || !$6->falselist.empty()) {
+        SymbolType type = GLOBAL;
+        if (get_scope() != 0) {
+            type = LOCAL;
+        }
+        SymbolTableEntry* new_temp = new_temp_var(-1, type);
+        expression* result = make_assign_expression(ASSIGN_EXPR, get_symbol(new_temp->name, get_scope()));
+
+        for (auto& it : $6->truelist) {
+            std::cout << "TRUELIST: " << it << std::endl;
+            backpatch(it, next_quad_label());
+        }
+
+        for (auto& it : $6->falselist) {
+            std::cout << "FALSE LIST: " << it << std::endl;
+            backpatch(it, next_quad_label() + 2);
+        }
+
+        emit_assign(ASSIGN, result, make_constbool_expression(CONSTBOOL_EXPR, 1));
+        emit_jump(JUMP, (next_quad_label() + 2));
+        set_curr_quad_label((next_quad_label() + 2));
+        emit_assign(ASSIGN, result, make_constbool_expression(CONSTBOOL_EXPR, 0));
+
+    }
+
+
     $$.test = $5;
     $$.enter = next_quad_label();
     emit_if_equal(IF_EQ, $6, make_constbool_expression(CONSTBOOL_EXPR, 1), 0);
+    push_breaklist();
+    push_contlist();
     push_state_stack("loop");
 }
 ;
@@ -733,22 +803,30 @@ forblock: TOK_L_CURLY_BR statements TOK_R_CURLY_BR {
 }
 
 for_statement: forprefix N elist TOK_R_PARENTH N statement N               {
+    std::cout << "Enter : " << $1.enter << std::endl;
     patchlabel($1.enter, $5+1);
     patchlabel($2, next_quad_label());
     patchlabel($5, $1.test);
     patchlabel($7, $2+1);
+    patchlist_breaklist(next_quad_label());
+    patchlist_contlist($1.enter+2);
+    pop_breaklist();
+    pop_contlist();
     pop_state_stack();
 }
 ;
 
 return_statement: TOK_RETURN TOK_SEMICOLON                                 {
     emit_return(RET, NULL);
-    emit_jump(JUMP, next_quad_label()+2);
+    add_returnelem(next_quad_label(), 0);
+    emit_jump(JUMP, 0);
 }
                   | TOK_RETURN expression TOK_SEMICOLON
                                                                            {
-    emit_return(RET, $2);                                                                        
-    emit_jump(JUMP, next_quad_label()+2);                                                                      }
+    emit_return(RET, $2);
+    add_returnelem(next_quad_label(), 0);                                                                        
+    emit_jump(JUMP, 0);                                                                      
+    }
 ;
 %%
 
@@ -764,20 +842,22 @@ int main(int argc, char** argv) {
             yyparse();
         }
     }
-    print_symtable();
-    print_symtable_inactive();
-    std::cout << std::endl;
-    quad_table_print();
-    generate_tcode();
-    print_instruction_table();
-    printf("\n");
     //print_symtable();
     //print_symtable_inactive();
-    printf("\n");
+    std::cout << std::endl;
+    //quad_table_print();
+    //printf("\n");
+    //print_symtable();
+    //print_symtable_inactive();
+    //printf("\n");
     //print_expression_list();
-    printf("\n");
+    //printf("\n");
     //print_reversed_expression_list();
     //quad_table_print();
+    generate_tcode();
+    print_instruction_table();
+    avm_binary_file("tcode.abc");
+    avm_binary_dump("tcode.abc");
     return 0;
 }
 

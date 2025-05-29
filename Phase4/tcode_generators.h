@@ -7,26 +7,26 @@
 
 enum vmopcode {
     ASSIGN_T,        ADD_T,            SUB_T,
-    MUL_T,           DIV_T,            MOD_T,
-    JEQ,             JNE,              JLE,        
-    JGE,             JLT,              JGT,          
-    CALLFUNC,        PUSHARG,          ENTERFUNC,    
-    EXITFUNC,        TABLECREATE_T,    TABLEGETELEM_T, 
+    MUL_T,           DIV_T,            MOD_T,        
+    JEQ,             JNE,              JLE,             
+    JGE,             JLT,              JGT,             
+    CALLFUNC,        PUSHARG,          ENTERFUNC,       
+    EXITFUNC,        NEWTABLE,         TABLEGETELEM_T,  
     TABLESETELEM_T,  JUMP_T,           NOP
 };
 
 enum vmarg_t {
+    LABEL_T,
     GLOBAL_T,
-    LOCAL_T,
     FORMAL_T,
-    BOOL_T,
-    STRING_T,
+    LOCAL_T,
     NUMBER_T,
+    STRING_T,
+    BOOL_T,
+    NIL_T,
     USERFUNC_T,
     LIBFUNC_T,
-    RETVAL_T,
-    NIL_T,
-    LABEL_T
+    RETVAL_T
 };
 
 struct vmarg {
@@ -43,6 +43,10 @@ struct instruction {
     unsigned srcLine;
 };
 
+unsigned consts_conststrings(std::string);
+unsigned consts_constnumbers(unsigned);
+unsigned libfuncs_newused(std::string);
+unsigned userfuncs_newfunc(expression*);
 unsigned retrieve_quad_index();
 unsigned current_processed_quad();
 
@@ -88,5 +92,7 @@ void print_instruction(instruction*);
 void print_instruction_table();
 void clear_instruction_table();
 void reset_instruction_table();
+void avm_binary_file(const std::string& filename);
+void avm_binary_dump(const std::string& filename);
 
 #endif

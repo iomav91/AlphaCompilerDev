@@ -4,19 +4,77 @@
 #include <string>
 #include <vector>
 #include "symbol_table.h"
+#include <fstream>
+#include <cstdint>
 
 extern std::vector<quad> quad_table;
 std::vector<instruction> instruction_table;
 
 typedef void (*generator_func_t)(quad*);
 
+std::vector<std::string> conststrings_vector;
+
 unsigned consts_conststrings(std::string str) {
     unsigned index = 0;
-    for (const auto& ch : str) {
-        index = (index << 8) + ch;
+    for (const auto& str : conststrings_vector) {
+        if (str == str) {
+            return index;
+        }
+        ++index;
     }
+    conststrings_vector.push_back(str);
     return index;
-    
+}
+
+std::vector<double> constsnumbers_vector;
+
+unsigned consts_constnumbers(unsigned num) {
+    std::cout << "constsnumbers NUM: " << num << std::endl;
+    unsigned index = 0;
+    for (const auto& val : constsnumbers_vector) {
+        if (val == num) {
+            return index;
+        }
+        ++index;
+    }
+    constsnumbers_vector.push_back(num);
+    return index;
+}
+
+std::vector<std::string> libfuncs_vector;
+
+unsigned libfuncs_newused(std::string str) {
+    unsigned index = 0;
+    for (const auto& libfunc : libfuncs_vector) {
+        if (libfunc == str) {
+            return index;
+        }
+        ++index;
+    }
+    libfuncs_vector.push_back(str);
+    return index;
+}
+
+std::vector<expression*> userfuncs_vector;
+
+unsigned userfuncs_newfunc(expression* expr) {
+    unsigned index = 0;
+    expression* userfunc = new expression;
+    for (const auto& userfunc : userfuncs_vector) {
+        if (userfunc->symbol->name == expr->symbol->name) {
+            return index;
+        }
+        //userfunc->symbol = expr->symbol;
+        //userfunc->symbol->i_address = expr->symbol->i_address;
+        //userfunc->symbol->total_locals = expr->symbol->total_locals;
+        //userfunc->symbol->func_name = expr->symbol->func_name;
+        //userfunc->symbol->isActive = expr->symbol->isActive;
+        //userfunc->symbol->space = expr->symbol->space;
+        //userfunc->symbol->offset = expr->symbol->offset;
+        ++index;
+    }
+    userfuncs_vector.push_back(expr);
+    return index;
 }
 
 unsigned retrieve_quad_index() {
@@ -94,7 +152,8 @@ vmarg* make_retvaloperand() {
 }
 
 vmarg* make_numberoperand(double num) {
-    return new vmarg{NUMBER_T, (unsigned)num};
+    std::cout << "make_numberoperand NUM: " << num << std::endl;
+    return new vmarg{NUMBER_T, consts_constnumbers((unsigned)num)};
 }
 
 vmarg* make_booloperand(int bool_const) {
@@ -107,6 +166,7 @@ vmarg* make_operand(expression* expr) {
         return NULL;
     }
     switch (expr->type) {
+        
         case VAR_EXPR:
         case TABLEITEM_EXPR:
         case ARITHM_EXPR:
@@ -126,7 +186,7 @@ vmarg* make_operand(expression* expr) {
             }
             
         case CONSTNUM_EXPR:
-            return new vmarg{NUMBER_T, (unsigned)expr->num_const};
+            return new vmarg{NUMBER_T, consts_constnumbers(expr->num_const)};
         case CONSTBOOL_EXPR:
             return new vmarg{BOOL_T, (unsigned)expr->bool_const};
         case CONSTSTRING_EXPR:
@@ -134,10 +194,11 @@ vmarg* make_operand(expression* expr) {
         case NIL_EXPR:
             return new vmarg{NIL_T, 0};
         case LIBFUNC_EXPR: {
-            return new vmarg{LIBFUNC_T, expr->symbol->i_address};
+            return new vmarg{LIBFUNC_T, libfuncs_newused(expr->symbol->name)};
         }
         case PROGRAMFUNC_EXPR: {
-            return new vmarg{USERFUNC_T, expr->symbol->i_address};
+            std::cout << "PROGRAMFUNC_EXPR: " << expr->symbol->name << std::endl;
+            return new vmarg{USERFUNC_T, userfuncs_newfunc(expr)};
         }
     }
 }
@@ -236,12 +297,15 @@ void generate_MOD(quad* quad) {
 void generate_UMINUS(quad* quad) {
     // Implementation for generating code for UMINUS opcode
     std::cout << "Generating code for UMINUS" << std::endl;
-    // This is a placeholder; actual implementation would depend on the context
-    // of the UMINUS operation in the quad.
-    // For example, you might want to generate code that negates a number.
-    // This could involve creating a new instruction that multiplies the number
-    // by -1 or something similar.
-    // For now, we'll just print a message.
+
+    instruction* uminus_instruction = new instruction;
+    uminus_instruction->opcode = MUL_T;
+    uminus_instruction->result = make_operand(quad->result);
+    uminus_instruction->arg1 = make_operand(quad->arg1);
+    uminus_instruction->arg2 = make_numberoperand(-1);    
+    uminus_instruction->srcLine = quad->line;
+    quad->taddress = next_instruction_label();
+    emit(uminus_instruction);
 }
 
 void generate_AND(quad* quad) {
@@ -466,14 +530,32 @@ void generate_GETRETVAL(quad* quad) {
     emit(getret_instruction);
 }
 
-void generate_FUNCSTART(quad*) {
+void generate_FUNCSTART(quad* quad) {
     // Implementation for generating code for FUNCSTART opcode
     std::cout << "Generating code for FUNCSTART" << std::endl;
+
+    quad->taddress = next_instruction_label();
+    instruction* funcstart_instruction = new instruction;
+    funcstart_instruction->opcode = ENTERFUNC;
+    funcstart_instruction->result = make_operand(quad->result);
+    funcstart_instruction->arg1 = NULL;
+    funcstart_instruction->arg2 = NULL;
+    funcstart_instruction->srcLine = quad->line;
+    emit(funcstart_instruction);
 }
 
-void generate_FUNCEND(quad*) {
+void generate_FUNCEND(quad* quad) {
     // Implementation for generating code for FUNCEND opcode
     std::cout << "Generating code for FUNCEND" << std::endl;
+
+    quad->taddress = next_instruction_label();
+    instruction* funcend_instruction = new instruction;
+    funcend_instruction->opcode = EXITFUNC;
+    funcend_instruction->result = make_operand(quad->result);
+    funcend_instruction->arg1 = NULL;
+    funcend_instruction->arg2 = NULL;
+    funcend_instruction->srcLine = quad->line;
+    emit(funcend_instruction);
 }
 
 void generate_TABLECREATE(quad* quad) {
@@ -481,7 +563,7 @@ void generate_TABLECREATE(quad* quad) {
     std::cout << "Generating code for TABLECREATE" << std::endl;
 
     instruction* tablecreate_instruction = new instruction;
-    tablecreate_instruction->opcode = TABLECREATE_T;
+    tablecreate_instruction->opcode = NEWTABLE;
     tablecreate_instruction->result = make_operand(quad->result);
     tablecreate_instruction->arg1 = NULL;
     tablecreate_instruction->arg2 = NULL;
@@ -546,50 +628,50 @@ void generate_tcode() {
 void print_instruction(const instruction& instr) {
     if (instr.opcode == ASSIGN_T) {
         if (instr.result->type == RETVAL_T) {
-            std::cout << instr.srcLine << "\t\t" << "ASSIGN" << "\t\t" << instr.arg1->value << std::endl;
+            std::cout << instr.srcLine << "\t\t" << "ASSIGN" << "\t\t" << instr.arg1->type << "\t\t" << instr.arg1->value << std::endl;
         } else {
-            std::cout << instr.srcLine << "\t\t" << "ASSIGN" << "\t\t" << instr.result->value << "\t\t" << instr.arg1->value << std::endl;
+            std::cout << instr.srcLine << "\t\t" << "ASSIGN" << "\t\t" << instr.result->type << "\t\t" << instr.result->value << "\t\t" << instr.arg1->type << "\t\t" << instr.arg1->value << std::endl;
         }
     } else if (instr.opcode == ADD_T) {
-        std::cout << instr.srcLine << "\t\t" << "ADD" << "\t\t" << instr.result->value << "\t\t" << instr.arg1->value << "\t\t" << instr.arg2->value << std::endl;
+        std::cout << instr.srcLine << "\t\t" << "ADD" << "\t\t" << instr.result->type << "\t\t" << instr.result->value << "\t\t" << instr.arg1->type << "\t\t" << instr.arg1->value << "\t\t" << instr.arg2->type << "\t\t" << instr.arg2->value << std::endl;
     } else if (instr.opcode == SUB_T) {
-        std::cout << instr.srcLine << "\t\t" << "SUB" << "\t\t" << instr.result->value << "\t\t" << instr.arg1->value << "\t\t" << instr.arg2->value << std::endl;
+        std::cout << instr.srcLine << "\t\t" << "SUB" << "\t\t" << instr.result->type << "\t\t" << instr.result->value << "\t\t" << instr.arg1->type << "\t\t" << instr.arg1->value << "\t\t" << instr.arg2->type << "\t\t" << instr.arg2->value << std::endl;
     } else if (instr.opcode == MUL_T) {
-        std::cout << instr.srcLine << "\t\t" << "MUL" << "\t\t" << instr.result->value << "\t\t" << instr.arg1->value << "\t\t" << instr.arg2->value << std::endl;
+        std::cout << instr.srcLine << "\t\t" << "MUL" << "\t\t" << instr.result->type << "\t\t" << instr.result->value << "\t\t" << instr.arg1->type << "\t\t" << instr.arg1->value << "\t\t" << instr.arg2->type << "\t\t" << instr.arg2->value << std::endl;
     } else if (instr.opcode == DIV_T) {
-        std::cout << instr.srcLine << "\t\t" << "DIV" << "\t\t" << instr.result->value << "\t\t" << instr.arg1->value << "\t\t" << instr.arg2->value << std::endl;
+        std::cout << instr.srcLine << "\t\t" << "DIV" << "\t\t" << instr.result->type << "\t\t" << instr.result->value << "\t\t" << instr.arg1->type << "\t\t" << instr.arg1->value << "\t\t" << instr.arg2->type << "\t\t" << instr.arg2->value << std::endl;
     } else if (instr.opcode == MOD_T) {
-        std::cout << instr.srcLine << "\t\t" << "MOD" << "\t\t" << instr.result->value << "\t\t" << instr.arg1->value << "\t\t" << instr.arg2->value << std::endl;
+        std::cout << instr.srcLine << "\t\t" << "MOD" << "\t\t" << instr.result->type << "\t\t" << instr.result->value << "\t\t" << instr.arg1->type << "\t\t" << instr.arg1->value << "\t\t" << instr.arg2->type << "\t\t" << instr.arg2->value << std::endl;
     } else if (instr.opcode == JEQ) {
-       std::cout << instr.srcLine  << "\t\t" << "JEQ" << "\t\t" << instr.arg1->value << "\t\t" << instr.arg2->value << "\t\t" << instr.result->value << std::endl;
+        std::cout << instr.srcLine << "\t\t" << "JEQ" << "\t\t" << instr.arg1->type << "\t\t" << instr.arg1->value << "\t\t" << instr.arg2->type << "\t\t" << instr.arg2->value << "\t\t" << instr.result->type << "\t\t" << instr.result->value << std::endl;
     } else if (instr.opcode == JNE) {
-        std::cout<<instr.srcLine<<"\t\t"<< "JNE"<< "\t\t"<<instr.result->value<<"\t\t"<<instr.arg1->value<<"\t\t"<<instr.arg2->value<<std::endl;
+        std::cout << instr.srcLine << "\t\t" << "JNE" << "\t\t" << instr.arg1->type << "\t\t" << instr.arg1->value << "\t\t" << instr.arg2->type << "\t\t" << instr.arg2->value << "\t\t" << instr.result->type << "\t\t" << instr.result->value << std::endl;
     } else if (instr.opcode == JLE) {
-        std::cout<<instr.srcLine<<"\t\t"<< "JLE"<< "\t\t"<<instr.result->value<<"\t\t"<<instr.arg1->value<<"\t\t"<<instr.arg2->value<<std::endl;
+        std::cout << instr.srcLine << "\t\t" << "JLE" << "\t\t" << instr.arg1->type << "\t\t" << instr.arg1->value << "\t\t" << instr.arg2->type << "\t\t" << instr.arg2->value << "\t\t" << instr.result->type << "\t\t" << instr.result->value << std::endl;
     } else if (instr.opcode == JGE) {
-        std::cout<<instr.srcLine<<"\t\t"<< "JGE"<< "\t\t"<<instr.result->value<<"\t\t"<<instr.arg1->value<<"\t\t"<<instr.arg2->value<<std::endl;
+        std::cout << instr.srcLine << "\t\t" << "JGE" << "\t\t" << instr.arg1->type << "\t\t" << instr.arg1->value << "\t\t" << instr.arg2->type << "\t\t" << instr.arg2->value << "\t\t" << instr.result->type << "\t\t" << instr.result->value << std::endl;
     } else if (instr.opcode == JLT) {
-        std::cout<<instr.srcLine<<"\t\t"<< "JLT"<< "\t\t"<<instr.result->value<<"\t\t"<<instr.arg1->value<<"\t\t"<<instr.arg2->value<<std::endl;
+        std::cout << instr.srcLine << "\t\t" << "JLT" << "\t\t" << instr.arg1->type << "\t\t" << instr.arg1->value << "\t\t" << instr.arg2->type << "\t\t" << instr.arg2->value << "\t\t" << instr.result->type << "\t\t" << instr.result->value << std::endl;
     } else if (instr.opcode == JGT) {
-        std::cout<<instr.srcLine<<"\t\t"<< "JGT"<< "\t\t"<<instr.result->value<<"\t\t"<<instr.arg1->value<<"\t\t"<<instr.arg2->value<<std::endl;
+        std::cout << instr.srcLine << "\t\t" << "JGT" << "\t\t" << instr.arg1->type << "\t\t" << instr.arg1->value << "\t\t" << instr.arg2->type << "\t\t" << instr.arg2->value << "\t\t" << instr.result->type << "\t\t" << instr.result->value << std::endl;
     } else if (instr.opcode == CALLFUNC) {
-        std::cout<<instr.srcLine<<"\t\t"<< "CALLFUNC"<< "\t\t"<<instr.result->value<<"\t\t"<<std::endl;
+        std::cout << instr.srcLine << "\t\t" << "CALLFUNC" << "\t\t" << instr.result->type << "\t\t" << instr.result->value << std::endl;
     } else if (instr.opcode == PUSHARG) {
-        std::cout<<instr.srcLine<<"\t\t"<< "PUSHARG"<< "\t\t"<<instr.result->value<<"\t\t"<<std::endl;
+        std::cout << instr.srcLine << "\t\t" << "PUSHARG"<< "\t\t" << instr.result->type << "\t\t" << instr.result->value << std::endl;
     } else if (instr.opcode == ENTERFUNC) {
-        std::cout<<instr.srcLine<<"\t\t"<< "ENTERFUNC" << "\t\t" << instr.result->value << std::endl;
+        std::cout << instr.srcLine << "\t\t" << "ENTERFUNC" << "\t\t" << instr.result->value << std::endl;
     } else if (instr.opcode == EXITFUNC) {
-        std::cout<<instr.srcLine<<"\t\t"<< "EXITFUNC" << "\t\t" << instr.result->value << std::endl;
-    } else if (instr.opcode == TABLECREATE_T) {
-        std::cout<<instr.srcLine<<"\t\t"<< "TABLECREATE" << "\t\t" << instr.result->value << std::endl;
+        std::cout << instr.srcLine << "\t\t" << "EXITFUNC" << "\t\t" << instr.result->value << std::endl;
+    } else if (instr.opcode == NEWTABLE) {
+        std::cout << instr.srcLine << "\t\t" << "NEWTABLE" << "\t\t" << instr.result->type << "\t\t" << instr.result->value << std::endl;
     } else if (instr.opcode == TABLEGETELEM_T) {
-        std::cout<<instr.srcLine<<"\t\t"<< "TABLEGETELEM" << "\t\t" << instr.result->value << "\t\t" << instr.arg1->value << "\t\t" << instr.arg2->value << std::endl;
+        std::cout << instr.srcLine << "\t\t" << "TABLEGETELEM" << "\t\t" << instr.result->type << "\t\t" << instr.result->value << "\t\t" << instr.arg1->type << "\t\t" << instr.arg1->value << "\t\t" << instr.arg2->type << "\t\t" << instr.arg2->value << std::endl;
     } else if (instr.opcode == TABLESETELEM_T) {
-        std::cout<<instr.srcLine<<"\t\t"<< "TABLESETELEM" << "\t\t" << instr.result->value << "\t\t" << instr.arg1->value << "\t\t" << instr.arg2->value << std::endl;
+        std::cout << instr.srcLine << "\t\t" << "TABLESETELEM" << "\t\t" << instr.result->type << "\t\t" << instr.result->value << "\t\t" << instr.arg1->type << "\t\t" << instr.arg1->value << "\t\t" << instr.arg2->type << "\t\t" << instr.arg2->value << std::endl;
     } else if (instr.opcode == JUMP_T) {
-        std::cout<<instr.srcLine<<"\t\t"<< "JUMP" << "\t\t" << instr.result->value << std::endl;
+        std::cout << instr.srcLine << "\t\t" << "JUMP" << "\t\t" << instr.result->type << "\t\t" << instr.result->value << std::endl;
     } else if (instr.opcode == NOP) {
-        std::cout<<instr.srcLine<<"\t\t"<< "NOP" << std::endl;
+        std::cout << instr.srcLine << "\t\t" << "NOP" << std::endl;
     } else {
         std::cerr << "Unknown opcode: " << instr.opcode << std::endl;
     }       
@@ -606,4 +688,190 @@ void print_instruction_table() {
     for (const auto& instr : instruction_table) {
         print_instruction(instr);
     }
+}
+
+void avm_binary_file(const std::string& filename = "tcode.abc") {
+
+
+    std::ofstream out(filename, std::ios::binary);
+    if (!out.is_open()) {
+        std::cerr << "Failed to open binary file for writing: " << filename << std::endl;
+        return;
+    }
+
+    // Write the number of instructions first
+    uint32_t instr_count = instruction_table.size();
+    out.write(reinterpret_cast<const char*>(&instr_count), sizeof(instr_count));
+    unsigned magic_number = 0x14069134; // Example magic number
+    out.write(reinterpret_cast<const char*>(&magic_number), sizeof(magic_number));
+    unsigned total_strings = conststrings_vector.size();
+    unsigned total_numbers = constsnumbers_vector.size();
+    unsigned total_userfuncs = userfuncs_vector.size();
+    unsigned total_libfuncs = libfuncs_vector.size();
+    out.write(reinterpret_cast<const char*>(&total_strings), sizeof(total_strings));
+    for (const auto& str : conststrings_vector) {
+        uint32_t str_length = str.length();
+        out.write(reinterpret_cast<const char*>(&str_length), sizeof(str_length));
+        out.write(str.c_str(), str_length);
+        unsigned size = str.length();
+        std::cout << "String: " << str << " (length: " << size << ")" << std::endl;
+        out.write(reinterpret_cast<const char*>(&size), sizeof(size));
+    }
+    out.write(reinterpret_cast<const char*>(&total_numbers), sizeof(total_numbers));
+    for (const auto& num : constsnumbers_vector) {
+        out.write(reinterpret_cast<const char*>(&num), sizeof(num));
+    }
+    out.write(reinterpret_cast<const char*>(&total_userfuncs), sizeof(total_userfuncs));
+    for (const auto& userfunc : userfuncs_vector) {
+        unsigned address = userfunc->symbol->i_address;
+        unsigned local_size = userfunc->symbol->total_locals;
+        const std::string& name = userfunc->symbol->name;
+        uint32_t name_length = name.length();
+        out.write(reinterpret_cast<const char*>(&address), sizeof(address));
+        out.write(reinterpret_cast<const char*>(&local_size), sizeof(local_size));
+        out.write(reinterpret_cast<const char*>(&name_length), sizeof(name_length));
+        out.write(name.c_str(), name_length);
+    }
+    out.write(reinterpret_cast<const char*>(&total_libfuncs), sizeof(total_libfuncs));
+    for (const auto& libfunc : libfuncs_vector) {
+        uint32_t name_length = libfunc.length();
+        out.write(reinterpret_cast<const char*>(&name_length), sizeof(name_length));
+        out.write(libfunc.c_str(), name_length);
+    }
+
+    for (const auto& instr : instruction_table) {
+        
+        // Write opcode and srcLine
+        out.write(reinterpret_cast<const char*>(&instr.opcode), sizeof(instr.opcode));
+        out.write(reinterpret_cast<const char*>(&instr.srcLine), sizeof(instr.srcLine));
+
+        // Helper lambda to write a vmarg pointer (can be NULL)
+        auto write_vmarg = [&out](const vmarg* arg) {
+            uint8_t is_null = (arg == nullptr) ? 1 : 0;
+            out.write(reinterpret_cast<const char*>(&is_null), sizeof(is_null));
+            if (!is_null) {
+                out.write(reinterpret_cast<const char*>(&arg->type), sizeof(arg->type));
+                out.write(reinterpret_cast<const char*>(&arg->value), sizeof(arg->value));
+            }
+        };
+
+        write_vmarg(instr.result);
+        write_vmarg(instr.arg1);
+        write_vmarg(instr.arg2);
+    }
+
+    out.close();
+    std::cout << "Tcode instructions written to binary file: " << filename << std::endl;
+}
+
+void avm_binary_dump(const std::string& filename = "tcode.abc") {
+    std::ifstream in(filename, std::ios::binary);
+    if (!in.is_open()) {
+        std::cerr << "Failed to open binary file for reading: " << filename << std::endl;
+        return;
+    }
+
+    uint32_t instr_count;
+    in.read(reinterpret_cast<char*>(&instr_count), sizeof(instr_count));
+    std::cout << "Instruction count: " << instr_count << std::endl;
+
+    unsigned magic_number;
+    in.read(reinterpret_cast<char*>(&magic_number), sizeof(magic_number));
+    std::cout << "Magic number: " << std::hex << magic_number << std::dec << std::endl;
+    if (magic_number != 0x14069134) {
+        std::cerr << "Invalid magic number in binary file." << std::endl;
+        in.close();
+        return;
+    }
+
+    // Read and print constant strings
+    unsigned total_strings;
+    in.read(reinterpret_cast<char*>(&total_strings), sizeof(total_strings));
+    std::cout << "Total strings: " << total_strings << std::endl;
+    for (unsigned i = 0; i < total_strings; ++i) {
+        uint32_t str_length;
+        in.read(reinterpret_cast<char*>(&str_length), sizeof(str_length));
+        std::string str(str_length, '\0');
+        in.read(&str[0], str_length);
+        std::cout << "  String[" << i << "]: " << str << std::endl;
+        in.read(reinterpret_cast<char*>(&str_length), sizeof(str_length));
+        std::cout << "  String length: " << str_length << std::endl;
+        if (str_length != str.length()) {
+            std::cerr << "String length mismatch for string[" << i << "]. Expected: " << str_length << ", Actual: " << str.length() << std::endl;
+        }
+        std::cout << "  String size: " << str.length() << std::endl;
+    }
+
+    // Read and print constant numbers
+    unsigned total_numbers;
+    in.read(reinterpret_cast<char*>(&total_numbers), sizeof(total_numbers));
+    std::cout << "Total numbers: " << total_numbers << std::endl;
+    for (unsigned i = 0; i < total_numbers; ++i) {
+        double num;
+        in.read(reinterpret_cast<char*>(&num), sizeof(num));
+        std::cout << "  Number[" << i << "]: " << num << std::endl;
+    }
+
+    // Read and print user functions
+    unsigned total_userfuncs;
+    in.read(reinterpret_cast<char*>(&total_userfuncs), sizeof(total_userfuncs));
+    std::cout << "Total userfuncs: " << total_userfuncs << std::endl;
+    for (unsigned i = 0; i < total_userfuncs; ++i) {
+        unsigned address, local_size;
+        in.read(reinterpret_cast<char*>(&address), sizeof(address));
+        in.read(reinterpret_cast<char*>(&local_size), sizeof(local_size));
+        uint32_t name_length;
+        in.read(reinterpret_cast<char*>(&name_length), sizeof(name_length));
+        std::string name(name_length, '\0');
+        in.read(&name[0], name_length);
+        std::cout << "  UserFunc[" << i << "]: address=" << address
+                  << ", local_size=" << local_size
+                  << ", name=" << name << std::endl;
+    }
+
+    // Read and print library functions
+    unsigned total_libfuncs;
+    in.read(reinterpret_cast<char*>(&total_libfuncs), sizeof(total_libfuncs));
+    std::cout << "Total libfuncs: " << total_libfuncs << std::endl;
+    for (unsigned i = 0; i < total_libfuncs; ++i) {
+        uint32_t name_length;
+        in.read(reinterpret_cast<char*>(&name_length), sizeof(name_length));
+        std::string name(name_length, '\0');
+        in.read(&name[0], name_length);
+        std::cout << "  LibFunc[" << i << "]: " << name << std::endl;
+    }
+
+    // Read and print instructions
+    for (uint32_t i = 0; i < instr_count; ++i) {
+        vmopcode opcode;
+        unsigned srcLine;
+        in.read(reinterpret_cast<char*>(&opcode), sizeof(opcode));
+        in.read(reinterpret_cast<char*>(&srcLine), sizeof(srcLine));
+
+        auto read_vmarg = [&in]() -> vmarg {
+            uint8_t is_null;
+            in.read(reinterpret_cast<char*>(&is_null), sizeof(is_null));
+            vmarg arg;
+            if (!is_null) {
+                in.read(reinterpret_cast<char*>(&arg.type), sizeof(arg.type));
+                in.read(reinterpret_cast<char*>(&arg.value), sizeof(arg.value));
+            } else {
+                arg.type = (vmarg_t)0;
+                arg.value = 0;
+            }
+            return arg;
+        };
+
+        vmarg result = read_vmarg();
+        vmarg arg1 = read_vmarg();
+        vmarg arg2 = read_vmarg();
+
+        std::cout << "Instruction " << i << ": opcode=" << opcode
+                  << ", srcLine=" << srcLine
+                  << ", result(type=" << result.type << ", value=" << result.value << ")"
+                  << ", arg1(type=" << arg1.type << ", value=" << arg1.value << ")"
+                  << ", arg2(type=" << arg2.type << ", value=" << arg2.value << ")"
+                  << std::endl;
+    }
+    in.close();
 }
