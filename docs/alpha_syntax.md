@@ -13,33 +13,37 @@ This section describes the syntax of the Alpha programming language. Alpha is a 
     *   An identifier is a sequence of letters, digits, and underscores, starting with a letter or underscore.
     *   Example: `myVariable`, `_count`, `result123`
     *   Identifiers can be of any length, but only the first 256 characters are significant. Keywords are reserved and cannot be used as identifiers.
-*   **Keywords:** The following words are reserved keywords in Alpha and cannot be used as identifiers:
-    `and`, `break`, `do`, `else`, `elseif`, `end`, `false`, `for`, `function`, `global`, `if`, `in`, `local`, `not`, `nil`, `or`, `repeat`, `return`, `then`, `true`, `until`, `while`
+*   **Keywords:** The following words are reserved keywords in Alpha and cannot be used as identifiers:  `if`, `else`, `while`, `for`,             `function`, `return`, `break`, `continue`, `and`, `or`, `not`, `local`, `true`, `false`, `nil`.
 *   **Operators:**
-    *   Arithmetic: `+`, `-`, `*`, `/`, `%`, `^` (exponentiation)
+    *   Arithmetic: `+`, `-`, `*`, `/`, `%`
     *   Relational: `==`, `!=`, `<`, `>`, `<=`, `>=`
     *   Logical: `and`, `or`, `not`
-    *   Assignment: `=`, `+=`, `-=`, `*=`, `/=`, `%=`
-    *   Concatenation: `..` (for strings)
+    *   Assignment: `=`
+    *   Table Access: `[]`
+    *   Member Access: `.`
+    *   String Concatenation: `..`
+    *   Increment/Decrement: `++`, `--` (if supported)
 *   **Operator Precedence and Associativity:**
 
-    | Operator          | Precedence | Associativity |
-    |-------------------|------------|---------------|
-    | `^`               | 8          | Right         |
-    | `*`, `/`, `%`     | 7          | Left          |
-    | `+`, `-`          | 6          | Left          |
-    | `..`              | 5          | Right         |
-    | `<`, `<=`, `>`, `>=` | 4          | Left          |
-    | `==`, `!=`        | 3          | Left          |
-    | `and`             | 2          | Left          |
-    | `or`              | 1          | Left          |
-    | `=` (assignment) | 0          | Right         |
+    | Operator          | Precedence | Associativity | Notes                        |
+    |-------------------|------------|---------------|------------------------------|
+    | `()`              | Highest    | N/A           | Parentheses                  |
+    | `[]`              | High       | N/A           | Table Access                 |
+    | `.`, `..`         |            | Left          | Member Access, Concatenation |
+    | `not`, `++`, `--`, `-` |          | Right         | Unary operators              |
+    | `*`, `/`, `%`     |            | Left          |                              |
+    | `+`, `-`          |            | Left          |                              |
+    | `>`, `>=`, `<`, `<=` |            | N/A           | Non-associative              |
+    | `==`, `!=`        |            | N/A           | Non-associative              |
+    | `and`             |            | Left          |                              |
+    | `or`              | Lowest     | Left          |                              |
+    | `=` (assignment) |            | Right         |                              |
 
 *   **Literals:**
     *   **Number Literals:** A sequence of digits, possibly with a decimal point.  Example: `123`, `0`, `-42`, `3.14`, `-0.5`, `1.0`
     *   **String Literals:** A sequence of characters enclosed in double quotes.  Example: `"Hello, world!"`, `"This is a string."`
         *   Escape sequences supported within string literals: `\n` (newline), `\t` (tab), `\\` (backslash), `\"` (double quote).
-    *   **Table Literals:** Tables are created using curly braces `{}` and key-value pairs separated by commas. Example: `{ "name": "John", "age": 30 }`
+    *   **Table Literals:** Tables are created using curly braces `[]` and key-value pairs separated by commas. Example: `{ "name": "John", "age": 30 }`
     *   **Boolean Literals:** `true`, `false`
     *   **Nil Literal:** `nil`
 
@@ -57,7 +61,7 @@ Alpha supports the following data types. Note that types are associated with *va
 
 ### C. Program Structure
 
-An Alpha program is a sequence of statements.  There is no required `program { ... }` block. The statements are executed sequentially from the beginning of the file.
+An Alpha program is a sequence of statements. The statements are executed sequentially from the beginning of the file.
 
 ```alpha
 // Alpha program
