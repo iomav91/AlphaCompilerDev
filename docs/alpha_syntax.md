@@ -43,7 +43,11 @@ This section describes the syntax of the Alpha programming language. Alpha is a 
     *   **Number Literals:** A sequence of digits, possibly with a decimal point.  Example: `123`, `0`, `-42`, `3.14`, `-0.5`, `1.0`
     *   **String Literals:** A sequence of characters enclosed in double quotes.  Example: `"Hello, world!"`, `"This is a string."`
         *   Escape sequences supported within string literals: `\n` (newline), `\t` (tab), `\\` (backslash), `\"` (double quote).
-    *   **Table Literals:** Tables are created using curly braces `[]` and key-value pairs separated by commas. Example: `{ "name": "John", "age": 30 }`
+    **Table Literals:** Tables are created using square brackets `[]`.
+        *   Examples:
+            *   Empty table: `[]`
+            *   Table with mixed data types: `[1, "str", true, false, -2.1, -2, 2.14]`
+            *   Table with nested tables containing key-value pairs: `[{true: "true"}, {2: "hello"}]` (Note the keys can be literals).
     *   **Boolean Literals:** `true`, `false`
     *   **Nil Literal:** `nil`
 
@@ -67,3 +71,25 @@ An Alpha program is a sequence of statements. The statements are executed sequen
 // Alpha program
 variable1 = 10;
 print(variable1);
+
+### D. Statements
+
+Assignment Statements: Assign a value to a variable. Example:
+
+count = 10;
+pi = 3.14159;
+message = "Goodbye!";
+myTable = [ "name", "John", "age", 30 ]; // Assigning a table literal
+
+Conditional Statements: Execute a block of code based on a condition.
+
+if (condition) { 
+    // Statements to execute if the condition is true
+} else {
+    // Statements to execute if the condition is false (optional)
+}
+or
+if (condition)
+   statement;
+else
+   statement;
