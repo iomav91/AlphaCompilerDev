@@ -4,7 +4,7 @@
 
 ## Description:
 
-This project involves the creation of the Alpha programming language, designed specifically for educational purposes. It's being developed during the Spring semester of 2025 as part of the CS340 Compilers course at the Computer Science Department of the University of Crete.  The project is structured into four distinct phases, covering the core aspects of compiler construction:
+This project involves the creation of the Alpha programming language using C/C++, designed specifically for educational purposes. It's being developed during the Spring semester of 2025 as part of the CS340 Compilers course at the Computer Science Department of the University of Crete.  The project is structured into four distinct phases, covering the core aspects of compiler construction:
 
 1.  **Phase 1: Lexical Analysis:** Implementation of a lexical analyzer using `lex` (or Flex), responsible for tokenizing the source code.
 2.  **Phase 2: Syntax and Semantic Analysis:** Development of a syntax analyzer using `bison`, along with semantic analysis to ensure the program's correctness.
