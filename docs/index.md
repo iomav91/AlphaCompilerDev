@@ -34,4 +34,4 @@ While the primary development is done by students, the *documentation's* target 
 
 ## License:
 
-[ *Specify the License here.  For example:* ] This project is licensed under the [MIT License](LICENSE) (or Apache 2.0, GPL, etc.).  See the `LICENSE` file for details.  [ *If you're using third-party components with different licenses, acknowledge them here as well.* ]
+This project is licensed under the [MIT License](LICENSE) (or Apache 2.0, GPL, etc.).  See the `LICENSE` file for details.
